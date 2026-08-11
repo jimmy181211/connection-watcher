@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
 using ConnectionWatcher.Core.Configuration;
 using ConnectionWatcher.Core.Logging;
 using ConnectionWatcher.Core.Models;
@@ -14,10 +15,12 @@ List<(string Name, Func<Task> Run)> tests =
     ("Local listener matching", TestListenerMatching),
     ("Rule validation", TestValidation),
     ("Ongoing connection is logged once", TestOngoingConnectionDeduplication),
+    ("Connection completion reports observed duration", TestConnectionCompletion),
     ("Reconnect is logged after grace period", TestReconnect),
     ("Highest matching action wins", TestOverlappingRules),
     ("New rule can match an ongoing connection", TestNewRuleMatch),
     ("CSV event log round trip", TestCsvLog),
+    ("Legacy CSV logs remain readable", TestLegacyCsvCompatibility),
     ("CSV event log rotation is bounded", TestCsvRotation),
     ("CSV log limit can be changed at runtime", TestCsvRuntimeLimit),
     ("Settings round trip", TestSettings),
@@ -118,9 +121,32 @@ static Task TestOngoingConnectionDeduplication()
         PortRange.Any,
         MatchAction.PopupAlert);
     TcpConnectionInfo connection = Connection("103.1.40.235", 1433);
-    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).Count == 1);
-    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).Count == 0);
-    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).Count == 0);
+    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).DetectedEvents.Count == 1);
+    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).DetectedEvents.Count == 0);
+    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).DetectedEvents.Count == 0);
+    return Task.CompletedTask;
+}
+
+static Task TestConnectionCompletion()
+{
+    ConnectionTracker tracker = new();
+    MonitoringRule rule = NewRule(
+        "Duration",
+        "103.1.40.235",
+        new PortRange(1433, 1433),
+        PortRange.Any,
+        MatchAction.SilentLog);
+    TcpConnectionInfo connection = Connection("103.1.40.235", 1433);
+    DateTimeOffset start = DateTimeOffset.Now;
+    ConnectionEvent detected = tracker.Process([connection], [rule], start)
+        .DetectedEvents.Single();
+    tracker.Process([connection], [rule], start.AddSeconds(5));
+    Assert(tracker.Process([], [rule], start.AddSeconds(6)).CompletedEvents.Count == 0);
+    ConnectionEvent completed = tracker.Process([], [rule], start.AddSeconds(7))
+        .CompletedEvents.Single();
+    Assert(ReferenceEquals(detected, completed));
+    Assert(!completed.IsActive);
+    Assert(completed.GetObservedDuration(start.AddSeconds(20)) == TimeSpan.FromSeconds(5));
     return Task.CompletedTask;
 }
 
@@ -137,7 +163,7 @@ static Task TestReconnect()
     tracker.Process([connection], [rule], DateTimeOffset.Now);
     tracker.Process([], [rule], DateTimeOffset.Now);
     tracker.Process([], [rule], DateTimeOffset.Now);
-    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).Count == 1);
+    Assert(tracker.Process([connection], [rule], DateTimeOffset.Now).DetectedEvents.Count == 1);
     return Task.CompletedTask;
 }
 
@@ -159,7 +185,7 @@ static Task TestOverlappingRules()
     IReadOnlyList<ConnectionEvent> events = tracker.Process(
         [Connection("103.1.40.235", 1433)],
         [broad, urgent],
-        DateTimeOffset.Now);
+        DateTimeOffset.Now).DetectedEvents;
     Assert(events.Count == 1);
     Assert(events[0].Action == MatchAction.PopupAlert);
     Assert(events[0].RuleNames.Count == 2);
@@ -186,7 +212,7 @@ static Task TestNewRuleMatch()
     IReadOnlyList<ConnectionEvent> events = tracker.Process(
         [connection],
         [first, second],
-        DateTimeOffset.Now);
+        DateTimeOffset.Now).DetectedEvents;
     Assert(events.Count == 1);
     Assert(events[0].RuleNames.SequenceEqual(["Exact"]));
     return Task.CompletedTask;
@@ -201,15 +227,30 @@ static async Task TestCsvLog()
     try
     {
         CsvEventLogger logger = new(directory, maximumFileBytes: 1024, maximumFiles: 5);
-        ConnectionEvent entry = ConnectionEvent.Create(
-            DateTimeOffset.Now,
-            Connection("103.1.40.235", 1433),
-            [NewRule("Rule, with comma", "103.1.40.235", new PortRange(1433, 1433), PortRange.Any, MatchAction.PopupAlert)]);
+        MonitoringRule rule = NewRule(
+            "Rule, with comma",
+            "103.1.40.235",
+            new PortRange(1433, 1433),
+            PortRange.Any,
+            MatchAction.PopupAlert);
+        ConnectionTracker tracker = new();
+        DateTimeOffset start = DateTimeOffset.Now;
+        ConnectionEvent entry = tracker.Process(
+            [Connection("103.1.40.235", 1433)],
+            [rule],
+            start).DetectedEvents.Single();
         await logger.AppendAsync(entry);
+        tracker.Process([Connection("103.1.40.235", 1433)], [rule], start.AddSeconds(4));
+        tracker.Process([], [rule], start.AddSeconds(5));
+        ConnectionEvent completed = tracker.Process([], [rule], start.AddSeconds(6))
+            .CompletedEvents.Single();
+        await logger.AppendCompletionAsync(completed);
         IReadOnlyList<ConnectionEvent> read = await logger.ReadRecentAsync();
         Assert(read.Count == 1);
         Assert(read[0].RemoteAddress == "103.1.40.235");
         Assert(read[0].RuleNames.Single() == "Rule, with comma");
+        Assert(!read[0].IsActive);
+        Assert(read[0].GetObservedDuration(DateTimeOffset.Now) == TimeSpan.FromSeconds(4));
     }
     finally
     {
@@ -248,6 +289,63 @@ static async Task TestCsvRotation()
         }
 
         Assert(Directory.GetFiles(directory, "events*.csv").Length <= 3);
+    }
+    finally
+    {
+        if (Directory.Exists(directory))
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+}
+
+static async Task TestLegacyCsvCompatibility()
+{
+    string directory = Path.Combine(
+        Path.GetTempPath(),
+        "ConnectionWatcherTests",
+        Guid.NewGuid().ToString("N"));
+    try
+    {
+        Directory.CreateDirectory(directory);
+        string header =
+            "Time/时间,Rules/规则,Action/操作,TCP State/TCP状态," +
+            "Local IP/本地IP,Local Port/本地端口,Remote IP/远程IP," +
+            "Remote Port/远程端口,PID,Program/程序,Path/路径,Event ID/事件ID";
+        string[] fields =
+        [
+            DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss zzz"),
+            "Legacy rule",
+            MatchAction.SilentLog.ToString(),
+            TcpState.Established.ToString(),
+            "172.20.10.2",
+            "61659",
+            "103.1.40.235",
+            "1433",
+            "2480",
+            "legacy.exe",
+            @"C:\Legacy\legacy.exe",
+            Guid.NewGuid().ToString()
+        ];
+        string line = string.Join(',', fields.Select(value => $"\"{value}\""));
+        await File.WriteAllTextAsync(
+            Path.Combine(directory, "events.csv"),
+            header + Environment.NewLine + line + Environment.NewLine,
+            new UTF8Encoding(true));
+
+        CsvEventLogger logger = new(directory, maximumFileBytes: 4096, maximumFiles: 5);
+        IReadOnlyList<ConnectionEvent> legacy = await logger.ReadRecentAsync();
+        Assert(legacy.Count == 1);
+        Assert(!legacy[0].IsActive);
+        Assert(legacy[0].GetObservedDuration(DateTimeOffset.Now) is null);
+
+        ConnectionEvent current = ConnectionEvent.Create(
+            DateTimeOffset.Now,
+            Connection("103.1.40.235", 1433),
+            [NewRule("Current", "103.1.40.235", new PortRange(1433, 1433), PortRange.Any, MatchAction.SilentLog)]);
+        await logger.AppendAsync(current);
+        IReadOnlyList<ConnectionEvent> combined = await logger.ReadRecentAsync();
+        Assert(combined.Count == 2);
     }
     finally
     {
@@ -310,6 +408,7 @@ static Task TestSettings()
         AppSettings settings = new()
         {
             Language = "zh-CN",
+            AlertVolumePercent = 65,
             LogLimitMb = 80,
             Rules =
             [
@@ -319,6 +418,7 @@ static Task TestSettings()
         store.Save(settings);
         AppSettings loaded = store.Load();
         Assert(loaded.Language == "zh-CN");
+        Assert(loaded.AlertVolumePercent == 65);
         Assert(loaded.LogLimitMb == 80);
         Assert(loaded.Rules.Count == 1);
         Assert(loaded.Rules[0].RemotePort.Contains(1433));
@@ -374,6 +474,8 @@ static async Task TestLiveMonitoring()
     await Task.Delay(1200);
     Assert(logger.Entries.Count == 1);
     await engine.StopAsync();
+    Assert(!result.IsActive);
+    Assert(logger.Completions.Count == 1);
 }
 
 static MonitoringRule NewRule(
@@ -418,12 +520,25 @@ static void Assert(bool condition)
 sealed class MemoryLogger : IEventLogger
 {
     public List<ConnectionEvent> Entries { get; } = [];
+    public List<ConnectionEvent> Completions { get; } = [];
 
     public Task AppendAsync(ConnectionEvent connectionEvent, CancellationToken cancellationToken = default)
     {
         lock (Entries)
         {
             Entries.Add(connectionEvent);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task AppendCompletionAsync(
+        ConnectionEvent connectionEvent,
+        CancellationToken cancellationToken = default)
+    {
+        lock (Completions)
+        {
+            Completions.Add(connectionEvent);
         }
 
         return Task.CompletedTask;

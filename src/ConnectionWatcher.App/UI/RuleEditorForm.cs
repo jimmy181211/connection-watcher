@@ -27,12 +27,14 @@ public sealed class RuleEditorForm : Form
 
     public RuleEditorForm(MonitoringRule? existing = null)
     {
+        Icon = AppIconProvider.Load();
         _original = existing?.Copy() ?? new MonitoringRule();
         ResultRule = _original.Copy();
         BuildInterface();
         LoadRule(_original);
         ApplyLocalizedText(existing is null);
         UpdateState();
+        UiFont.Apply(this);
     }
 
     public MonitoringRule ResultRule { get; private set; }

@@ -16,7 +16,7 @@ This tool is not intended to replace Resource Monitor or antivirus software. It 
 
 TCP Connection Watcher is a small, rule-based **Windows network connection monitoring tool**. Users can choose the remote IP address, remote port, or local port they care about. When Windows reports a TCP connection that matches an enabled rule, the app records it or alerts the user according to that rule.
 
-Simply put, it helps you watch a specified IP address or port. For example, you can tell it to watch `103.1.40.235:1433`. After monitoring starts, if the computer connects to that target, the app records the connection time, the program using it, and its PID. Depending on the settings, it can **log silently, show a tray notice, or display a pop-up alert.**
+Simply put, it helps you watch a specified IP address or port. For example, you can tell it to watch `103.1.40.235:1433`. After monitoring starts, if the computer connects to that target, the app records the connection time, active or ended status, observed duration, program, and PID. Depending on the settings, it can **log silently, show a tray notice, or display a pop-up alert.**
 
 The app only tells you, “A connection you asked me to watch has appeared.” It does not label other network connections as suspicious, and one connection alone cannot prove that the computer has a virus. The saved information can be shared with a cybersecurity team for further investigation.
 
@@ -34,17 +34,18 @@ connection-watcher/
 ├── docs/
 ├── packaging/
 └── Final-Share/
-    ├── English/
-    └── 中文版/
+    ├── TCP-Connection-Watcher-Setup-win-x64.exe
+    ├── SHA256SUMS.txt
+    └── Docs/
 ```
 
 - `ConnectionWatcher.sln`: the solution file for the entire project.
 - `src/ConnectionWatcher.Core`: core logic for settings, rules, Windows TCP connection reading, connection deduplication, and CSV logs.
-- `src/ConnectionWatcher.App`: the bilingual Windows interface, including the main window, rule editor, built-in help center, tray notices, and alert window.
-- `tests`: functional and interface tests; the functional test suite currently contains 14 tests.
-- `docs`: Chinese and English project overviews and user guides.
+- `src/ConnectionWatcher.App`: the seven-language Windows interface, including the main window, rule editor, built-in help center, tray notices, and alert window.
+- `tests`: functional and interface tests; the functional test suite currently contains 16 tests.
+- `docs`: project overviews and user guides in all seven supported languages.
 - `packaging`: installer definitions and portable-edition notes.
-- `Final-Share`: the final folders for sharing, with separate Chinese and English installers, documents, and SHA-256 checksums.
+- `Final-Share`: the final sharing folder, with one multilingual installer, the documents, and SHA-256 checksums.
 
 ## Build and verification
 

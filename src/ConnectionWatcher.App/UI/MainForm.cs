@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Media;
 using System.Text;
 using ConnectionWatcher.App.Localization;
 using ConnectionWatcher.App.Services;
@@ -28,6 +27,7 @@ public sealed class MainForm : Form
     private readonly ToolStripMenuItem _trayOpen = new();
     private readonly ToolStripMenuItem _trayToggle = new();
     private readonly ToolStripMenuItem _trayExit = new();
+    private readonly Icon _applicationIcon = AppIconProvider.Load();
 
     private readonly Label _sidebarStatus = new();
     private readonly Label _sidebarHint = new();
@@ -39,7 +39,10 @@ public sealed class MainForm : Form
     private readonly Label _homeRules = ValueLabel();
     private readonly Label _homeIntervalCaption = new();
     private readonly Label _homeInterval = ValueLabel();
-    private readonly Label _shortConnectionNote = SubtitleLabel();
+    private readonly Label _actionLegendTitle = new();
+    private readonly Label _silentActionLegend = new() { Name = "SilentActionLegend" };
+    private readonly Label _trayActionLegend = new() { Name = "TrayActionLegend" };
+    private readonly Label _popupActionLegend = new() { Name = "PopupActionLegend" };
     private readonly Button _monitorButton = new();
 
     private readonly Label _rulesTitle = TitleLabel();
@@ -55,19 +58,53 @@ public sealed class MainForm : Form
     private readonly Button _exportButton = new();
     private readonly Button _openLogsButton = new();
     private readonly DataGridView _eventsGrid = NewGrid();
+    private readonly Label _eventDetailsHint = SubtitleLabel();
+    private Font? _eventStatusFont;
+    private readonly System.Windows.Forms.Timer _eventDurationTimer = new()
+    {
+        Interval = 1000
+    };
 
     private readonly Label _settingsTitle = TitleLabel();
     private readonly Label _settingsSubtitle = SubtitleLabel();
-    private readonly ComboBox _language = new() { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox _language = new()
+    {
+        Name = "LanguageComboBox",
+        DropDownStyle = ComboBoxStyle.DropDownList,
+        Width = 165
+    };
     private readonly Label _startWithWindowsCaption = new();
-    private readonly CheckBox _startWithWindows = new();
+    private readonly CheckBox _startWithWindows = new() { Name = "StartWithWindowsCheckBox" };
     private readonly Label _startWithWindowsHint = SubtitleLabel();
     private readonly Label _resumeMonitoringCaption = new();
-    private readonly CheckBox _resumeMonitoring = new();
+    private readonly CheckBox _resumeMonitoring = new() { Name = "ResumeMonitoringCheckBox" };
     private readonly Label _resumeMonitoringHint = SubtitleLabel();
     private readonly Label _alertSoundCaption = new();
-    private readonly CheckBox _alertSound = new();
+    private readonly CheckBox _alertSound = new() { Name = "AlertSoundCheckBox" };
     private readonly Label _alertSoundHint = SubtitleLabel();
+    private readonly Button _testAlertSoundButton = new()
+    {
+        Name = "TestAlertSoundButton",
+        AutoSize = true,
+        MinimumSize = new Size(105, 34)
+    };
+    private readonly FlowLayoutPanel _alertSoundControls = new()
+    {
+        AutoSize = true,
+        FlowDirection = FlowDirection.LeftToRight,
+        WrapContents = false
+    };
+    private readonly Label _alertVolumeCaption = new();
+    private readonly Label _alertVolumeHint = SubtitleLabel();
+    private readonly NumericUpDown _alertVolume = new()
+    {
+        Name = "AlertVolumeInput",
+        Minimum = AppSettings.MinimumAlertVolumePercent,
+        Maximum = AppSettings.MaximumAlertVolumePercent,
+        Increment = 5,
+        TextAlign = HorizontalAlignment.Right,
+        Width = 110
+    };
     private readonly Label _logLimitCaption = new();
     private readonly Label _logLimitHint = SubtitleLabel();
     private readonly NumericUpDown _logLimit = new()
@@ -107,12 +144,13 @@ public sealed class MainForm : Form
             logger,
             GetRulesSnapshot);
         _engine.EventDetected += EngineEventDetected;
+        _engine.EventCompleted += EngineEventCompleted;
         _engine.MonitoringError += EngineMonitoringError;
         _engine.MonitoringRecovered += EngineMonitoringRecovered;
 
         _notifyIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = _applicationIcon,
             Visible = true,
             ContextMenuStrip = _trayMenu
         };
@@ -127,6 +165,8 @@ public sealed class MainForm : Form
 
         Shown += MainFormShown;
         FormClosing += MainFormClosing;
+        _eventDurationTimer.Tick += (_, _) => UpdateVisibleEventDurations();
+        _eventDurationTimer.Start();
         Resize += (_, _) =>
         {
             if (WindowState == FormWindowState.Minimized)
@@ -141,7 +181,7 @@ public sealed class MainForm : Form
         return new Label
         {
             AutoSize = true,
-            Font = new Font("Segoe UI", 17F, FontStyle.Regular),
+            Font = new Font("Segoe UI", 20F, FontStyle.Regular),
             Margin = new Padding(0, 0, 0, 4)
         };
     }
@@ -186,7 +226,7 @@ public sealed class MainForm : Form
     private void BuildInterface()
     {
         Text = UiText.Get("AppTitle");
-        Icon = SystemIcons.Shield;
+        Icon = (Icon)_applicationIcon.Clone();
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(920, 620);
         ClientSize = new Size(1100, 720);
@@ -283,19 +323,25 @@ public sealed class MainForm : Form
     private Panel BuildHomePage()
     {
         Panel page = new();
-        FlowLayoutPanel header = Header(_homeTitle, _homeSubtitle);
-        _monitorButton.AutoSize = true;
-        _monitorButton.MinimumSize = new Size(140, 38);
+        _homeTitle.Name = "HomeTitle";
+        _homeSubtitle.Name = "HomeSubtitle";
+        _monitorButton.Name = "MonitorButton";
+        _monitorButton.AutoSize = false;
+        _monitorButton.Size = new Size(180, 38);
         _monitorButton.Click += async (_, _) => await ToggleMonitoringAsync();
-        header.Controls.Add(_monitorButton);
+        TableLayoutPanel header = Header(
+            _homeTitle,
+            _homeSubtitle,
+            _monitorButton);
 
         TableLayoutPanel summary = new()
         {
-            AutoSize = true,
+            Name = "HomeSummary",
+            AutoSize = false,
             ColumnCount = 3,
             RowCount = 1,
-            Dock = DockStyle.Top,
-            Margin = new Padding(0, 24, 0, 20)
+            Dock = DockStyle.Fill,
+            Margin = new Padding(0, 24, 0, 0)
         };
         summary.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
         summary.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
@@ -304,13 +350,68 @@ public sealed class MainForm : Form
         summary.Controls.Add(SummaryBox(_homeRulesCaption, _homeRules), 1, 0);
         summary.Controls.Add(SummaryBox(_homeIntervalCaption, _homeInterval), 2, 0);
 
-        _shortConnectionNote.Padding = new Padding(12);
-        Panel body = new() { Dock = DockStyle.Fill };
-        body.Controls.Add(_shortConnectionNote);
-        body.Controls.Add(summary);
-        body.Controls.Add(header);
-        page.Controls.Add(body);
+        TableLayoutPanel legend = BuildActionLegend();
+
+        TableLayoutPanel layout = new()
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 4,
+            Margin = Padding.Empty
+        };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 142));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        header.Dock = DockStyle.Fill;
+        layout.Controls.Add(header, 0, 0);
+        layout.Controls.Add(summary, 0, 1);
+        layout.Controls.Add(legend, 0, 2);
+        page.Controls.Add(layout);
         return page;
+    }
+
+    private TableLayoutPanel BuildActionLegend()
+    {
+        TableLayoutPanel legend = new()
+        {
+            Name = "ActionLegend",
+            Dock = DockStyle.Fill,
+            ColumnCount = 3,
+            RowCount = 2,
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(12, 8, 12, 8),
+            Margin = new Padding(0, 12, 12, 0)
+        };
+        legend.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+        legend.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+        legend.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.34F));
+        legend.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        legend.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        _actionLegendTitle.AutoSize = true;
+        _actionLegendTitle.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+        _actionLegendTitle.Margin = new Padding(0, 0, 0, 5);
+        legend.Controls.Add(_actionLegendTitle, 0, 0);
+        legend.SetColumnSpan(_actionLegendTitle, 3);
+
+        ConfigureLegendItem(_silentActionLegend, MatchAction.SilentLog);
+        ConfigureLegendItem(_trayActionLegend, MatchAction.TrayNotice);
+        ConfigureLegendItem(_popupActionLegend, MatchAction.PopupAlert);
+        legend.Controls.Add(_silentActionLegend, 0, 1);
+        legend.Controls.Add(_trayActionLegend, 1, 1);
+        legend.Controls.Add(_popupActionLegend, 2, 1);
+        return legend;
+    }
+
+    private static void ConfigureLegendItem(Label label, MatchAction action)
+    {
+        label.Dock = DockStyle.Fill;
+        label.AutoEllipsis = true;
+        label.TextAlign = ContentAlignment.MiddleLeft;
+        label.ForeColor = ActionColor(action);
+        label.Margin = Padding.Empty;
     }
 
     private static Panel SummaryBox(Label caption, Label value)
@@ -335,17 +436,48 @@ public sealed class MainForm : Form
     private Panel BuildRulesPage()
     {
         Panel page = new();
-        FlowLayoutPanel header = Header(_rulesTitle, _rulesSubtitle);
+        _rulesTitle.Name = "RulesTitle";
         _newRuleButton.AutoSize = true;
         _newRuleButton.MinimumSize = new Size(110, 36);
         _newRuleButton.Click += (_, _) => AddRule();
-        header.Controls.Add(_newRuleButton);
+        TableLayoutPanel header = Header(
+            _rulesTitle,
+            _rulesSubtitle,
+            _newRuleButton);
 
-        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 22 });
-        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 48 });
-        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 22 });
-        _rulesGrid.Columns.Add(new DataGridViewCheckBoxColumn { FillWeight = 8 });
+        _rulesGrid.Name = "RulesGrid";
+        _rulesGrid.ColumnHeadersDefaultCellStyle.Alignment =
+            DataGridViewContentAlignment.MiddleCenter;
+        _rulesGrid.RowsDefaultCellStyle.Alignment =
+            DataGridViewContentAlignment.MiddleCenter;
+        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 20,
+            MinimumWidth = 120
+        });
+        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 42,
+            MinimumWidth = 235
+        });
+        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 24,
+            MinimumWidth = 160
+        });
+        _rulesGrid.Columns.Add(new DataGridViewCheckBoxColumn
+        {
+            FillWeight = 14,
+            MinimumWidth = 100
+        });
         _rulesGrid.ReadOnly = false;
+        foreach (DataGridViewColumn column in _rulesGrid.Columns)
+        {
+            column.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+            column.HeaderCell.Style.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+        }
         foreach (DataGridViewColumn column in _rulesGrid.Columns.Cast<DataGridViewColumn>().Take(3))
         {
             column.ReadOnly = true;
@@ -396,7 +528,8 @@ public sealed class MainForm : Form
     private Panel BuildEventsPage()
     {
         Panel page = new();
-        FlowLayoutPanel header = Header(_eventsTitle, _eventsSubtitle);
+        _eventsTitle.Name = "EventsTitle";
+        TableLayoutPanel header = Header(_eventsTitle, _eventsSubtitle);
 
         FlowLayoutPanel tools = new()
         {
@@ -413,30 +546,74 @@ public sealed class MainForm : Form
         _openLogsButton.Click += (_, _) => OpenLogFolder();
         tools.Controls.AddRange([_eventSearch, _exportButton, _openLogsButton]);
 
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 18 });
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 20 });
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 18 });
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 18 });
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 11 });
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 7 });
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 16 });
-        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn { FillWeight = 18 });
+        _eventsGrid.Name = "EventsGrid";
+        _eventsGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+        _eventsGrid.ColumnHeadersHeightSizeMode =
+            DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 18,
+            MinimumWidth = 120
+        });
+        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 13,
+            MinimumWidth = 92
+        });
+        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 14,
+            MinimumWidth = 100
+        });
+        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 24,
+            MinimumWidth = 140
+        });
+        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 20,
+            MinimumWidth = 110
+        });
+        _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            FillWeight = 11,
+            MinimumWidth = 68,
+            DefaultCellStyle = new DataGridViewCellStyle
+            {
+                Alignment = DataGridViewContentAlignment.MiddleCenter
+            }
+        });
+        _eventsGrid.CellDoubleClick += (_, args) =>
+        {
+            if (args.RowIndex >= 0 &&
+                _eventsGrid.Rows[args.RowIndex].Tag is ConnectionEvent entry)
+            {
+                ShowEventDetails(entry);
+            }
+        };
+
+        _eventDetailsHint.Name = "EventDetailsHint";
+        _eventDetailsHint.Dock = DockStyle.Fill;
+        _eventDetailsHint.TextAlign = ContentAlignment.MiddleLeft;
 
         TableLayoutPanel layout = new()
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 3
+            RowCount = 4
         };
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         header.Dock = DockStyle.Fill;
         tools.Dock = DockStyle.Fill;
         _eventsGrid.Dock = DockStyle.Fill;
         layout.Controls.Add(header, 0, 0);
         layout.Controls.Add(tools, 0, 1);
         layout.Controls.Add(_eventsGrid, 0, 2);
+        layout.Controls.Add(_eventDetailsHint, 0, 3);
         page.Controls.Add(layout);
         return page;
     }
@@ -444,7 +621,8 @@ public sealed class MainForm : Form
     private Panel BuildSettingsPage()
     {
         Panel page = new();
-        FlowLayoutPanel header = Header(_settingsTitle, _settingsSubtitle);
+        _settingsTitle.Name = "SettingsTitle";
+        TableLayoutPanel header = Header(_settingsTitle, _settingsSubtitle);
         TableLayoutPanel settings = new()
         {
             Dock = DockStyle.Top,
@@ -458,9 +636,11 @@ public sealed class MainForm : Form
         AddSetting(settings, "LanguageLabel", null, _language, 0);
         AddSetting(settings, string.Empty, _startWithWindowsHint, _startWithWindows, 1, _startWithWindowsCaption);
         AddSetting(settings, string.Empty, _resumeMonitoringHint, _resumeMonitoring, 2, _resumeMonitoringCaption);
-        AddSetting(settings, string.Empty, _alertSoundHint, _alertSound, 3, _alertSoundCaption);
-        AddSetting(settings, string.Empty, _logLimitHint, _logLimit, 4, _logLimitCaption);
-        AddSetting(settings, string.Empty, _helpCenterHint, _helpCenterButton, 5, _helpCenterCaption);
+        _alertSoundControls.Controls.AddRange([_testAlertSoundButton, _alertSound]);
+        AddSetting(settings, string.Empty, _alertSoundHint, _alertSoundControls, 3, _alertSoundCaption);
+        AddSetting(settings, string.Empty, _alertVolumeHint, _alertVolume, 4, _alertVolumeCaption);
+        AddSetting(settings, string.Empty, _logLimitHint, _logLimit, 5, _logLimitCaption);
+        AddSetting(settings, string.Empty, _helpCenterHint, _helpCenterButton, 6, _helpCenterCaption);
 
         _language.SelectedIndexChanged += LanguageChanged;
         _startWithWindows.CheckedChanged += StartWithWindowsChanged;
@@ -476,6 +656,14 @@ public sealed class MainForm : Form
             _settings.AlertSound = _alertSound.Checked;
             SaveSettings();
         };
+        _alertVolume.ValueChanged += (_, _) =>
+        {
+            if (_refreshingSettings) return;
+            _settings.AlertVolumePercent = decimal.ToInt32(_alertVolume.Value);
+            SaveSettings();
+        };
+        _testAlertSoundButton.Click += (_, _) =>
+            AlertSoundPlayer.Play(decimal.ToInt32(_alertVolume.Value));
         _logLimit.Validated += async (_, _) => await LogLimitChangedAsync();
         _helpCenterButton.Click += (_, _) =>
         {
@@ -492,25 +680,52 @@ public sealed class MainForm : Form
         return page;
     }
 
-    private static FlowLayoutPanel Header(Label title, Label subtitle)
+    private static TableLayoutPanel Header(
+        Label title,
+        Label subtitle,
+        Control? action = null)
     {
-        FlowLayoutPanel header = new()
+        TableLayoutPanel header = new()
         {
             Dock = DockStyle.Top,
             Height = 82,
-            FlowDirection = FlowDirection.LeftToRight,
-            WrapContents = false
+            ColumnCount = action is null ? 1 : 2,
+            RowCount = 1,
+            Margin = Padding.Empty
         };
-        FlowLayoutPanel text = new()
+        header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        if (action is not null)
         {
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            Width = 650,
-            Height = 76
+            header.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        }
+        header.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        TableLayoutPanel text = new()
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
         };
-        text.Controls.Add(title);
-        text.Controls.Add(subtitle);
-        header.Controls.Add(text);
+        text.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        text.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        text.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        title.Dock = DockStyle.Fill;
+        subtitle.AutoSize = false;
+        subtitle.Dock = DockStyle.Fill;
+        subtitle.AutoEllipsis = true;
+        subtitle.Margin = Padding.Empty;
+        text.Controls.Add(title, 0, 0);
+        text.Controls.Add(subtitle, 0, 1);
+        header.Controls.Add(text, 0, 0);
+        if (action is not null)
+        {
+            action.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            action.Margin = new Padding(12, 0, 0, 0);
+            header.Controls.Add(action, 1, 0);
+        }
+
         return header;
     }
 
@@ -556,6 +771,10 @@ public sealed class MainForm : Form
     private async void MainFormShown(object? sender, EventArgs e)
     {
         IReadOnlyList<ConnectionEvent> existing = await _logger.ReadRecentAsync();
+        foreach (ConnectionEvent entry in existing.Where(entry => entry.IsActive))
+        {
+            entry.MarkHistoricalInactive();
+        }
         _events.Clear();
         _events.AddRange(existing);
         RefreshEvents();
@@ -590,6 +809,9 @@ public sealed class MainForm : Form
 
     private void ApplyLanguage()
     {
+        UiFont.Apply(this);
+        _eventStatusFont?.Dispose();
+        _eventStatusFont = new Font(_eventsGrid.Font, FontStyle.Bold);
         Text = UiText.Get("AppTitle");
         foreach (string key in _navButtons.Keys)
         {
@@ -602,7 +824,10 @@ public sealed class MainForm : Form
         _homeRulesCaption.Text = UiText.Get("EnabledRules");
         _homeIntervalCaption.Text = UiText.Get("CheckInterval");
         _homeInterval.Text = UiText.Get("OneSecond");
-        _shortConnectionNote.Text = UiText.Get("ShortConnectionNote");
+        _actionLegendTitle.Text = UiText.Get("ActionLegend");
+        _silentActionLegend.Text = ActionLegendText(MatchAction.SilentLog);
+        _trayActionLegend.Text = ActionLegendText(MatchAction.TrayNotice);
+        _popupActionLegend.Text = ActionLegendText(MatchAction.PopupAlert);
 
         _rulesTitle.Text = UiText.Get("Rules");
         _rulesSubtitle.Text = UiText.Get("RulesDescription");
@@ -622,13 +847,14 @@ public sealed class MainForm : Form
         _openLogsButton.Text = UiText.Get("OpenLogFolder");
         string[] eventHeaders =
         [
-            "Time", "MatchedRules", "RemoteEndpoint", "LocalEndpoint",
-            "TcpState", "PID", "Program", "MatchAction"
+            "Time", "ConnectionStatus", "ObservedDuration",
+            "RemoteEndpoint", "Program", "ActionColumn"
         ];
         for (int index = 0; index < eventHeaders.Length; index++)
         {
             _eventsGrid.Columns[index].HeaderText = UiText.Get(eventHeaders[index]);
         }
+        _eventDetailsHint.Text = UiText.Get("EventDoubleClickHint");
 
         _settingsTitle.Text = UiText.Get("Settings");
         _settingsSubtitle.Text = UiText.Get("Privacy");
@@ -642,6 +868,9 @@ public sealed class MainForm : Form
         _alertSoundCaption.Text = UiText.Get("AlertSound");
         _alertSound.Text = string.Empty;
         _alertSoundHint.Text = UiText.Get("AlertSoundHint");
+        _testAlertSoundButton.Text = UiText.Get("TestSound");
+        _alertVolumeCaption.Text = UiText.Get("AlertVolume");
+        _alertVolumeHint.Text = UiText.Get("AlertVolumeHint");
         _logLimitCaption.Text = UiText.Get("LogLimit");
         _logLimitHint.Text = UiText.Get("LogLimitHint");
         _helpCenterCaption.Text = UiText.Get("HelpCenter");
@@ -673,9 +902,15 @@ public sealed class MainForm : Form
                 int index = _rulesGrid.Rows.Add(
                     rule.Name,
                     UiText.FormatRuleCondition(rule),
-                    UiText.Action(rule.Action),
+                    UiText.ActionCompact(rule.Action),
                     rule.Enabled);
                 _rulesGrid.Rows[index].Tag = rule.Id;
+                DataGridViewCell actionCell = _rulesGrid.Rows[index].Cells[2];
+                Color actionColor = ActionColor(rule.Action);
+                actionCell.ToolTipText = UiText.Action(rule.Action);
+                actionCell.Style.ForeColor = actionColor;
+                actionCell.Style.SelectionForeColor = actionColor;
+                actionCell.Style.SelectionBackColor = SystemColors.Window;
             }
         }
         finally
@@ -847,6 +1082,22 @@ public sealed class MainForm : Form
         BeginInvoke(() => HandleDetectedEvent(connectionEvent));
     }
 
+    private void EngineEventCompleted(object? sender, ConnectionEvent connectionEvent)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        BeginInvoke(() =>
+        {
+            if (_pages["Events"].Visible)
+            {
+                RefreshEvents();
+            }
+        });
+    }
+
     private void EngineMonitoringError(object? sender, Exception exception)
     {
         if (IsDisposed)
@@ -937,7 +1188,7 @@ public sealed class MainForm : Form
         _urgentAlert.Show(this);
         if (_settings.AlertSound)
         {
-            SystemSounds.Exclamation.Play();
+            AlertSoundPlayer.Play(_settings.AlertVolumePercent);
         }
     }
 
@@ -970,17 +1221,82 @@ public sealed class MainForm : Form
         {
             int row = _eventsGrid.Rows.Add(
                 entry.DetectedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                string.Join(" | ", entry.RuleNames),
+                FormatConnectionStatus(entry),
+                FormatObservedDuration(entry, DateTimeOffset.Now),
                 FormatEndpoint(entry.RemoteAddress, entry.RemotePort),
-                FormatEndpoint(entry.LocalAddress, entry.LocalPort),
-                entry.State,
-                entry.ProcessId,
                 entry.ProcessName,
-                UiText.Action(entry.Action));
+                UiText.ActionMarker(entry.Action));
             _eventsGrid.Rows[row].Tag = entry;
-            _eventsGrid.Rows[row].Cells[6].ToolTipText =
+            DataGridViewCell statusCell = _eventsGrid.Rows[row].Cells[1];
+            Color statusColor = entry.IsActive ? Color.SeaGreen : Color.DimGray;
+            statusCell.Style.ForeColor = statusColor;
+            statusCell.Style.SelectionForeColor = SystemColors.HighlightText;
+            statusCell.Style.Font = _eventStatusFont;
+            _eventsGrid.Rows[row].Cells[4].ToolTipText =
                 entry.ProcessPath ?? UiText.Get("ProcessPathUnavailable");
+            DataGridViewCell actionCell = _eventsGrid.Rows[row].Cells[5];
+            actionCell.ToolTipText = UiText.Action(entry.Action);
+            Color actionColor = ActionColor(entry.Action);
+            actionCell.Style.ForeColor = actionColor;
+            actionCell.Style.SelectionForeColor = actionColor;
+            actionCell.Style.SelectionBackColor = SystemColors.Window;
         }
+    }
+
+    private void ShowEventDetails(ConnectionEvent entry)
+    {
+        using EventDetailsForm details = new(entry);
+        details.ShowDialog(this);
+    }
+
+    private void UpdateVisibleEventDurations()
+    {
+        if (!_pages.TryGetValue("Events", out Panel? page) || !page.Visible)
+        {
+            return;
+        }
+
+        DateTimeOffset now = DateTimeOffset.Now;
+        foreach (DataGridViewRow row in _eventsGrid.Rows)
+        {
+            if (row.Tag is ConnectionEvent { IsActive: true } entry)
+            {
+                row.Cells[2].Value = FormatObservedDuration(entry, now);
+            }
+        }
+    }
+
+    private static string FormatObservedDuration(
+        ConnectionEvent entry,
+        DateTimeOffset now)
+    {
+        TimeSpan? duration = entry.GetObservedDuration(now);
+        if (duration is null)
+        {
+            return "—";
+        }
+
+        int totalHours = (int)Math.Floor(duration.Value.TotalHours);
+        return $"{totalHours:00}:{duration.Value.Minutes:00}:{duration.Value.Seconds:00}";
+    }
+
+    private static string FormatConnectionStatus(ConnectionEvent entry) =>
+        $"{(entry.IsActive ? '●' : '○')} " +
+        UiText.Get(entry.IsActive ? "ConnectionActive" : "ConnectionEnded");
+
+    private static string ActionLegendText(MatchAction action)
+    {
+        return $"{UiText.ActionMarker(action)}  {UiText.Action(action)}";
+    }
+
+    private static Color ActionColor(MatchAction action)
+    {
+        return action switch
+        {
+            MatchAction.SilentLog => Color.DimGray,
+            MatchAction.TrayNotice => Color.DarkOrange,
+            _ => Color.Crimson
+        };
     }
 
     private async Task ExportEventsAsync()
@@ -998,15 +1314,18 @@ public sealed class MainForm : Form
         StringBuilder csv = new();
         csv.AppendLine(string.Join(',', new[]
         {
-            UiText.Get("Time"), UiText.Get("MatchedRules"), UiText.Get("MatchAction"),
-            UiText.Get("TcpState"), UiText.Get("LocalEndpoint"), UiText.Get("RemoteEndpoint"),
-            "PID", UiText.Get("Program"), "Path"
+            UiText.Get("Time"), UiText.Get("ConnectionStatus"),
+            UiText.Get("ObservedDuration"), UiText.Get("MatchedRules"),
+            UiText.Get("MatchAction"), UiText.Get("TcpState"), UiText.Get("LocalEndpoint"),
+            UiText.Get("RemoteEndpoint"), "PID", UiText.Get("Program"), "Path"
         }.Select(CsvEscape)));
         foreach (ConnectionEvent entry in FilteredEvents())
         {
             csv.AppendLine(string.Join(',', new[]
             {
                 entry.DetectedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                UiText.Get(entry.IsActive ? "ConnectionActive" : "ConnectionEnded"),
+                FormatObservedDuration(entry, DateTimeOffset.Now),
                 string.Join(" | ", entry.RuleNames),
                 UiText.Action(entry.Action),
                 entry.State.ToString(),
@@ -1058,12 +1377,25 @@ public sealed class MainForm : Form
             _language.Items.AddRange(
             [
                 new LanguageOption("zh-CN", UiText.Get("Chinese")),
-                new LanguageOption("en", UiText.Get("English"))
+                new LanguageOption("zh-TW", UiText.Get("TraditionalChinese")),
+                new LanguageOption("en", UiText.Get("English")),
+                new LanguageOption("es", UiText.Get("Spanish")),
+                new LanguageOption("fr", UiText.Get("French")),
+                new LanguageOption("de", UiText.Get("German")),
+                new LanguageOption("pt-BR", UiText.Get("BrazilianPortuguese"))
             ]);
-            _language.SelectedIndex = UiText.IsChinese ? 0 : 1;
+            _language.SelectedIndex = _language.Items
+                .Cast<LanguageOption>()
+                .Select((option, index) => (option, index))
+                .First(pair => pair.option.Code == UiText.Language)
+                .index;
             _startWithWindows.Checked = _settings.StartWithWindows;
             _resumeMonitoring.Checked = _settings.ResumeMonitoring;
             _alertSound.Checked = _settings.AlertSound;
+            _alertVolume.Value = Math.Clamp(
+                _settings.AlertVolumePercent,
+                AppSettings.MinimumAlertVolumePercent,
+                AppSettings.MaximumAlertVolumePercent);
             _logLimit.Value = Math.Clamp(
                 _settings.LogLimitMb,
                 AppSettings.MinimumLogLimitMb,
@@ -1197,12 +1529,12 @@ public sealed class MainForm : Form
         }
         else if (_engine.IsRunning)
         {
-            _notifyIcon.Icon = SystemIcons.Shield;
+            _notifyIcon.Icon = _applicationIcon;
             _notifyIcon.Text = Truncate(UiText.Get("TrayNormal"));
         }
         else
         {
-            _notifyIcon.Icon = SystemIcons.Application;
+            _notifyIcon.Icon = _applicationIcon;
             _notifyIcon.Text = Truncate(UiText.Get("AppTitle"));
         }
     }
@@ -1263,7 +1595,11 @@ public sealed class MainForm : Form
     {
         if (disposing)
         {
+            _eventDurationTimer.Stop();
+            _eventDurationTimer.Dispose();
+            _eventStatusFont?.Dispose();
             _notifyIcon.Dispose();
+            _applicationIcon.Dispose();
             _trayMenu.Dispose();
             _engine.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }

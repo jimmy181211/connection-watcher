@@ -1,4 +1,4 @@
-TCP Connection Watcher 1.0.0
+TCP Connection Watcher 1.2.0
 
 How to use
 ----------

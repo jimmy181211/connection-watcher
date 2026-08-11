@@ -21,6 +21,14 @@ When a connection matches a rule, the app follows your selected action:
 - **Tray notice and log:** Does not show a pop-up. The tray icon changes to a warning state, and opening the Event log page clears the notice.
 - **Pop up alert and log:** Shows a window as soon as the first match appears. While the window is open, later matches update the same window. After it is closed, the rule's repeat interval controls when another alert can appear.
 
+The Home page shows a compact symbol for each action. **Monitoring Rules** combines the symbol with a short name, while the **Action** column in the Event Log shows the symbol alone so it remains clear in a narrow column:
+
+- `1 ●` gray circle: Log silently
+- `2 ▲` orange triangle: Tray notice and log
+- `3 ◆` red diamond: Pop up alert and log
+
+The number and shape also distinguish the actions when color is difficult to see. Point to a rule or Event Log symbol to view its full action name.
+
 #### *Important note:*
 
 1. A rule match means only that a connection you chose to watch has appeared. It does not prove that the computer has a virus.
@@ -28,8 +36,8 @@ When a connection matches a rule, the app follows your selected action:
 
 ## First run
 
-1. Choose Chinese or English.
-2. Open **Monitoring rules**.
+1. Choose one of the seven supported languages during installation. A portable edition asks for the language when it first opens.
+2. Open **Monitoring Rules**.
 3. Select **New rule**.
 4. Enter the monitoring conditions in the form fields.
 5. Check the rule preview at the bottom of the form.
@@ -55,13 +63,25 @@ Logs are stored in:
 %LOCALAPPDATA%\ConnectionWatcher\Logs\
 ```
 
-Each new matching connection adds one row. If the same connection stays open for several hours, it is not written again every second. A new record is created only after the connection disappears for two checks and then appears again.
+Each new matching connection appears as one row in the **Event Log**. If it stays open for several hours, it is not recorded again every second. **Status** shows whether it is active or ended, while **Observed duration** updates while it is active and becomes fixed after it ends.
+
+For easier reading, the table shows only the main fields. Double-click a row to open **Event details**, where the matched rules, local endpoint, TCP state, PID, program path, and action are shown. Active status and duration continue to update there, and **Copy details** copies the complete record.
+
+Observed duration starts when the app first sees the connection, so it may not equal the connection's full lifetime. After monitoring stops, the app cannot tell whether the connection ended during that gap. Starting monitoring again therefore creates a new observation. The background CSV writes lifecycle information only when the connection is detected and when the observation ends; the app combines those records into one Event Log row.
+
+A new record is also created after a connection disappears for two checks and then appears again.
 
 The total log limit is 25 MB by default and can be changed to 5–500 MB in **Settings**. The app uses up to five log files and automatically removes the oldest records when the selected limit is reached.
 
 ## Help center
 
-In **Settings**, select **Open help center** to read the project overview and user guide inside the app.
+In **Settings**, select **Open help center** to read the project overview and user guide inside the app. The documents follow the current interface language.
+
+## Startup and alert-sound settings
+
+- **Launch app at Windows sign-in:** Opens the app after you sign in, helping prevent forgotten monitoring sessions. It does not start monitoring by itself.
+- **Start monitoring automatically when the app opens:** Starts monitoring with enabled rules whenever the app opens.
+- **Urgent alert sound:** Uses a short sound built into the app, so it does not depend on the Windows event-sound scheme. Set its volume from 10% to 100% (40% by default). **Test sound** and real urgent alerts use the same setting, and the Windows volume still applies.
 
 ## Important limitations
 
@@ -70,7 +90,8 @@ In **Settings**, select **Open help center** to read the project overview and us
 3. The Windows TCP connection table does not provide a completely reliable connection-initiator field, so the app cannot determine which side started a connection.
 4. Windows permissions may prevent the app from reading the executable path of some system or protected processes. The PID and any available process name are still recorded.
 5. The app does not monitor while it is closed, monitoring is stopped, or the computer is asleep.
-6. The app only records connections and shows alerts. It does not close programs, change firewall settings, or block IP addresses.
+6. Observed duration begins when the app first detects a connection and has a precision of about one second. It is not an exact connection-start time supplied by Windows.
+7. The app only records connections and shows alerts. It does not close programs, change firewall settings, or block IP addresses.
 
 ## Privacy and permissions
 

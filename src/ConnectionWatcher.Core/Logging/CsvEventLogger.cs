@@ -8,7 +8,8 @@ namespace ConnectionWatcher.Core.Logging;
 public sealed class CsvEventLogger : IEventLogger
 {
     private const string Header =
-        "Time/时间,Rules/规则,Action/操作,TCP State/TCP状态," +
+        "Record Type/记录类型,First Seen/首次发现,Last Seen/最后发现," +
+        "Ended At/结束时间,Rules/规则,Action/操作,TCP State/TCP状态," +
         "Local IP/本地IP,Local Port/本地端口,Remote IP/远程IP," +
         "Remote Port/远程端口,PID,Program/程序,Path/路径,Event ID/事件ID";
 
@@ -57,11 +58,29 @@ public sealed class CsvEventLogger : IEventLogger
         ConnectionEvent connectionEvent,
         CancellationToken cancellationToken = default)
     {
+        await AppendRecordAsync("Start", connectionEvent, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task AppendCompletionAsync(
+        ConnectionEvent connectionEvent,
+        CancellationToken cancellationToken = default)
+    {
+        await AppendRecordAsync("End", connectionEvent, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task AppendRecordAsync(
+        string recordType,
+        ConnectionEvent connectionEvent,
+        CancellationToken cancellationToken)
+    {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             Directory.CreateDirectory(LogDirectory);
-            string line = Format(connectionEvent);
+            EnsureCurrentSchema();
+            string line = Format(recordType, connectionEvent);
             long additionalBytes = Encoding.UTF8.GetByteCount(line + Environment.NewLine);
             RotateIfNeeded(additionalBytes);
 
@@ -100,7 +119,7 @@ public sealed class CsvEventLogger : IEventLogger
                 return Array.Empty<ConnectionEvent>();
             }
 
-            List<ConnectionEvent> entries = [];
+            Dictionary<Guid, ConnectionEvent> entries = [];
             foreach (string path in Directory.GetFiles(LogDirectory, "events*.csv")
                          .OrderBy(File.GetLastWriteTimeUtc))
             {
@@ -110,12 +129,15 @@ public sealed class CsvEventLogger : IEventLogger
                 {
                     if (TryParse(line, out ConnectionEvent? entry) && entry is not null)
                     {
-                        entries.Add(entry);
+                        entries[entry.EventId] = entry;
                     }
                 }
             }
 
-            return entries.TakeLast(maximumEntries).Reverse().ToArray();
+            return entries.Values
+                .OrderByDescending(entry => entry.DetectedAt)
+                .Take(maximumEntries)
+                .ToArray();
         }
         finally
         {
@@ -127,14 +149,11 @@ public sealed class CsvEventLogger : IEventLogger
     {
         long maximumTotalBytes = Interlocked.Read(ref _maximumTotalBytes);
         long maximumFileBytes = Math.Max(1, maximumTotalBytes / _maximumFiles);
-        bool currentWillBeCreated = false;
+        bool currentWillBeCreated = !File.Exists(CurrentLogPath);
         if (File.Exists(CurrentLogPath) &&
             new FileInfo(CurrentLogPath).Length + additionalBytes > maximumFileBytes)
         {
-            string archivedPath = Path.Combine(
-                LogDirectory,
-                $"events-{DateTime.Now:yyyyMMdd-HHmmss-fff}.csv");
-            File.Move(CurrentLogPath, archivedPath);
+            ArchiveCurrentLog();
             currentWillBeCreated = true;
         }
 
@@ -166,11 +185,43 @@ public sealed class CsvEventLogger : IEventLogger
         }
     }
 
-    private static string Format(ConnectionEvent entry)
+    private void EnsureCurrentSchema()
+    {
+        if (!File.Exists(CurrentLogPath) || new FileInfo(CurrentLogPath).Length == 0)
+        {
+            return;
+        }
+
+        string? currentHeader = File.ReadLines(CurrentLogPath).FirstOrDefault();
+        if (!string.Equals(currentHeader, Header, StringComparison.Ordinal))
+        {
+            ArchiveCurrentLog();
+        }
+    }
+
+    private void ArchiveCurrentLog()
+    {
+        string archiveName = $"events-{DateTime.Now:yyyyMMdd-HHmmss-fff}";
+        string archivedPath = Path.Combine(LogDirectory, archiveName + ".csv");
+        int suffix = 1;
+        while (File.Exists(archivedPath))
+        {
+            archivedPath = Path.Combine(
+                LogDirectory,
+                $"{archiveName}-{suffix++}.csv");
+        }
+
+        File.Move(CurrentLogPath, archivedPath);
+    }
+
+    private static string Format(string recordType, ConnectionEvent entry)
     {
         string[] fields =
         [
-            entry.DetectedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture),
+            recordType,
+            FormatTimestamp(entry.DetectedAt),
+            FormatTimestamp(entry.LastSeenAt),
+            entry.EndedAt is null ? string.Empty : FormatTimestamp(entry.EndedAt.Value),
             string.Join(" | ", entry.RuleNames),
             entry.Action.ToString(),
             entry.State.ToString(),
@@ -186,6 +237,11 @@ public sealed class CsvEventLogger : IEventLogger
         return string.Join(',', fields.Select(Escape));
     }
 
+    private static string FormatTimestamp(DateTimeOffset value) =>
+        value.ToLocalTime().ToString(
+            "yyyy-MM-dd HH:mm:ss zzz",
+            CultureInfo.InvariantCulture);
+
     private static string Escape(string value)
     {
         string flattened = value.Replace('\r', ' ').Replace('\n', ' ');
@@ -196,8 +252,58 @@ public sealed class CsvEventLogger : IEventLogger
     {
         entry = null;
         List<string> fields = ParseFields(line);
-        if (fields.Count != 12 ||
-            !DateTimeOffset.TryParse(fields[0], out DateTimeOffset detectedAt) ||
+        if (fields.Count == 12)
+        {
+            return TryParseLegacy(fields, out entry);
+        }
+
+        DateTimeOffset parsedEndedAt = default;
+        if (fields.Count != 15 ||
+            (fields[0] != "Start" && fields[0] != "End") ||
+            !DateTimeOffset.TryParse(fields[1], out DateTimeOffset detectedAt) ||
+            !DateTimeOffset.TryParse(fields[2], out DateTimeOffset lastSeenAt) ||
+            (!string.IsNullOrWhiteSpace(fields[3]) &&
+             !DateTimeOffset.TryParse(fields[3], out parsedEndedAt)) ||
+            !Enum.TryParse(fields[5], out MatchAction action) ||
+            !Enum.TryParse(fields[6], out TcpState state) ||
+            !int.TryParse(fields[8], out int localPort) ||
+            !int.TryParse(fields[10], out int remotePort) ||
+            !int.TryParse(fields[11], out int processId) ||
+            !Guid.TryParse(fields[14], out Guid eventId))
+        {
+            return false;
+        }
+
+        DateTimeOffset? endedAt = string.IsNullOrWhiteSpace(fields[3])
+            ? null
+            : parsedEndedAt;
+
+        entry = new ConnectionEvent
+        {
+            EventId = eventId,
+            DetectedAt = detectedAt,
+            LastSeenAt = lastSeenAt,
+            EndedAt = endedAt,
+            RuleNames = fields[4].Split(" | ", StringSplitOptions.RemoveEmptyEntries),
+            Action = action,
+            State = state,
+            LocalAddress = fields[7],
+            LocalPort = localPort,
+            RemoteAddress = fields[9],
+            RemotePort = remotePort,
+            ProcessId = processId,
+            ProcessName = fields[12],
+            ProcessPath = string.IsNullOrWhiteSpace(fields[13]) ? null : fields[13]
+        };
+        return true;
+    }
+
+    private static bool TryParseLegacy(
+        IReadOnlyList<string> fields,
+        out ConnectionEvent? entry)
+    {
+        entry = null;
+        if (!DateTimeOffset.TryParse(fields[0], out DateTimeOffset detectedAt) ||
             !Enum.TryParse(fields[2], out MatchAction action) ||
             !Enum.TryParse(fields[3], out TcpState state) ||
             !int.TryParse(fields[5], out int localPort) ||
@@ -212,6 +318,9 @@ public sealed class CsvEventLogger : IEventLogger
         {
             EventId = eventId,
             DetectedAt = detectedAt,
+            LastSeenAt = detectedAt,
+            EndedAt = detectedAt,
+            DurationKnown = false,
             RuleNames = fields[1].Split(" | ", StringSplitOptions.RemoveEmptyEntries),
             Action = action,
             State = state,

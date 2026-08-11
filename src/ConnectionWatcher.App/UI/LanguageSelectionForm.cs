@@ -4,36 +4,62 @@ public sealed class LanguageSelectionForm : Form
 {
     public LanguageSelectionForm()
     {
-        Text = "Choose Language / 请选择语言";
+        Icon = AppIconProvider.Load();
+        Text = "Choose language";
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
         MinimizeBox = false;
-        ClientSize = new Size(380, 165);
+        ClientSize = new Size(780, 245);
         Font = new Font("Segoe UI", 10F);
 
         Label prompt = new()
         {
-            Text = "请选择界面语言 / Choose the interface language",
+            Text = "Choose the interface language",
             AutoSize = true,
-            Location = new Point(30, 28)
+            Location = new Point(30, 24),
+            Font = new Font("Segoe UI", 11F, FontStyle.Bold)
         };
-        Button chinese = new()
+        TableLayoutPanel choices = new()
         {
-            Text = "中文",
-            Size = new Size(140, 42),
-            Location = new Point(30, 82)
+            Location = new Point(26, 66),
+            Size = new Size(728, 132),
+            ColumnCount = 4,
+            RowCount = 2
         };
-        Button english = new()
+        for (int index = 0; index < 4; index++)
         {
-            Text = "English",
-            Size = new Size(140, 42),
-            Location = new Point(205, 82)
-        };
+            choices.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        }
+        choices.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        choices.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
 
-        chinese.Click += (_, _) => Select("zh-CN");
-        english.Click += (_, _) => Select("en");
-        Controls.AddRange([prompt, chinese, english]);
+        (string Code, string Label)[] languages =
+        [
+            ("en", "English"),
+            ("zh-CN", "简体中文"),
+            ("zh-TW", "繁體中文"),
+            ("es", "Español"),
+            ("fr", "Français"),
+            ("de", "Deutsch"),
+            ("pt-BR", "Português (Brasil)")
+        ];
+        for (int index = 0; index < languages.Length; index++)
+        {
+            (string code, string label) = languages[index];
+            Button button = new()
+            {
+                Text = label,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(8),
+                MinimumSize = new Size(150, 42)
+            };
+            button.Click += (_, _) => Select(code);
+            choices.Controls.Add(button, index % 4, index / 4);
+        }
+
+        Controls.AddRange([prompt, choices]);
+        UiFont.Apply(this, bilingual: true);
     }
 
     public string SelectedLanguage { get; private set; } = string.Empty;

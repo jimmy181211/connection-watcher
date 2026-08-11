@@ -3,17 +3,22 @@ using ConnectionWatcher.Core.Rules;
 
 namespace ConnectionWatcher.Core.Monitoring;
 
+public sealed record ConnectionTrackingResult(
+    IReadOnlyList<ConnectionEvent> DetectedEvents,
+    IReadOnlyList<ConnectionEvent> CompletedEvents);
+
 public sealed class ConnectionTracker
 {
     private readonly Dictionary<ConnectionKey, TrackedConnection> _tracked = [];
 
-    public IReadOnlyList<ConnectionEvent> Process(
+    public ConnectionTrackingResult Process(
         IEnumerable<TcpConnectionInfo> connections,
         IReadOnlyList<MonitoringRule> rules,
         DateTimeOffset detectedAt)
     {
         HashSet<ConnectionKey> seen = [];
-        List<ConnectionEvent> events = [];
+        List<ConnectionEvent> detectedEvents = [];
+        List<ConnectionEvent> completedEvents = [];
         MonitoringRule[] enabledRules = rules.Where(rule => rule.Enabled).ToArray();
 
         foreach (TcpConnectionInfo connection in connections)
@@ -36,12 +41,22 @@ public sealed class ConnectionTracker
             }
 
             tracked.MissedPolls = 0;
+            foreach (ConnectionEvent trackedEvent in tracked.Events)
+            {
+                trackedEvent.MarkSeen(detectedAt);
+            }
+
             MonitoringRule[] newlyMatched = matches
                 .Where(rule => tracked.MatchedRuleIds.Add(rule.Id))
                 .ToArray();
             if (newlyMatched.Length > 0)
             {
-                events.Add(ConnectionEvent.Create(detectedAt, connection, newlyMatched));
+                ConnectionEvent connectionEvent = ConnectionEvent.Create(
+                    detectedAt,
+                    connection,
+                    newlyMatched);
+                tracked.Events.Add(connectionEvent);
+                detectedEvents.Add(connectionEvent);
             }
         }
 
@@ -55,11 +70,24 @@ public sealed class ConnectionTracker
             tracked.MissedPolls++;
             if (tracked.MissedPolls >= 2)
             {
+                completedEvents.AddRange(Complete(tracked));
                 _tracked.Remove(key);
             }
         }
 
-        return events;
+        return new ConnectionTrackingResult(detectedEvents, completedEvents);
+    }
+
+    public IReadOnlyList<ConnectionEvent> CompleteAll()
+    {
+        List<ConnectionEvent> completedEvents = [];
+        foreach (TrackedConnection tracked in _tracked.Values)
+        {
+            completedEvents.AddRange(Complete(tracked));
+        }
+
+        _tracked.Clear();
+        return completedEvents;
     }
 
     public void Reset()
@@ -67,9 +95,20 @@ public sealed class ConnectionTracker
         _tracked.Clear();
     }
 
+    private static IReadOnlyList<ConnectionEvent> Complete(TrackedConnection tracked)
+    {
+        foreach (ConnectionEvent connectionEvent in tracked.Events)
+        {
+            connectionEvent.Complete();
+        }
+
+        return tracked.Events.ToArray();
+    }
+
     private sealed class TrackedConnection
     {
         public HashSet<Guid> MatchedRuleIds { get; } = [];
+        public List<ConnectionEvent> Events { get; } = [];
         public int MissedPolls { get; set; }
     }
 }

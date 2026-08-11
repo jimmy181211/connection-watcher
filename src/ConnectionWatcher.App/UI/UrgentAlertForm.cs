@@ -20,9 +20,11 @@ public sealed class UrgentAlertForm : Form
 
     public UrgentAlertForm(ConnectionEvent firstEvent)
     {
+        Icon = AppIconProvider.Load();
         BuildInterface();
         AddEvent(firstEvent);
         ApplyLanguage();
+        UiFont.Apply(this);
     }
 
     public event EventHandler? ViewDetailsRequested;
@@ -122,10 +124,10 @@ public sealed class UrgentAlertForm : Form
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        _notice.AutoSize = true;
+        _notice.AutoSize = false;
         _notice.Name = "Notice";
         _notice.Dock = DockStyle.Fill;
-        _notice.MaximumSize = new Size(540, 0);
+        _notice.MinimumSize = new Size(0, 44);
         _notice.ForeColor = Color.Firebrick;
         FlowLayoutPanel buttons = new()
         {

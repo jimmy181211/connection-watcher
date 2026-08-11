@@ -16,7 +16,9 @@ public sealed class HelpCenterForm : Form
 
     public HelpCenterForm()
     {
+        Icon = AppIconProvider.Load();
         BuildInterface();
+        UiFont.Apply(this);
     }
 
     private void BuildInterface()
@@ -90,7 +92,7 @@ public sealed class HelpCenterForm : Form
 
     private static string LoadDocument(string documentName)
     {
-        string language = UiText.IsChinese ? "zh-CN" : "en";
+        string language = UiText.Language;
         string resourceName = $"ConnectionWatcher.Help.{documentName}.{language}.md";
         using Stream? stream = Assembly.GetExecutingAssembly()
             .GetManifestResourceStream(resourceName);

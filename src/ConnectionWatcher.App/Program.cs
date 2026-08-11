@@ -18,7 +18,9 @@ internal static class Program
         if (!createdNew)
         {
             MessageBox.Show(
-                "TCP Connection Watcher is already running.\n\nTCP连接监视器已经在运行。",
+                "TCP Connection Watcher is already running.\n\n" +
+                "TCP连接监视器已经在运行。\n\n" +
+                "El Monitor de conexiones TCP ya está en ejecución.",
                 "TCP Connection Watcher",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
@@ -34,13 +36,40 @@ internal static class Program
 
         if (string.IsNullOrWhiteSpace(settings.Language))
         {
-            using LanguageSelectionForm selection = new();
-            if (selection.ShowDialog() != DialogResult.OK)
+            string installerLanguagePath = Path.Combine(
+                AppContext.BaseDirectory,
+                "install-language.txt");
+            string installerLanguage = string.Empty;
+            try
             {
-                return;
+                if (File.Exists(installerLanguagePath))
+                {
+                    installerLanguage = File.ReadAllText(installerLanguagePath).Trim();
+                }
             }
+            catch (IOException)
+            {
+                // Fall back to the first-run language selector.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Fall back to the first-run language selector.
+            }
+            if (installerLanguage is
+                "zh-CN" or "zh-TW" or "en" or "es" or "fr" or "de" or "pt-BR")
+            {
+                settings.Language = installerLanguage;
+            }
+            else
+            {
+                using LanguageSelectionForm selection = new();
+                if (selection.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
 
-            settings.Language = selection.SelectedLanguage;
+                settings.Language = selection.SelectedLanguage;
+            }
             settingsStore.Save(settings);
         }
 

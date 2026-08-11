@@ -6,6 +6,10 @@ public interface IEventLogger
 {
     Task AppendAsync(ConnectionEvent connectionEvent, CancellationToken cancellationToken = default);
 
+    Task AppendCompletionAsync(
+        ConnectionEvent connectionEvent,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<ConnectionEvent>> ReadRecentAsync(
         int maximumEntries = 2000,
         CancellationToken cancellationToken = default);

@@ -23,6 +23,7 @@ public sealed class MonitoringEngine : IAsyncDisposable
     }
 
     public event EventHandler<ConnectionEvent>? EventDetected;
+    public event EventHandler<ConnectionEvent>? EventCompleted;
     public event EventHandler<Exception>? MonitoringError;
     public event EventHandler? MonitoringRecovered;
 
@@ -63,10 +64,30 @@ public sealed class MonitoringEngine : IAsyncDisposable
         }
         finally
         {
-            _cancellation.Dispose();
-            _cancellation = null;
-            _worker = null;
-            _tracker.Reset();
+            try
+            {
+                foreach (ConnectionEvent connectionEvent in _tracker.CompleteAll())
+                {
+                    try
+                    {
+                        await _logger.AppendCompletionAsync(connectionEvent)
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    {
+                        MonitoringError?.Invoke(this, ex);
+                    }
+
+                    EventCompleted?.Invoke(this, connectionEvent);
+                }
+            }
+            finally
+            {
+                _cancellation.Dispose();
+                _cancellation = null;
+                _worker = null;
+                _tracker.Reset();
+            }
         }
     }
 
@@ -79,15 +100,21 @@ public sealed class MonitoringEngine : IAsyncDisposable
             try
             {
                 IReadOnlyList<TcpConnectionInfo> connections = _provider.GetConnections();
-                IReadOnlyList<ConnectionEvent> events = _tracker.Process(
+                ConnectionTrackingResult result = _tracker.Process(
                     connections,
                     _rulesProvider(),
                     DateTimeOffset.Now);
-                foreach (ConnectionEvent connectionEvent in events)
+                foreach (ConnectionEvent connectionEvent in result.DetectedEvents)
                 {
                     await _logger.AppendAsync(connectionEvent, cancellationToken)
                         .ConfigureAwait(false);
                     EventDetected?.Invoke(this, connectionEvent);
+                }
+                foreach (ConnectionEvent connectionEvent in result.CompletedEvents)
+                {
+                    await _logger.AppendCompletionAsync(connectionEvent, cancellationToken)
+                        .ConfigureAwait(false);
+                    EventCompleted?.Invoke(this, connectionEvent);
                 }
 
                 if (recoveringFromError)

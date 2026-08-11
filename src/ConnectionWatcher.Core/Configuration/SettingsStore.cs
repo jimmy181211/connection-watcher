@@ -87,5 +87,9 @@ public sealed class SettingsStore
             settings.LogLimitMb,
             AppSettings.MinimumLogLimitMb,
             AppSettings.MaximumLogLimitMb);
+        settings.AlertVolumePercent = Math.Clamp(
+            settings.AlertVolumePercent,
+            AppSettings.MinimumAlertVolumePercent,
+            AppSettings.MaximumAlertVolumePercent);
     }
 }

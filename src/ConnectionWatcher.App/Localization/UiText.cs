@@ -2,7 +2,7 @@ using ConnectionWatcher.Core.Models;
 
 namespace ConnectionWatcher.App.Localization;
 
-public static class UiText
+public static partial class UiText
 {
     private static readonly IReadOnlyDictionary<string, string> Chinese =
         new Dictionary<string, string>
@@ -22,7 +22,7 @@ public static class UiText
             ["EnabledRules"] = "启用规则",
             ["CheckInterval"] = "检查间隔",
             ["OneSecond"] = "1秒",
-            ["ShortConnectionNote"] = "每1秒读取一次TCP连接表；极短连接可能无法记录。",
+            ["ActionLegend"] = "操作标识（事件记录使用相同标识）",
             ["RulesDescription"] = "规则决定监视什么；“匹配后操作”决定发现后怎样处理。",
             ["NewRule"] = "新建规则",
             ["Edit"] = "编辑",
@@ -30,6 +30,7 @@ public static class UiText
             ["Name"] = "规则名称",
             ["Condition"] = "监视条件",
             ["MatchAction"] = "匹配后操作",
+            ["ActionColumn"] = "操作",
             ["Enabled"] = "启用",
             ["NoRules"] = "还没有规则。请先新建并启用一条规则。",
             ["DeleteRuleTitle"] = "删除规则",
@@ -37,6 +38,9 @@ public static class UiText
             ["SilentLog"] = "静默记录",
             ["TrayNotice"] = "托盘提示并记录",
             ["PopupAlert"] = "弹窗警报并记录",
+            ["SilentShort"] = "静默",
+            ["TrayShort"] = "托盘",
+            ["PopupShort"] = "弹窗",
             ["TcpConnection"] = "TCP连接",
             ["LocalListener"] = "本地监听端口",
             ["AnyRemoteIp"] = "任意远程IP",
@@ -48,10 +52,23 @@ public static class UiText
             ["ConnectionCondition"] = "远程IP：{0} · 远程端口：{1} · 本地端口：{2}",
             ["Any"] = "任意",
             ["SearchEvents"] = "搜索规则、IP、端口或程序",
-            ["EventsDescription"] = "每个新匹配连接记录一次；持续连接不会每秒重复写入。",
+            ["EventsDescription"] = "每个新匹配连接记录一次；活动状态和已观察时长会自动更新。",
+            ["EventDoubleClickHint"] = "双击一条事件可查看完整详细信息。",
+            ["EventDetailsTitle"] = "事件详细信息",
+            ["EventDetailsDescription"] = "此窗口显示所选事件的完整记录；活动状态和已观察时长会自动更新。",
+            ["StartTime"] = "开始时间",
+            ["EndTime"] = "结束时间",
+            ["ProcessPath"] = "程序路径",
+            ["CopyDetails"] = "复制详细信息",
+            ["Copied"] = "已复制",
+            ["CopyFailed"] = "无法复制详细信息，请重试。",
             ["ExportCsv"] = "导出CSV",
             ["OpenLogFolder"] = "打开日志文件夹",
             ["Time"] = "时间",
+            ["ConnectionStatus"] = "状态",
+            ["ObservedDuration"] = "已观察时长",
+            ["ConnectionActive"] = "活动中",
+            ["ConnectionEnded"] = "已结束",
             ["MatchedRules"] = "匹配规则",
             ["RemoteEndpoint"] = "远程目标",
             ["LocalEndpoint"] = "本地端点",
@@ -60,14 +77,22 @@ public static class UiText
             ["NoEvents"] = "还没有符合规则的连接记录。",
             ["ExportComplete"] = "事件记录已导出。",
             ["Language"] = "界面语言",
-            ["Chinese"] = "中文",
+            ["Chinese"] = "简体中文",
+            ["TraditionalChinese"] = "繁體中文",
             ["English"] = "English",
-            ["StartWithWindows"] = "登录Windows后启动程序",
-            ["StartWithWindowsHint"] = "只启动程序；是否自动监控由下面的选项决定。",
-            ["ResumeMonitoring"] = "启动程序后恢复监控",
-            ["ResumeMonitoringHint"] = "默认关闭；只使用已启用的规则。",
+            ["Spanish"] = "Español",
+            ["French"] = "Français",
+            ["German"] = "Deutsch",
+            ["BrazilianPortuguese"] = "Português (Brasil)",
+            ["StartWithWindows"] = "登录 Windows 后启动程序",
+            ["StartWithWindowsHint"] = "只打开程序，不会自动开始监控。",
+            ["ResumeMonitoring"] = "程序打开后自动开始监控",
+            ["ResumeMonitoringHint"] = "默认关闭；仅使用已启用的规则。",
             ["AlertSound"] = "紧急提醒声音",
-            ["AlertSoundHint"] = "默认关闭，避免打扰工作。",
+            ["AlertSoundHint"] = "使用程序内置的短提示音。",
+            ["TestSound"] = "测试声音",
+            ["AlertVolume"] = "紧急提醒音量（%）",
+            ["AlertVolumeHint"] = "同时用于测试声音和真正的紧急警报；Windows 系统音量仍然有效。",
             ["LogLimit"] = "事件日志上限（MB）",
             ["LogLimitHint"] = "可设置5–500MB；日志分为5个文件，超过上限后自动删除最旧的记录。",
             ["HelpCenter"] = "帮助中心",
@@ -129,8 +154,8 @@ public static class UiText
         {
             ["AppTitle"] = "TCP Connection Watcher",
             ["Home"] = "Home",
-            ["Rules"] = "Monitoring rules",
-            ["Events"] = "Event log",
+            ["Rules"] = "Monitoring Rules",
+            ["Events"] = "Event Log",
             ["Settings"] = "Settings",
             ["MonitoringStopped"] = "Stopped",
             ["MonitoringRunning"] = "Monitoring",
@@ -142,7 +167,7 @@ public static class UiText
             ["EnabledRules"] = "Enabled rules",
             ["CheckInterval"] = "Check interval",
             ["OneSecond"] = "1 second",
-            ["ShortConnectionNote"] = "The TCP connection table is read once per second; very short connections may be missed.",
+            ["ActionLegend"] = "Action symbols (the Event Log uses the same symbols)",
             ["RulesDescription"] = "Rules define what to monitor; “Action on match” defines what happens next.",
             ["NewRule"] = "New rule",
             ["Edit"] = "Edit",
@@ -150,6 +175,7 @@ public static class UiText
             ["Name"] = "Rule name",
             ["Condition"] = "Monitoring condition",
             ["MatchAction"] = "Action on match",
+            ["ActionColumn"] = "Action",
             ["Enabled"] = "Enabled",
             ["NoRules"] = "No rules yet. Create and enable a rule first.",
             ["DeleteRuleTitle"] = "Delete rule",
@@ -157,6 +183,9 @@ public static class UiText
             ["SilentLog"] = "Log silently",
             ["TrayNotice"] = "Tray notice and log",
             ["PopupAlert"] = "Pop up alert and log",
+            ["SilentShort"] = "Silent",
+            ["TrayShort"] = "Tray",
+            ["PopupShort"] = "Popup",
             ["TcpConnection"] = "TCP connection",
             ["LocalListener"] = "Local listening port",
             ["AnyRemoteIp"] = "Any remote IP",
@@ -168,10 +197,23 @@ public static class UiText
             ["ConnectionCondition"] = "Remote IP: {0} · remote port: {1} · local port: {2}",
             ["Any"] = "Any",
             ["SearchEvents"] = "Search rule, IP, port, or program",
-            ["EventsDescription"] = "Each newly matched connection is logged once; an ongoing connection is not written every second.",
+            ["EventsDescription"] = "Each new match is logged once; its status and observed duration update automatically.",
+            ["EventDoubleClickHint"] = "Double-click an event to view its full details.",
+            ["EventDetailsTitle"] = "Event details",
+            ["EventDetailsDescription"] = "This window shows the complete record for the selected event; active status and observed duration update automatically.",
+            ["StartTime"] = "Start time",
+            ["EndTime"] = "End time",
+            ["ProcessPath"] = "Program path",
+            ["CopyDetails"] = "Copy details",
+            ["Copied"] = "Copied",
+            ["CopyFailed"] = "The details could not be copied. Please try again.",
             ["ExportCsv"] = "Export CSV",
             ["OpenLogFolder"] = "Open log folder",
             ["Time"] = "Time",
+            ["ConnectionStatus"] = "Status",
+            ["ObservedDuration"] = "Observed duration",
+            ["ConnectionActive"] = "Active",
+            ["ConnectionEnded"] = "Ended",
             ["MatchedRules"] = "Matched rules",
             ["RemoteEndpoint"] = "Remote endpoint",
             ["LocalEndpoint"] = "Local endpoint",
@@ -180,14 +222,22 @@ public static class UiText
             ["NoEvents"] = "No connections have matched a rule yet.",
             ["ExportComplete"] = "Event log exported.",
             ["Language"] = "Interface language",
-            ["Chinese"] = "中文",
+            ["Chinese"] = "简体中文",
+            ["TraditionalChinese"] = "繁體中文",
             ["English"] = "English",
-            ["StartWithWindows"] = "Start after Windows sign-in",
-            ["StartWithWindowsHint"] = "Starts the app only; the option below controls automatic monitoring.",
-            ["ResumeMonitoring"] = "Resume monitoring after launch",
-            ["ResumeMonitoringHint"] = "Off by default; only enabled rules are used.",
+            ["Spanish"] = "Español",
+            ["French"] = "Français",
+            ["German"] = "Deutsch",
+            ["BrazilianPortuguese"] = "Português (Brasil)",
+            ["StartWithWindows"] = "Launch app at Windows sign-in",
+            ["StartWithWindowsHint"] = "Opens the app only; it does not start monitoring.",
+            ["ResumeMonitoring"] = "Start monitoring automatically when the app opens",
+            ["ResumeMonitoringHint"] = "Off by default; uses only enabled rules.",
             ["AlertSound"] = "Urgent alert sound",
-            ["AlertSoundHint"] = "Off by default to avoid interrupting work.",
+            ["AlertSoundHint"] = "Uses the short alert chime built into the app.",
+            ["TestSound"] = "Test sound",
+            ["AlertVolume"] = "Urgent alert volume (%)",
+            ["AlertVolumeHint"] = "Applies to Test sound and urgent alerts; the Windows volume still applies.",
             ["LogLimit"] = "Event log limit (MB)",
             ["LogLimitHint"] = "Choose 5–500 MB. Logs use five files; the oldest records are removed when the limit is reached.",
             ["HelpCenter"] = "Help center",
@@ -244,20 +294,188 @@ public static class UiText
             ["ProcessPathUnavailable"] = "Unavailable (permission restricted)"
         };
 
+    private static readonly IReadOnlyDictionary<string, string> Spanish =
+        new Dictionary<string, string>
+        {
+            ["AppTitle"] = "Monitor de conexiones TCP",
+            ["Home"] = "Inicio",
+            ["Rules"] = "Reglas de monitoreo",
+            ["Events"] = "Registro de eventos",
+            ["Settings"] = "Configuración",
+            ["MonitoringStopped"] = "Detenido",
+            ["MonitoringRunning"] = "Monitoreando",
+            ["MonitoringInterrupted"] = "Error de monitoreo",
+            ["MonitoringStatus"] = "Estado del monitoreo",
+            ["StatusHint"] = "Las conexiones solo se revisan después de seleccionar Iniciar monitoreo.",
+            ["StartMonitoring"] = "Iniciar monitoreo",
+            ["StopMonitoring"] = "Detener monitoreo",
+            ["EnabledRules"] = "Reglas activas",
+            ["CheckInterval"] = "Intervalo de revisión",
+            ["OneSecond"] = "1 segundo",
+            ["ActionLegend"] = "Símbolos de acción (el registro usa los mismos símbolos)",
+            ["RulesDescription"] = "Las reglas definen qué observar; «Acción al coincidir» define qué ocurre después.",
+            ["NewRule"] = "Nueva regla",
+            ["Edit"] = "Editar",
+            ["Delete"] = "Eliminar",
+            ["Name"] = "Nombre de la regla",
+            ["Condition"] = "Condición de monitoreo",
+            ["MatchAction"] = "Acción al coincidir",
+            ["ActionColumn"] = "Acción",
+            ["Enabled"] = "Activada",
+            ["NoRules"] = "Aún no hay reglas. Primero cree y active una regla.",
+            ["DeleteRuleTitle"] = "Eliminar regla",
+            ["DeleteRuleQuestion"] = "¿Desea eliminar la regla «{0}»? Los eventos existentes no se eliminarán.",
+            ["SilentLog"] = "Registrar en silencio",
+            ["TrayNotice"] = "Aviso en bandeja y registro",
+            ["PopupAlert"] = "Alerta emergente y registro",
+            ["SilentShort"] = "Silencio",
+            ["TrayShort"] = "Bandeja",
+            ["PopupShort"] = "Alerta",
+            ["TcpConnection"] = "Conexión TCP",
+            ["LocalListener"] = "Puerto local en escucha",
+            ["AnyRemoteIp"] = "Cualquier IP remota",
+            ["RemoteIp"] = "IP remota",
+            ["RemotePort"] = "Puerto remoto",
+            ["LocalPort"] = "Puerto local",
+            ["AnyPort"] = "Cualquier puerto",
+            ["ListenerOn"] = "Escucha en el puerto local {0}",
+            ["ConnectionCondition"] = "IP remota: {0} · puerto remoto: {1} · puerto local: {2}",
+            ["Any"] = "Cualquiera",
+            ["SearchEvents"] = "Buscar regla, IP, puerto o programa",
+            ["EventsDescription"] = "Cada coincidencia nueva se registra una vez; su estado y duración observada se actualizan automáticamente.",
+            ["EventDoubleClickHint"] = "Haga doble clic en un evento para ver todos sus detalles.",
+            ["EventDetailsTitle"] = "Detalles del evento",
+            ["EventDetailsDescription"] = "Esta ventana muestra el registro completo del evento seleccionado; el estado activo y la duración observada se actualizan automáticamente.",
+            ["StartTime"] = "Hora de inicio",
+            ["EndTime"] = "Hora de finalización",
+            ["ProcessPath"] = "Ruta del programa",
+            ["CopyDetails"] = "Copiar detalles",
+            ["Copied"] = "Copiado",
+            ["CopyFailed"] = "No se pudieron copiar los detalles. Inténtelo de nuevo.",
+            ["ExportCsv"] = "Exportar CSV",
+            ["OpenLogFolder"] = "Abrir carpeta de registros",
+            ["Time"] = "Hora",
+            ["ConnectionStatus"] = "Estado",
+            ["ObservedDuration"] = "Duración observada",
+            ["ConnectionActive"] = "Activa",
+            ["ConnectionEnded"] = "Finalizada",
+            ["MatchedRules"] = "Reglas coincidentes",
+            ["RemoteEndpoint"] = "Destino remoto",
+            ["LocalEndpoint"] = "Extremo local",
+            ["TcpState"] = "Estado TCP",
+            ["Program"] = "Programa",
+            ["NoEvents"] = "Aún no hay conexiones que coincidan con una regla.",
+            ["ExportComplete"] = "El registro de eventos se exportó.",
+            ["Language"] = "Idioma de la interfaz",
+            ["Chinese"] = "简体中文",
+            ["TraditionalChinese"] = "繁體中文",
+            ["English"] = "English",
+            ["Spanish"] = "Español",
+            ["French"] = "Français",
+            ["German"] = "Deutsch",
+            ["BrazilianPortuguese"] = "Português (Brasil)",
+            ["StartWithWindows"] = "Abrir la aplicación al iniciar sesión en Windows",
+            ["StartWithWindowsHint"] = "Solo abre la aplicación; no inicia el monitoreo.",
+            ["ResumeMonitoring"] = "Iniciar el monitoreo automáticamente al abrir la aplicación",
+            ["ResumeMonitoringHint"] = "Desactivado de forma predeterminada; solo utiliza reglas activadas.",
+            ["AlertSound"] = "Sonido de alerta urgente",
+            ["AlertSoundHint"] = "Utiliza el aviso sonoro corto integrado en la aplicación.",
+            ["TestSound"] = "Probar sonido",
+            ["AlertVolume"] = "Volumen de la alerta urgente (%)",
+            ["AlertVolumeHint"] = "Se aplica a Probar sonido y a las alertas urgentes; el volumen de Windows también se mantiene.",
+            ["LogLimit"] = "Límite del registro de eventos (MB)",
+            ["LogLimitHint"] = "Elija entre 5 y 500 MB. Se utilizan cinco archivos y se eliminan primero los registros más antiguos.",
+            ["HelpCenter"] = "Centro de ayuda",
+            ["HelpCenterHint"] = "Consulte la descripción del proyecto y la guía del usuario dentro de la aplicación.",
+            ["OpenHelpCenter"] = "Abrir centro de ayuda",
+            ["ProjectOverview"] = "Descripción del proyecto",
+            ["UserGuide"] = "Guía del usuario",
+            ["HelpDocumentUnavailable"] = "No se pudo cargar el documento de ayuda.",
+            ["LogLimitUpdateError"] = "No se pudo actualizar el límite del registro de eventos: {0}",
+            ["Privacy"] = "Esta herramienta no se conecta a Internet, no sube registros, no lee el contenido de los paquetes ni bloquea conexiones automáticamente.",
+            ["CreateRule"] = "Crear regla de monitoreo",
+            ["EditRule"] = "Editar regla de monitoreo",
+            ["RuleType"] = "Tipo de regla",
+            ["AnyRemoteIpCheck"] = "Cualquier IP remota",
+            ["AnyRemotePortCheck"] = "Cualquier puerto remoto",
+            ["AnyLocalPortCheck"] = "Cualquier puerto local",
+            ["PortFormat"] = "Introduzca un puerto (1433) o un intervalo (1400-1500)",
+            ["RepeatInterval"] = "Intervalo para repetir la alerta después de cerrarla",
+            ["EveryTime"] = "Cada vez",
+            ["OneMinute"] = "1 minuto",
+            ["FiveMinutes"] = "5 minutos",
+            ["FifteenMinutes"] = "15 minutos",
+            ["EnableAfterSave"] = "Activar esta regla después de guardarla",
+            ["RulePreview"] = "Vista previa de la regla",
+            ["Save"] = "Guardar",
+            ["Cancel"] = "Cancelar",
+            ["PreviewConnection"] = "Cuando una conexión TCP de un programa coincida con: {0}, {1}.",
+            ["PreviewListener"] = "Cuando un programa escuche en el puerto local {0}, {1}.",
+            ["NameRequired"] = "Introduzca un nombre para la regla.",
+            ["InvalidRemoteIp"] = "La dirección IP remota no es válida.",
+            ["InvalidRemotePort"] = "El puerto remoto debe ser un puerto o un intervalo entre 1 y 65535.",
+            ["InvalidLocalPort"] = "El puerto local debe ser un puerto o un intervalo entre 1 y 65535.",
+            ["ConditionRequired"] = "Limite al menos una dirección IP o un puerto.",
+            ["ListenerPortRequired"] = "Una regla de escucha requiere un puerto local.",
+            ["InvalidRepeatInterval"] = "El intervalo de repetición no es válido.",
+            ["NeedEnabledRule"] = "Cree y active al menos una regla antes de iniciar el monitoreo.",
+            ["UrgentTitle"] = "Coincidencia con una regla",
+            ["FirstSeen"] = "Primera detección",
+            ["LatestSeen"] = "Detección más reciente",
+            ["Occurrences"] = "Durante esta alerta",
+            ["Times"] = "veces",
+            ["NotMalwareVerdict"] = "Esta conexión coincidió con una regla creada por usted, pero eso por sí solo no significa que el equipo esté infectado.",
+            ["ViewDetails"] = "Ver detalles",
+            ["Close"] = "Cerrar",
+            ["Open"] = "Abrir",
+            ["Exit"] = "Salir",
+            ["CloseWhileRunning"] = "El monitoreo está activo. Seleccione Sí para minimizar a la bandeja o No para detenerlo y salir.",
+            ["CloseWhileRunningTitle"] = "El monitoreo sigue activo",
+            ["TrayNormal"] = "Monitor de conexiones TCP: monitoreando",
+            ["TrayNotices"] = "Monitor de conexiones TCP: {0} avisos",
+            ["Error"] = "Error",
+            ["UnexpectedError"] = "Error inesperado",
+            ["StartupSettingError"] = "No se pudo cambiar la configuración de inicio de Windows: {0}",
+            ["ProcessPathUnavailable"] = "No disponible (permisos insuficientes)"
+        };
+
     public static string Language { get; private set; } = "en";
 
     public static bool IsChinese => Language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
 
+    public static bool IsSpanish => Language.StartsWith("es", StringComparison.OrdinalIgnoreCase);
+
     public static void SetLanguage(string language)
     {
-        Language = language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
-            ? "zh-CN"
-            : "en";
+        string normalized = language.Trim();
+        Language = normalized.StartsWith("zh-TW", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("zh-Hant", StringComparison.OrdinalIgnoreCase)
+                ? "zh-TW"
+                : normalized.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                    ? "zh-CN"
+                    : normalized.StartsWith("es", StringComparison.OrdinalIgnoreCase)
+                        ? "es"
+                        : normalized.StartsWith("fr", StringComparison.OrdinalIgnoreCase)
+                            ? "fr"
+                            : normalized.StartsWith("de", StringComparison.OrdinalIgnoreCase)
+                                ? "de"
+                                : normalized.StartsWith("pt", StringComparison.OrdinalIgnoreCase)
+                                    ? "pt-BR"
+                                    : "en";
     }
 
     public static string Get(string key)
     {
-        IReadOnlyDictionary<string, string> source = IsChinese ? Chinese : English;
+        IReadOnlyDictionary<string, string> source = Language switch
+        {
+            "zh-CN" => Chinese,
+            "zh-TW" => TraditionalChinese,
+            "es" => Spanish,
+            "fr" => French,
+            "de" => German,
+            "pt-BR" => BrazilianPortuguese,
+            _ => English
+        };
         return source.TryGetValue(key, out string? value) ? value : key;
     }
 
@@ -269,6 +487,27 @@ public static class UiText
             MatchAction.TrayNotice => "TrayNotice",
             _ => "PopupAlert"
         });
+    }
+
+    public static string ActionMarker(MatchAction action)
+    {
+        return action switch
+        {
+            MatchAction.SilentLog => "1 ●",
+            MatchAction.TrayNotice => "2 ▲",
+            _ => "3 ◆"
+        };
+    }
+
+    public static string ActionCompact(MatchAction action)
+    {
+        string shortName = Get(action switch
+        {
+            MatchAction.SilentLog => "SilentShort",
+            MatchAction.TrayNotice => "TrayShort",
+            _ => "PopupShort"
+        });
+        return $"{ActionMarker(action)}  {shortName}";
     }
 
     public static string RuleType(MonitoringRuleType type)

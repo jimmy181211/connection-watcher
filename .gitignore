@@ -4,6 +4,7 @@
 artifacts/
 dist/
 Final-Share/
+work/
 
 # Local IDE settings
 .vs/
