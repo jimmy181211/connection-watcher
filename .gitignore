@@ -1,0 +1,11 @@
+# Build output and temporary packaging files
+**/bin/
+**/obj/
+artifacts/
+dist/
+Final-Share/
+
+# Local IDE settings
+.vs/
+*.user
+*.suo
