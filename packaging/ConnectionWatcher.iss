@@ -55,10 +55,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "{#SourceDir}\ConnectionWatcher.exe"; DestDir: "{app}"; Flags: ignoreversion
 #if PackageLanguage == "zh-CN"
-Source: "..\README.zh-CN.md"; DestDir: "{app}\Docs"; DestName: "项目说明.md"; Flags: ignoreversion
+Source: "..\docs\项目说明.md"; DestDir: "{app}\Docs"; DestName: "项目说明.md"; Flags: ignoreversion
 Source: "..\docs\使用说明.md"; DestDir: "{app}\Docs"; Flags: ignoreversion
 #else
-Source: "..\README.md"; DestDir: "{app}\Docs"; DestName: "Project-Overview.md"; Flags: ignoreversion
+Source: "..\docs\Project-Overview.md"; DestDir: "{app}\Docs"; DestName: "Project-Overview.md"; Flags: ignoreversion
 Source: "..\docs\User-Guide.md"; DestDir: "{app}\Docs"; Flags: ignoreversion
 #endif
 
