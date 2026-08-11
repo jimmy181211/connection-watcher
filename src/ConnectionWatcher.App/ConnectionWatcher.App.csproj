@@ -16,6 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConnectionWatcher.Core\ConnectionWatcher.Core.csproj" />
+    <PackageReference Include="Markdig" Version="1.3.2" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\docs\Project-Overview.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.en.md" />

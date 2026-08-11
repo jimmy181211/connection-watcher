@@ -159,8 +159,16 @@ internal static class Program
         form.Show();
         form.Size = form.MinimumSize;
         Application.DoEvents();
-        RichTextBox[] documents = Descendants(form).OfType<RichTextBox>().ToArray();
-        if (documents.Length != 2 || documents.Any(document => document.Text.Length < 100))
+        WebBrowser[] documents = Descendants(form).OfType<WebBrowser>().ToArray();
+        for (int attempt = 0; attempt < 10 &&
+             documents.Any(document => document.Document?.Body is null); attempt++)
+        {
+            Thread.Sleep(50);
+            Application.DoEvents();
+        }
+
+        if (documents.Length != 2 || documents.Any(document =>
+                (document.Document?.Body?.InnerText?.Length ?? 0) < 100))
         {
             throw new InvalidOperationException("Embedded help documents did not load.");
         }
