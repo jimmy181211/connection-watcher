@@ -51,10 +51,12 @@ public sealed class RuleEditorForm : Form
         StartPosition = FormStartPosition.CenterParent;
         MinimizeBox = false;
         MaximizeBox = false;
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        ClientSize = new Size(650, 570);
+        FormBorderStyle = FormBorderStyle.Sizable;
+        MinimumSize = new Size(680, 620);
+        ClientSize = new Size(720, 680);
         Font = new Font("Segoe UI", 9.5F);
         AutoScaleMode = AutoScaleMode.Dpi;
+        SizeGripStyle = SizeGripStyle.Show;
 
         TableLayoutPanel layout = new()
         {
@@ -62,10 +64,23 @@ public sealed class RuleEditorForm : Form
             Padding = new Padding(18),
             ColumnCount = 2,
             RowCount = 10,
-            AutoScroll = true
+            AutoScroll = true,
+            GrowStyle = TableLayoutPanelGrowStyle.FixedSize
         };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        for (int row = 0; row < 7; row++)
+        {
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        }
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        _anyRemoteIp.AutoSize = true;
+        _anyRemotePort.AutoSize = true;
+        _anyLocalPort.AutoSize = true;
+        _enabled.AutoSize = true;
 
         AddField(layout, new Label { Name = "NameLabel" }, _name, 0, 0, 2);
         AddField(layout, new Label { Name = "TypeLabel" }, _type, 1, 0);
@@ -94,15 +109,17 @@ public sealed class RuleEditorForm : Form
             Name = "PreviewGroup",
             Dock = DockStyle.Fill,
             Padding = new Padding(12),
-            Height = 90
+            MinimumSize = new Size(0, 100)
         };
         _preview.Dock = DockStyle.Fill;
-        _preview.AutoEllipsis = true;
+        _preview.AutoEllipsis = false;
+        _preview.TextAlign = ContentAlignment.TopLeft;
         previewGroup.Controls.Add(_preview);
         layout.Controls.Add(previewGroup, 0, 7);
         layout.SetColumnSpan(previewGroup, 2);
 
         _error.AutoSize = true;
+        _error.Dock = DockStyle.Fill;
         _error.ForeColor = Color.Firebrick;
         _error.Margin = new Padding(3, 8, 3, 8);
         layout.Controls.Add(_error, 0, 8);
@@ -112,7 +129,9 @@ public sealed class RuleEditorForm : Form
         {
             Dock = DockStyle.Fill,
             FlowDirection = FlowDirection.RightToLeft,
-            AutoSize = true
+            AutoSize = true,
+            WrapContents = true,
+            Padding = new Padding(0, 8, 0, 0)
         };
         Button save = new() { Name = "SaveButton", AutoSize = true, MinimumSize = new Size(90, 34) };
         Button cancel = new() { Name = "CancelButton", AutoSize = true, MinimumSize = new Size(90, 34) };
@@ -155,24 +174,27 @@ public sealed class RuleEditorForm : Form
         int column,
         int span = 1)
     {
-        FlowLayoutPanel container = new()
+        TableLayoutPanel container = new()
         {
             Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
             AutoSize = true,
-            Margin = new Padding(3, 4, 10, 8)
+            Margin = new Padding(3, 4, 10, 8),
+            ColumnCount = 1,
+            RowCount = 2
         };
+        container.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        container.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        container.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         label.AutoSize = true;
-        field.Width = 280;
+        label.Dock = DockStyle.Fill;
+        field.Dock = DockStyle.Top;
         field.MinimumSize = new Size(180, 30);
-        container.Controls.Add(label);
-        container.Controls.Add(field);
+        container.Controls.Add(label, 0, 0);
+        container.Controls.Add(field, 0, 1);
         layout.Controls.Add(container, column, row);
         if (span > 1)
         {
             layout.SetColumnSpan(container, span);
-            field.Width = 580;
         }
     }
 

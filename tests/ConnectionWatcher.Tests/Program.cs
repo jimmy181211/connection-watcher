@@ -19,6 +19,7 @@ List<(string Name, Func<Task> Run)> tests =
     ("New rule can match an ongoing connection", TestNewRuleMatch),
     ("CSV event log round trip", TestCsvLog),
     ("CSV event log rotation is bounded", TestCsvRotation),
+    ("CSV log limit can be changed at runtime", TestCsvRuntimeLimit),
     ("Settings round trip", TestSettings),
     ("Windows TCP provider smoke test", TestWindowsProvider),
     ("Live local TCP monitoring end to end", TestLiveMonitoring)
@@ -257,6 +258,46 @@ static async Task TestCsvRotation()
     }
 }
 
+static async Task TestCsvRuntimeLimit()
+{
+    string directory = Path.Combine(
+        Path.GetTempPath(),
+        "ConnectionWatcherTests",
+        Guid.NewGuid().ToString("N"));
+    try
+    {
+        CsvEventLogger logger = new(directory, maximumFileBytes: 1200, maximumFiles: 3);
+        MonitoringRule rule = NewRule(
+            "Runtime limit rule",
+            "103.1.40.235",
+            new PortRange(1433, 1433),
+            PortRange.Any,
+            MatchAction.SilentLog);
+        for (int index = 0; index < 30; index++)
+        {
+            await logger.AppendAsync(ConnectionEvent.Create(
+                DateTimeOffset.Now.AddSeconds(index),
+                Connection("103.1.40.235", 1433) with
+                {
+                    ProcessName = "runtime-log-limit-test-process.exe"
+                },
+                [rule]));
+        }
+
+        await logger.UpdateMaximumTotalBytesAsync(1200);
+        long totalBytes = Directory.GetFiles(directory, "events*.csv")
+            .Sum(path => new FileInfo(path).Length);
+        Assert(totalBytes <= 1200);
+    }
+    finally
+    {
+        if (Directory.Exists(directory))
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+}
+
 static Task TestSettings()
 {
     string directory = Path.Combine(
@@ -269,6 +310,7 @@ static Task TestSettings()
         AppSettings settings = new()
         {
             Language = "zh-CN",
+            LogLimitMb = 80,
             Rules =
             [
                 NewRule("UCSD", "103.1.40.235", new PortRange(1433, 1433), PortRange.Any, MatchAction.PopupAlert)
@@ -277,6 +319,7 @@ static Task TestSettings()
         store.Save(settings);
         AppSettings loaded = store.Load();
         Assert(loaded.Language == "zh-CN");
+        Assert(loaded.LogLimitMb == 80);
         Assert(loaded.Rules.Count == 1);
         Assert(loaded.Rules[0].RemotePort.Contains(1433));
     }

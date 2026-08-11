@@ -45,10 +45,12 @@ internal static class Program
         }
 
         UiText.SetLanguage(settings.Language);
+        const int maximumLogFiles = 5;
+        long maximumTotalBytes = settings.LogLimitMb * 1024L * 1024L;
         CsvEventLogger logger = new(
             Path.Combine(dataRoot, "Logs"),
-            maximumFileBytes: 5 * 1024 * 1024,
-            maximumFiles: 5);
+            maximumFileBytes: maximumTotalBytes / maximumLogFiles,
+            maximumFiles: maximumLogFiles);
 
         Application.ThreadException += (_, args) =>
             MessageBox.Show(

@@ -13,7 +13,7 @@ public sealed class CsvEventLogger : IEventLogger
         "Remote Port/远程端口,PID,Program/程序,Path/路径,Event ID/事件ID";
 
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly long _maximumFileBytes;
+    private long _maximumTotalBytes;
     private readonly int _maximumFiles;
 
     public CsvEventLogger(
@@ -22,12 +22,36 @@ public sealed class CsvEventLogger : IEventLogger
         int maximumFiles = 5)
     {
         LogDirectory = logDirectory;
-        _maximumFileBytes = maximumFileBytes;
         _maximumFiles = maximumFiles;
+        _maximumTotalBytes = checked(maximumFileBytes * maximumFiles);
     }
 
     public string LogDirectory { get; }
     public string CurrentLogPath => Path.Combine(LogDirectory, "events.csv");
+
+    public async Task UpdateMaximumTotalBytesAsync(
+        long maximumTotalBytes,
+        CancellationToken cancellationToken = default)
+    {
+        if (maximumTotalBytes < _maximumFiles)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumTotalBytes));
+        }
+
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            Interlocked.Exchange(ref _maximumTotalBytes, maximumTotalBytes);
+            if (Directory.Exists(LogDirectory))
+            {
+                RotateIfNeeded(0);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
 
     public async Task AppendAsync(
         ConnectionEvent connectionEvent,
@@ -101,9 +125,11 @@ public sealed class CsvEventLogger : IEventLogger
 
     private void RotateIfNeeded(long additionalBytes)
     {
+        long maximumTotalBytes = Interlocked.Read(ref _maximumTotalBytes);
+        long maximumFileBytes = Math.Max(1, maximumTotalBytes / _maximumFiles);
         bool currentWillBeCreated = false;
         if (File.Exists(CurrentLogPath) &&
-            new FileInfo(CurrentLogPath).Length + additionalBytes > _maximumFileBytes)
+            new FileInfo(CurrentLogPath).Length + additionalBytes > maximumFileBytes)
         {
             string archivedPath = Path.Combine(
                 LogDirectory,
@@ -112,13 +138,31 @@ public sealed class CsvEventLogger : IEventLogger
             currentWillBeCreated = true;
         }
 
-        string[] files = Directory.GetFiles(LogDirectory, "events*.csv")
-            .OrderByDescending(File.GetLastWriteTimeUtc)
+        FileInfo[] files = new DirectoryInfo(LogDirectory)
+            .GetFiles("events*.csv")
+            .OrderByDescending(file => file.LastWriteTimeUtc)
             .ToArray();
         int filesToKeep = currentWillBeCreated ? _maximumFiles - 1 : _maximumFiles;
-        foreach (string obsolete in files.Skip(filesToKeep))
+        foreach (FileInfo obsolete in files.Skip(filesToKeep))
         {
-            File.Delete(obsolete);
+            obsolete.Delete();
+        }
+
+        files = new DirectoryInfo(LogDirectory)
+            .GetFiles("events*.csv")
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .ToArray();
+        long totalBytes = files.Sum(file => file.Length);
+        foreach (FileInfo obsolete in files.Reverse())
+        {
+            if (totalBytes <= maximumTotalBytes ||
+                obsolete.FullName.Equals(CurrentLogPath, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            totalBytes -= obsolete.Length;
+            obsolete.Delete();
         }
     }
 

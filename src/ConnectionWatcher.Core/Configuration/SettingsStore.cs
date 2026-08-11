@@ -83,6 +83,9 @@ public sealed class SettingsStore
             }
         }
 
-        settings.LogLimitMb = 25;
+        settings.LogLimitMb = Math.Clamp(
+            settings.LogLimitMb,
+            AppSettings.MinimumLogLimitMb,
+            AppSettings.MaximumLogLimitMb);
     }
 }

@@ -40,8 +40,8 @@ connection-watcher/
 
 - `ConnectionWatcher.sln`: the solution file for the entire project.
 - `src/ConnectionWatcher.Core`: core logic for settings, rules, Windows TCP connection reading, connection deduplication, and CSV logs.
-- `src/ConnectionWatcher.App`: the bilingual Windows interface, including the main window, rule editor, tray notices, and alert window.
-- `tests`: functional and interface tests; the functional test suite currently contains 13 tests.
+- `src/ConnectionWatcher.App`: the bilingual Windows interface, including the main window, rule editor, built-in help center, tray notices, and alert window.
+- `tests`: functional and interface tests; the functional test suite currently contains 14 tests.
 - `docs`: Chinese and English project overviews and user guides.
 - `packaging`: installer definitions and portable-edition notes.
 - `Final-Share`: the final folders for sharing, with separate Chinese and English installers, documents, and SHA-256 checksums.

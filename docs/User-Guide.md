@@ -57,7 +57,11 @@ Logs are stored in:
 
 Each new matching connection adds one row. If the same connection stays open for several hours, it is not written again every second. A new record is created only after the connection disappears for two checks and then appears again.
 
-The app keeps up to five log files, with a maximum size of 5 MB per file. When the limit is reached, it automatically deletes the oldest file.
+The total log limit is 25 MB by default and can be changed to 5–500 MB in **Settings**. The app uses up to five log files and automatically removes the oldest records when the selected limit is reached.
+
+## Help center
+
+In **Settings**, select **Open help center** to read the project overview and user guide inside the app.
 
 ## Important limitations
 

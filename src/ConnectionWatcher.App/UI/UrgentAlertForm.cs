@@ -56,7 +56,8 @@ public sealed class UrgentAlertForm : Form
         return new Label
         {
             AutoSize = true,
-            MaximumSize = new Size(310, 0),
+            Dock = DockStyle.Fill,
+            MaximumSize = new Size(390, 0),
             Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
         };
     }
@@ -64,23 +65,33 @@ public sealed class UrgentAlertForm : Form
     private void BuildInterface()
     {
         StartPosition = FormStartPosition.Manual;
-        FormBorderStyle = FormBorderStyle.FixedDialog;
+        FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = false;
         MinimizeBox = false;
         TopMost = true;
         ShowInTaskbar = false;
-        ClientSize = new Size(500, 350);
+        MinimumSize = new Size(560, 440);
+        ClientSize = new Size(600, 480);
         Font = new Font("Segoe UI", 9.5F);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        SizeGripStyle = SizeGripStyle.Show;
 
         TableLayoutPanel layout = new()
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(18),
             ColumnCount = 2,
-            RowCount = 9
+            RowCount = 9,
+            AutoScroll = true,
+            GrowStyle = TableLayoutPanelGrowStyle.FixedSize
         };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 125));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        for (int row = 0; row < 8; row++)
+        {
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        }
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         Label heading = new()
         {
@@ -101,21 +112,27 @@ public sealed class UrgentAlertForm : Form
         AddRow(layout, "LatestLabel", _latestValue, 6);
         AddRow(layout, "CountLabel", _countValue, 7);
 
-        FlowLayoutPanel footer = new()
+        TableLayoutPanel footer = new()
         {
             Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
+            ColumnCount = 1,
+            RowCount = 2,
             AutoSize = true
         };
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         _notice.AutoSize = true;
-        _notice.MaximumSize = new Size(450, 0);
+        _notice.Name = "Notice";
+        _notice.Dock = DockStyle.Fill;
+        _notice.MaximumSize = new Size(540, 0);
         _notice.ForeColor = Color.Firebrick;
         FlowLayoutPanel buttons = new()
         {
+            Dock = DockStyle.Fill,
             FlowDirection = FlowDirection.RightToLeft,
             AutoSize = true,
-            Width = 450,
+            WrapContents = true,
             Margin = new Padding(0, 14, 0, 0)
         };
         Button details = new() { Name = "DetailsButton", AutoSize = true, MinimumSize = new Size(110, 34) };
@@ -123,8 +140,8 @@ public sealed class UrgentAlertForm : Form
         details.Click += (_, _) => ViewDetailsRequested?.Invoke(this, EventArgs.Empty);
         close.Click += (_, _) => Close();
         buttons.Controls.AddRange([details, close]);
-        footer.Controls.Add(_notice);
-        footer.Controls.Add(buttons);
+        footer.Controls.Add(_notice, 0, 0);
+        footer.Controls.Add(buttons, 0, 1);
         layout.Controls.Add(footer, 0, 8);
         layout.SetColumnSpan(footer, 2);
 

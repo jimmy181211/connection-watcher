@@ -69,10 +69,22 @@ public sealed class MainForm : Form
     private readonly CheckBox _alertSound = new();
     private readonly Label _alertSoundHint = SubtitleLabel();
     private readonly Label _logLimitCaption = new();
-    private readonly Label _logLimitValue = new()
+    private readonly Label _logLimitHint = SubtitleLabel();
+    private readonly NumericUpDown _logLimit = new()
+    {
+        Minimum = AppSettings.MinimumLogLimitMb,
+        Maximum = AppSettings.MaximumLogLimitMb,
+        Increment = 5,
+        ThousandsSeparator = true,
+        TextAlign = HorizontalAlignment.Right,
+        Width = 110
+    };
+    private readonly Label _helpCenterCaption = new();
+    private readonly Label _helpCenterHint = SubtitleLabel();
+    private readonly Button _helpCenterButton = new()
     {
         AutoSize = true,
-        Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
+        MinimumSize = new Size(150, 36)
     };
 
     private bool _refreshingRules;
@@ -447,7 +459,8 @@ public sealed class MainForm : Form
         AddSetting(settings, string.Empty, _startWithWindowsHint, _startWithWindows, 1, _startWithWindowsCaption);
         AddSetting(settings, string.Empty, _resumeMonitoringHint, _resumeMonitoring, 2, _resumeMonitoringCaption);
         AddSetting(settings, string.Empty, _alertSoundHint, _alertSound, 3, _alertSoundCaption);
-        AddSetting(settings, string.Empty, null, _logLimitValue, 4, _logLimitCaption);
+        AddSetting(settings, string.Empty, _logLimitHint, _logLimit, 4, _logLimitCaption);
+        AddSetting(settings, string.Empty, _helpCenterHint, _helpCenterButton, 5, _helpCenterCaption);
 
         _language.SelectedIndexChanged += LanguageChanged;
         _startWithWindows.CheckedChanged += StartWithWindowsChanged;
@@ -462,6 +475,12 @@ public sealed class MainForm : Form
             if (_refreshingSettings) return;
             _settings.AlertSound = _alertSound.Checked;
             SaveSettings();
+        };
+        _logLimit.Validated += async (_, _) => await LogLimitChangedAsync();
+        _helpCenterButton.Click += (_, _) =>
+        {
+            using HelpCenterForm helpCenter = new();
+            helpCenter.ShowDialog(this);
         };
 
         Panel body = new() { Dock = DockStyle.Fill, AutoScroll = true };
@@ -624,7 +643,10 @@ public sealed class MainForm : Form
         _alertSound.Text = string.Empty;
         _alertSoundHint.Text = UiText.Get("AlertSoundHint");
         _logLimitCaption.Text = UiText.Get("LogLimit");
-        _logLimitValue.Text = UiText.Get("LogLimitValue");
+        _logLimitHint.Text = UiText.Get("LogLimitHint");
+        _helpCenterCaption.Text = UiText.Get("HelpCenter");
+        _helpCenterHint.Text = UiText.Get("HelpCenterHint");
+        _helpCenterButton.Text = UiText.Get("OpenHelpCenter");
 
         _trayOpen.Text = UiText.Get("Open");
         _trayExit.Text = UiText.Get("Exit");
@@ -1042,6 +1064,10 @@ public sealed class MainForm : Form
             _startWithWindows.Checked = _settings.StartWithWindows;
             _resumeMonitoring.Checked = _settings.ResumeMonitoring;
             _alertSound.Checked = _settings.AlertSound;
+            _logLimit.Value = Math.Clamp(
+                _settings.LogLimitMb,
+                AppSettings.MinimumLogLimitMb,
+                AppSettings.MaximumLogLimitMb);
         }
         finally
         {
@@ -1084,6 +1110,37 @@ public sealed class MainForm : Form
                 MessageBoxIcon.Error);
             _refreshingSettings = true;
             _startWithWindows.Checked = _settings.StartWithWindows;
+            _refreshingSettings = false;
+        }
+    }
+
+    private async Task LogLimitChangedAsync()
+    {
+        if (_refreshingSettings)
+        {
+            return;
+        }
+
+        int previousValue = _settings.LogLimitMb;
+        int selectedValue = decimal.ToInt32(_logLimit.Value);
+        try
+        {
+            await _logger.UpdateMaximumTotalBytesAsync(selectedValue * 1024L * 1024L);
+            _settings.LogLimitMb = selectedValue;
+            SaveSettings();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                string.Format(UiText.Get("LogLimitUpdateError"), ex.Message),
+                UiText.Get("Error"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+            _refreshingSettings = true;
+            _logLimit.Value = Math.Clamp(
+                previousValue,
+                AppSettings.MinimumLogLimitMb,
+                AppSettings.MaximumLogLimitMb);
             _refreshingSettings = false;
         }
     }

@@ -18,8 +18,12 @@ internal static class Program
         Directory.CreateDirectory(output);
         RenderMainWindow(output, "zh-CN", "zh");
         RenderMainWindow(output, "en", "en");
-        RenderRuleEditor(output);
-        RenderUrgentAlert(output);
+        RenderRuleEditor(output, "zh-CN", "zh");
+        RenderRuleEditor(output, "en", "en");
+        RenderUrgentAlert(output, "zh-CN", "zh");
+        RenderUrgentAlert(output, "en", "en");
+        RenderHelpCenter(output, "zh-CN", "zh");
+        RenderHelpCenter(output, "en", "en");
         Console.WriteLine(output);
         return 0;
     }
@@ -88,25 +92,28 @@ internal static class Program
         bitmap.Save(path);
     }
 
-    private static void RenderRuleEditor(string output)
+    private static void RenderRuleEditor(string output, string language, string filePrefix)
     {
-        UiText.SetLanguage("zh-CN");
+        UiText.SetLanguage(language);
         using RuleEditorForm form = new(SampleRules()[0])
         {
             Opacity = 0,
             ShowInTaskbar = false
         };
         form.Show();
+        form.Size = form.MinimumSize;
         Application.DoEvents();
+        AssertFullyVisible(form, form.Controls.Find("SaveButton", true).Single());
+        AssertFullyVisible(form, form.Controls.Find("CancelButton", true).Single());
         using Bitmap bitmap = new(form.Width, form.Height);
         form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.Size));
-        bitmap.Save(Path.Combine(output, "rule-editor-zh.png"));
+        bitmap.Save(Path.Combine(output, $"rule-editor-{filePrefix}.png"));
         form.Hide();
     }
 
-    private static void RenderUrgentAlert(string output)
+    private static void RenderUrgentAlert(string output, string language, string filePrefix)
     {
-        UiText.SetLanguage("zh-CN");
+        UiText.SetLanguage(language);
         MonitoringRule rule = SampleRules()[0];
         ConnectionEvent entry = new()
         {
@@ -132,9 +139,44 @@ internal static class Program
         form.AddEvent(entry);
         form.AddEvent(entry);
         form.Show();
+        form.Size = form.MinimumSize;
         Application.DoEvents();
-        Capture(form, Path.Combine(output, "urgent-alert-zh.png"));
+        AssertFullyVisible(form, form.Controls.Find("Notice", true).Single());
+        AssertFullyVisible(form, form.Controls.Find("DetailsButton", true).Single());
+        AssertFullyVisible(form, form.Controls.Find("CloseButton", true).Single());
+        Capture(form, Path.Combine(output, $"urgent-alert-{filePrefix}.png"));
         form.Hide();
+    }
+
+    private static void RenderHelpCenter(string output, string language, string filePrefix)
+    {
+        UiText.SetLanguage(language);
+        using HelpCenterForm form = new()
+        {
+            Opacity = 0,
+            ShowInTaskbar = false
+        };
+        form.Show();
+        form.Size = form.MinimumSize;
+        Application.DoEvents();
+        RichTextBox[] documents = Descendants(form).OfType<RichTextBox>().ToArray();
+        if (documents.Length != 2 || documents.Any(document => document.Text.Length < 100))
+        {
+            throw new InvalidOperationException("Embedded help documents did not load.");
+        }
+
+        Capture(form, Path.Combine(output, $"help-center-{filePrefix}.png"));
+        form.Hide();
+    }
+
+    private static void AssertFullyVisible(Form form, Control control)
+    {
+        Rectangle bounds = form.RectangleToClient(control.Parent!.RectangleToScreen(control.Bounds));
+        if (!form.ClientRectangle.Contains(bounds))
+        {
+            throw new InvalidOperationException(
+                $"Control '{control.Name}' is outside the visible client area: {bounds}.");
+        }
     }
 
     private static List<MonitoringRule> SampleRules()
