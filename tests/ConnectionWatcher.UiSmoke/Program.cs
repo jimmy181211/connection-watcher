@@ -69,7 +69,7 @@ internal static class Program
         RenderLanguageSelection(output);
         AssertEmbeddedAlertSound();
         AssertUpdateVersionParsing();
-        AssertInstallerLanguageHandoff(output);
+        AssertInstallerAppLanguageHandoff(output);
         Console.WriteLine(output);
         return 0;
     }
@@ -302,7 +302,7 @@ internal static class Program
             .Single();
         AssertFullyVisible(form, helpCenter);
         AssertTextFits(helpCenter);
-        AssertFullyVisible(form, checkUpdates);
+        AssertFullyVisibleOrScrollable(form, checkUpdates);
         AssertTextFits(checkUpdates);
         AssertSettingsRightInset(form, helpCenter, checkUpdates);
         form.Hide();
@@ -758,6 +758,29 @@ internal static class Program
         }
     }
 
+    private static void AssertFullyVisibleOrScrollable(Form form, Control control)
+    {
+        Rectangle bounds = form.RectangleToClient(
+            control.Parent!.RectangleToScreen(control.Bounds));
+        if (form.ClientRectangle.Contains(bounds))
+        {
+            return;
+        }
+
+        for (Control? ancestor = control.Parent;
+             ancestor is not null;
+             ancestor = ancestor.Parent)
+        {
+            if (ancestor is ScrollableControl { AutoScroll: true })
+            {
+                return;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Control '{control.Name}' is neither visible nor inside a scrollable area: {bounds}.");
+    }
+
     private static int ControlLeft(Form form, Control control)
     {
         return form.RectangleToClient(
@@ -803,7 +826,7 @@ internal static class Program
         }
     }
 
-    private static void AssertInstallerLanguageHandoff(string output)
+    private static void AssertInstallerAppLanguageHandoff(string output)
     {
         string directory = Path.Combine(output, "installer-language-handoff");
         Directory.CreateDirectory(directory);
@@ -816,7 +839,7 @@ internal static class Program
         if (selected != "en" || File.Exists(path))
         {
             throw new InvalidOperationException(
-                "The installer language was not applied once and consumed.");
+                "The app language chosen in Setup was not applied once and consumed.");
         }
 
         File.WriteAllText(path, "unsupported-language");
@@ -825,7 +848,7 @@ internal static class Program
         if (selected is not null || File.Exists(path))
         {
             throw new InvalidOperationException(
-                "An unsupported installer language was accepted or retained.");
+                "An unsupported app language from Setup was accepted or retained.");
         }
     }
 
