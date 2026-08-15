@@ -91,5 +91,16 @@ public sealed class SettingsStore
             settings.AlertVolumePercent,
             AppSettings.MinimumAlertVolumePercent,
             AppSettings.MaximumAlertVolumePercent);
+        decimal clampedInterval = Math.Clamp(
+            settings.CheckIntervalSeconds,
+            AppSettings.MinimumCheckIntervalSeconds,
+            AppSettings.MaximumCheckIntervalSeconds);
+        decimal steps = Math.Round(
+            (clampedInterval - AppSettings.MinimumCheckIntervalSeconds) /
+            AppSettings.CheckIntervalStepSeconds,
+            MidpointRounding.AwayFromZero);
+        settings.CheckIntervalSeconds =
+            AppSettings.MinimumCheckIntervalSeconds +
+            steps * AppSettings.CheckIntervalStepSeconds;
     }
 }

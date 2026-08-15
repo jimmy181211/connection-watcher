@@ -8,18 +8,27 @@ public sealed class MonitoringEngine : IAsyncDisposable
     private readonly ITcpConnectionProvider _provider;
     private readonly IEventLogger _logger;
     private readonly Func<IReadOnlyList<MonitoringRule>> _rulesProvider;
+    private readonly IProcessContextProvider? _processContextProvider;
     private readonly ConnectionTracker _tracker = new();
+    private readonly object _intervalGate = new();
+    private readonly List<CancellationTokenSource> _retiredIntervalSignals = [];
+    private CancellationTokenSource _intervalChanged = new();
+    private TimeSpan _interval;
     private CancellationTokenSource? _cancellation;
     private Task? _worker;
 
     public MonitoringEngine(
         ITcpConnectionProvider provider,
         IEventLogger logger,
-        Func<IReadOnlyList<MonitoringRule>> rulesProvider)
+        Func<IReadOnlyList<MonitoringRule>> rulesProvider,
+        IProcessContextProvider? processContextProvider = null,
+        TimeSpan? interval = null)
     {
         _provider = provider;
         _logger = logger;
         _rulesProvider = rulesProvider;
+        _processContextProvider = processContextProvider;
+        _interval = interval ?? TimeSpan.FromSeconds(1);
     }
 
     public event EventHandler<ConnectionEvent>? EventDetected;
@@ -28,7 +37,40 @@ public sealed class MonitoringEngine : IAsyncDisposable
     public event EventHandler? MonitoringRecovered;
 
     public bool IsRunning => _worker is { IsCompleted: false };
-    public TimeSpan Interval { get; } = TimeSpan.FromSeconds(1);
+    public TimeSpan Interval
+    {
+        get
+        {
+            lock (_intervalGate)
+            {
+                return _interval;
+            }
+        }
+    }
+
+    public void UpdateInterval(TimeSpan interval)
+    {
+        if (interval <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(interval));
+        }
+
+        CancellationTokenSource changed;
+        lock (_intervalGate)
+        {
+            if (_interval == interval)
+            {
+                return;
+            }
+
+            _interval = interval;
+            changed = _intervalChanged;
+            _retiredIntervalSignals.Add(changed);
+            _intervalChanged = new CancellationTokenSource();
+        }
+
+        changed.Cancel();
+    }
 
     public void Start()
     {
@@ -93,7 +135,6 @@ public sealed class MonitoringEngine : IAsyncDisposable
 
     private async Task RunAsync(CancellationToken cancellationToken)
     {
-        using PeriodicTimer timer = new(Interval);
         bool recoveringFromError = false;
         do
         {
@@ -106,6 +147,22 @@ public sealed class MonitoringEngine : IAsyncDisposable
                     DateTimeOffset.Now);
                 foreach (ConnectionEvent connectionEvent in result.DetectedEvents)
                 {
+                    if (_processContextProvider is not null)
+                    {
+                        try
+                        {
+                            ProcessContext context = _processContextProvider.GetContext(
+                                connectionEvent.ProcessId,
+                                connectionEvent.ProcessName,
+                                connectionEvent.ProcessPath);
+                            connectionEvent.ApplyProcessContext(context);
+                        }
+                        catch
+                        {
+                            // Attribution is best-effort and must never stop monitoring.
+                        }
+                    }
+
                     await _logger.AppendAsync(connectionEvent, cancellationToken)
                         .ConfigureAwait(false);
                     EventDetected?.Invoke(this, connectionEvent);
@@ -133,11 +190,49 @@ public sealed class MonitoringEngine : IAsyncDisposable
                 MonitoringError?.Invoke(this, ex);
             }
         }
-        while (await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false));
+        while (await WaitForNextPollAsync(cancellationToken).ConfigureAwait(false));
+    }
+
+    private async Task<bool> WaitForNextPollAsync(CancellationToken cancellationToken)
+    {
+        TimeSpan interval;
+        CancellationToken intervalChanged;
+        lock (_intervalGate)
+        {
+            interval = _interval;
+            intervalChanged = _intervalChanged.Token;
+        }
+
+        using CancellationTokenSource waitCancellation =
+            CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                intervalChanged);
+        try
+        {
+            await Task.Delay(interval, waitCancellation.Token).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (OperationCanceledException) when (intervalChanged.IsCancellationRequested)
+        {
+            return true;
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
+        lock (_intervalGate)
+        {
+            _intervalChanged.Dispose();
+            foreach (CancellationTokenSource signal in _retiredIntervalSignals)
+            {
+                signal.Dispose();
+            }
+            _retiredIntervalSignals.Clear();
+        }
     }
 }

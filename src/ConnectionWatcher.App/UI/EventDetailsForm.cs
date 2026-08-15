@@ -11,7 +11,9 @@ public sealed class EventDetailsForm : Form
     [
         "StartTime", "EndTime", "ConnectionStatus", "ObservedDuration",
         "MatchedRules", "RemoteEndpoint", "LocalEndpoint", "TcpState",
-        "PID", "Program", "ProcessPath", "ActionColumn"
+        "PID", "ConnectionOwner", "ProcessPath", "ProductName",
+        "CompanyName", "FileDescription", "ParentProcesses",
+        "RelatedServices", "ActionColumn"
     ];
 
     private readonly ConnectionEvent _entry;
@@ -59,8 +61,8 @@ public sealed class EventDetailsForm : Form
         ShowInTaskbar = false;
         MinimizeBox = false;
         MaximizeBox = false;
-        MinimumSize = new Size(760, 680);
-        ClientSize = new Size(780, 650);
+        MinimumSize = new Size(760, 700);
+        ClientSize = new Size(820, 740);
         Font = new Font("Segoe UI", 9.5F);
         AutoScaleMode = AutoScaleMode.Dpi;
 
@@ -106,7 +108,8 @@ public sealed class EventDetailsForm : Form
         for (int index = 0; index < FieldKeys.Length; index++)
         {
             string key = FieldKeys[index];
-            bool multiline = key == "MatchedRules";
+            bool multiline = key is
+                "MatchedRules" or "ParentProcesses" or "RelatedServices";
             AddField(details, key, index, multiline);
         }
         details.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -197,9 +200,31 @@ public sealed class EventDetailsForm : Form
             _entry.LocalPort);
         _values["TcpState"].Text = _entry.State.ToString();
         _values["PID"].Text = _entry.ProcessId.ToString();
-        _values["Program"].Text = _entry.ProcessName;
+        _values["ConnectionOwner"].Text = _entry.ProcessName;
         _values["ProcessPath"].Text = _entry.ProcessPath ??
             UiText.Get("ProcessPathUnavailable");
+        _values["ProductName"].Text = ValueOrUnavailable(
+            _entry.ProcessProductName);
+        _values["CompanyName"].Text = ValueOrUnavailable(
+            _entry.ProcessCompanyName);
+        _values["FileDescription"].Text = ValueOrUnavailable(
+            _entry.ProcessFileDescription);
+        _values["ParentProcesses"].Text = _entry.ParentProcesses.Count == 0
+            ? UiText.Get("ContextUnavailable")
+            : string.Join(
+                Environment.NewLine,
+                _entry.ParentProcesses.Select(parent =>
+                    $"{parent.ProcessName} (PID {parent.ProcessId})" +
+                    (string.IsNullOrWhiteSpace(parent.ProductName)
+                        ? string.Empty
+                        : $" — {parent.ProductName}")));
+        _values["RelatedServices"].Text = _entry.RelatedServices.Count == 0
+            ? UiText.Get("NoneFound")
+            : string.Join(
+                Environment.NewLine,
+                _entry.RelatedServices.Select(service =>
+                    $"{service.DisplayName} [{service.ServiceName}] " +
+                    $"(PID {service.ProcessId})"));
         _values["ActionColumn"].Text =
             $"{UiText.ActionMarker(_entry.Action)}  {UiText.Action(_entry.Action)}";
 
@@ -244,6 +269,11 @@ public sealed class EventDetailsForm : Form
 
     private static string FormatEndpoint(string address, int port) =>
         $"{address}:{port}";
+
+    private static string ValueOrUnavailable(string? value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? UiText.Get("ContextUnavailable")
+            : value;
 
     private static string FormatStatus(ConnectionEvent entry) =>
         $"{(entry.IsActive ? '●' : '○')} " +

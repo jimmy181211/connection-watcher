@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.Json;
 using ConnectionWatcher.Core.Models;
 
 namespace ConnectionWatcher.Core.Logging;
@@ -11,7 +12,9 @@ public sealed class CsvEventLogger : IEventLogger
         "Record Type/记录类型,First Seen/首次发现,Last Seen/最后发现," +
         "Ended At/结束时间,Rules/规则,Action/操作,TCP State/TCP状态," +
         "Local IP/本地IP,Local Port/本地端口,Remote IP/远程IP," +
-        "Remote Port/远程端口,PID,Program/程序,Path/路径,Event ID/事件ID";
+        "Remote Port/远程端口,PID,Connection Owner/连接所属进程,Path/路径," +
+        "Product/产品名称,Company/公司,File Description/文件说明," +
+        "Parent Processes/父级进程,Related Services/相关服务,Event ID/事件ID";
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private long _maximumTotalBytes;
@@ -232,6 +235,11 @@ public sealed class CsvEventLogger : IEventLogger
             entry.ProcessId.ToString(CultureInfo.InvariantCulture),
             entry.ProcessName,
             entry.ProcessPath ?? string.Empty,
+            entry.ProcessProductName ?? string.Empty,
+            entry.ProcessCompanyName ?? string.Empty,
+            entry.ProcessFileDescription ?? string.Empty,
+            JsonSerializer.Serialize(entry.ParentProcesses),
+            JsonSerializer.Serialize(entry.RelatedServices),
             entry.EventId.ToString()
         ];
         return string.Join(',', fields.Select(Escape));
@@ -257,8 +265,13 @@ public sealed class CsvEventLogger : IEventLogger
             return TryParseLegacy(fields, out entry);
         }
 
+        if (fields.Count == 15)
+        {
+            return TryParseVersionTwo(fields, out entry);
+        }
+
         DateTimeOffset parsedEndedAt = default;
-        if (fields.Count != 15 ||
+        if (fields.Count != 20 ||
             (fields[0] != "Start" && fields[0] != "End") ||
             !DateTimeOffset.TryParse(fields[1], out DateTimeOffset detectedAt) ||
             !DateTimeOffset.TryParse(fields[2], out DateTimeOffset lastSeenAt) ||
@@ -269,7 +282,7 @@ public sealed class CsvEventLogger : IEventLogger
             !int.TryParse(fields[8], out int localPort) ||
             !int.TryParse(fields[10], out int remotePort) ||
             !int.TryParse(fields[11], out int processId) ||
-            !Guid.TryParse(fields[14], out Guid eventId))
+            !Guid.TryParse(fields[19], out Guid eventId))
         {
             return false;
         }
@@ -293,7 +306,53 @@ public sealed class CsvEventLogger : IEventLogger
             RemotePort = remotePort,
             ProcessId = processId,
             ProcessName = fields[12],
-            ProcessPath = string.IsNullOrWhiteSpace(fields[13]) ? null : fields[13]
+            ProcessPath = EmptyToNull(fields[13]),
+            ProcessProductName = EmptyToNull(fields[14]),
+            ProcessCompanyName = EmptyToNull(fields[15]),
+            ProcessFileDescription = EmptyToNull(fields[16]),
+            ParentProcesses = DeserializeList<ProcessSnapshot>(fields[17]),
+            RelatedServices = DeserializeList<WindowsServiceSnapshot>(fields[18])
+        };
+        return true;
+    }
+
+    private static bool TryParseVersionTwo(
+        IReadOnlyList<string> fields,
+        out ConnectionEvent? entry)
+    {
+        entry = null;
+        DateTimeOffset parsedEndedAt = default;
+        if ((fields[0] != "Start" && fields[0] != "End") ||
+            !DateTimeOffset.TryParse(fields[1], out DateTimeOffset detectedAt) ||
+            !DateTimeOffset.TryParse(fields[2], out DateTimeOffset lastSeenAt) ||
+            (!string.IsNullOrWhiteSpace(fields[3]) &&
+             !DateTimeOffset.TryParse(fields[3], out parsedEndedAt)) ||
+            !Enum.TryParse(fields[5], out MatchAction action) ||
+            !Enum.TryParse(fields[6], out TcpState state) ||
+            !int.TryParse(fields[8], out int localPort) ||
+            !int.TryParse(fields[10], out int remotePort) ||
+            !int.TryParse(fields[11], out int processId) ||
+            !Guid.TryParse(fields[14], out Guid eventId))
+        {
+            return false;
+        }
+
+        entry = new ConnectionEvent
+        {
+            EventId = eventId,
+            DetectedAt = detectedAt,
+            LastSeenAt = lastSeenAt,
+            EndedAt = string.IsNullOrWhiteSpace(fields[3]) ? null : parsedEndedAt,
+            RuleNames = fields[4].Split(" | ", StringSplitOptions.RemoveEmptyEntries),
+            Action = action,
+            State = state,
+            LocalAddress = fields[7],
+            LocalPort = localPort,
+            RemoteAddress = fields[9],
+            RemotePort = remotePort,
+            ProcessId = processId,
+            ProcessName = fields[12],
+            ProcessPath = EmptyToNull(fields[13])
         };
         return true;
     }
@@ -369,4 +428,24 @@ public sealed class CsvEventLogger : IEventLogger
         fields.Add(current.ToString());
         return fields;
     }
+
+    private static IReadOnlyList<T> DeserializeList<T>(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return Array.Empty<T>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T[]>(json) ?? Array.Empty<T>();
+        }
+        catch (JsonException)
+        {
+            return Array.Empty<T>();
+        }
+    }
+
+    private static string? EmptyToNull(string value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 }
