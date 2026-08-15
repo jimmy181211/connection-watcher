@@ -10,9 +10,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\ConnectionWatcher.ico</ApplicationIcon>
     <SatelliteResourceLanguages>de;es;fr;pt-BR;zh-Hans;zh-Hant</SatelliteResourceLanguages>
-    <Version>1.3.0</Version>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
-    <FileVersion>1.3.0.0</FileVersion>
+    <Version>1.4.0</Version>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <FileVersion>1.4.0.0</FileVersion>
     <AssemblyTitle>SocketSight - Rule-Based TCP Connection Monitoring for Windows</AssemblyTitle>
     <Product>SocketSight</Product>
     <Description>Rule-Based TCP Connection Monitoring for Windows. See the connections that matter.</Description>

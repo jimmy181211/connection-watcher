@@ -1,5 +1,16 @@
 # Release Notes
 
+## v1.4.0
+
+### Added
+
+- A localized **Feedback** form that opens a pre-filled GitHub Issue for the user to review and submit. Logs and connection records are not attached by default.
+- The latest project overview and user guide are included for all supported interface languages.
+
+### Notes
+
+- Feedback is sent only after the user reviews the pre-filled issue page and submits it on GitHub. The app does not use a GitHub account token or upload logs automatically.
+
 ## v1.3.0
 
 ### Added
@@ -8,7 +19,6 @@
 - Configurable TCP check intervals from **0.5 to 10.0 seconds**, in 0.5-second steps.
 - Deeper application context for newly matched connections: the owner reported by Windows, file metadata, up to three parent/host processes, and related Windows services when available.
 - A manual **Check for updates** action that reads the latest public GitHub release only when requested.
-- A localized **Feedback** form that opens a pre-filled GitHub Issue for the user to review and submit. Logs and connection records are not attached by default.
 
 ### Changed
 
