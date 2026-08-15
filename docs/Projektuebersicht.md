@@ -1,26 +1,38 @@
-# TCP-Verbindungsmonitor
+# SocketSight – Projektübersicht
+
+## Inhalt
+
+- [Hintergrund und Zweck](#hintergrund-und-zweck)
+- [Projektübersicht](#projektübersicht)
+- [Wichtige Entwurfsentscheidungen](#wichtige-entwurfsentscheidungen)
+- [Projektstruktur](#projektstruktur)
+- [Start, Sprache und Hilfe](#start-sprache-und-hilfe)
+- [Erstellen und Prüfen](#erstellen-und-prüfen)
 
 ## Hintergrund und Zweck
 
-Bei der Untersuchung einer ungewöhnlichen Netzwerkverbindung muss häufig eine einfache Frage beantwortet werden, die sich nicht immer rechtzeitig prüfen lässt:
+Der Windows-Ressourcenmonitor zeigt die aktuelle Netzwerkaktivität, muss dafür aber geöffnet und ständig beobachtet werden. Eine kurze Verbindung kann verschwinden, bevor sie bemerkt wird, und eine gezielte Langzeitaufzeichnung ist umständlich.
 
-> Hat mein Computer eine Verbindung zu einer bestimmten IP-Adresse oder einem Port hergestellt? Wenn ja, wann, welchem Prozess ordnete Windows sie zu und welcher Anwendungskontext lässt sich ermitteln?
+SocketSight ermöglicht Regeln für eine entfernte IP-Adresse, einen entfernten Port oder einen lokalen Port. Es verarbeitet nur passende TCP-Verbindungen und speichert Zeitpunkt, Status, beobachtete Dauer, den von Windows gemeldeten Prozess und verfügbare Anwendungsinformationen.
 
-Der Windows-Ressourcenmonitor zeigt die aktuelle Netzwerkaktivität, muss aber geöffnet und ständig beobachtet werden. Eine kurze Verbindung kann schnell verschwinden, und eine dauerhafte Beobachtung ist unpraktisch. Außerdem warnt er nicht automatisch vor einem ausgewählten Ziel und führt kein fortlaufendes Protokoll darüber.
-
-Der TCP-Verbindungsmonitor löst dieses Problem. Nachdem eine IP-Adresse oder ein Port ausgewählt wurde, sucht die App im Hintergrund nach passenden Verbindungen. Sie protokolliert Zeit, Adressen, Ports, den von Windows gemeldeten Verbindungsinhaber sowie verfügbare Datei-, übergeordnete Prozess- und Windows-Dienstinformationen und benachrichtigt den Benutzer entsprechend den Einstellungen.
-
-Dieses Tool ersetzt weder den Ressourcenmonitor noch Antivirensoftware. Es hilft, ausgewählte Ziele zu überwachen, Informationen aufzubewahren und diese für eine spätere Sicherheitsuntersuchung bereitzustellen.
+Das Programm ersetzt weder den Ressourcenmonitor noch ein Antivirenprogramm. Es erleichtert die wiederholte Beobachtung einer ausgewählten Verbindung und die spätere Untersuchung durch den Benutzer oder Fachpersonal.
 
 ## Projektübersicht
 
-Der TCP-Verbindungsmonitor ist ein kleines, regelbasiertes **Windows-Tool zur Beobachtung von Netzwerkverbindungen**. Benutzer können eine Remote-IP, einen Remote-Port oder einen lokalen Port auswählen. Meldet Windows eine TCP-Verbindung, die einer aktivierten Regel entspricht, wird sie protokolliert oder gemeldet.
+SocketSight ist ein lokal unter Windows laufendes TCP-Beobachtungsprogramm mit regelbasierter Auswahl. Nach dem Start der Überwachung liest es die Windows-TCP-Tabelle im eingestellten Intervall und verarbeitet Verbindungen, die aktivierte Regeln erfüllen.
 
-Einfach gesagt überwacht das Tool eine bestimmte IP-Adresse oder einen Port. Es kann zum Beispiel `103.1.40.235:1433` beobachten. Sobald eine entsprechende Verbindung erscheint, zeichnet die App Zeit, aktiven oder beendeten Status, beobachtete Dauer, den von Windows gemeldeten Inhaber, PID und verfügbaren Anwendungskontext auf. Je nach Einstellung kann sie **im Hintergrund protokollieren, einen Taskleistenhinweis anzeigen oder ein Warnfenster öffnen.**
+Das Standardintervall beträgt eine Sekunde. Es kann in Schritten von 0,5 Sekunden auf 0,5–10 Sekunden eingestellt werden. Ein kürzeres Intervall erkennt kurze Verbindungen eher, benötigt aber mehr Prüfungen; ein längeres spart Ressourcen, kann kurze Verbindungen jedoch verpassen.
 
-Das Standard-Prüfintervall beträgt eine Sekunde. Benutzer können in 0,5-Sekunden-Schritten einen Wert von 0,5 bis 10 Sekunden wählen. Ein kürzeres Intervall erkennt kurze Verbindungen eher; ein längeres benötigt weniger Ressourcen, kann sie aber übersehen.
+Die Anwendung verarbeitet nur Verbindungen, die durch Regeln ausgewählt wurden. Andere Netzwerkaktivität wird nicht automatisch als verdächtig bezeichnet. Diese Version konzentriert sich auf TCP; UDP würde ein anderes, tieferes Tracing und eine deutlich komplexere Zuordnung zu Anwendungen benötigen.
 
-Die App sagt nur: „Eine von Ihnen ausgewählte Verbindung ist erschienen.“ Sie kennzeichnet andere Verbindungen nicht als verdächtig, und eine einzelne Verbindung beweist keine Infektion. Die gespeicherten Daten können einem Cybersicherheitsteam zur weiteren Untersuchung übergeben werden.
+## Wichtige Entwurfsentscheidungen
+
+- **Regeln zuerst:** Nur Verbindungen mit aktivierten passenden Regeln werden verarbeitet.
+- **Eine Beobachtung pro Verbindung:** Eine dauerhafte Verbindung wird nicht jede Sekunde erneut geschrieben.
+- **Ende nach Echtzeit:** Nach zwei Sekunden Abwesenheit gilt sie als beendet; bei Rückkehr innerhalb dieser Zeit bleibt es dieselbe Beobachtung.
+- **Anwendungskontext ist ein Hinweis:** Prozess-, PID-, Datei-, Elternprozess- und Dienstinformationen helfen bei der Untersuchung, beweisen aber nicht die endgültige Ursache.
+- **Ansicht und Daten getrennt:** **Anzeige leeren** blendet alte Zeilen aus, ohne CSV-Dateien zu löschen.
+- **Lokal:** Das Programm liest keine Paketdaten und lädt Regeln oder Protokolle nicht hoch. GitHub wird nur bei manueller Updateprüfung oder beim Öffnen der Feedbackseite kontaktiert.
 
 ## Projektstruktur
 
@@ -29,41 +41,47 @@ connection-watcher/
 ├── ConnectionWatcher.sln
 ├── RELEASE_NOTES.md
 ├── src/
-│   ├── ConnectionWatcher.Core/
-│   └── ConnectionWatcher.App/
+│   ├── ConnectionWatcher.Core/       # Regeln, Überwachung, Status, Protokolle, Einstellungen
+│   └── ConnectionWatcher.App/        # WinForms-Oberfläche, Sprachen, Tray, Start
 ├── tests/
-│   ├── ConnectionWatcher.Tests/
-│   └── ConnectionWatcher.UiSmoke/
-├── docs/
-├── learning/
-├── scripts/
-│   └── build-release.ps1
-├── packaging/
-└── Final-Share/
-    ├── TCP-Connection-Watcher-Setup-win-x64.exe
-    ├── SHA256SUMS.txt
-    └── Docs/
+│   ├── ConnectionWatcher.Tests/      # Kern- und Kompatibilitätstests
+│   └── ConnectionWatcher.UiSmoke/    # Sprach-, DPI- und Layouttests
+├── docs/                             # Projektübersichten und Benutzerhandbücher
+├── learning/                         # Entwicklertutorial und Lernmaterial
+├── scripts/build-release.ps1         # Erstellen, Testen, Paketieren und Veröffentlichung
+├── packaging/                        # Inno-Setup-Installationsdefinition
+└── Final-Share/                      # fertige Dateien für Benutzer
 ```
 
-- `ConnectionWatcher.sln`: Projektmappendatei für das gesamte Projekt.
-- `src/ConnectionWatcher.Core`: Kernlogik für Einstellungen, Regeln, Windows-TCP-Verbindungen, zeitbasierte Verbindungsverfolgung, Prozesskontext und rückwärtskompatible CSV-Protokolle.
-- `src/ConnectionWatcher.App`: Windows-Oberfläche in sieben Sprachen mit Hauptfenster, Regeleditor, Ereignisdetails, integrierter Hilfe, Update-Prüfung, Taskleistenhinweisen und Warnfenster.
-- `tests`: 20 Funktions- und Kompatibilitätstests sowie mehrsprachige Oberflächen- und DPI-Skalierungstests.
-- `docs`: Projektübersichten und Benutzerhandbücher in sieben Sprachen.
-- `learning`: Entwicklertutorial und Lernmaterial zur Architektur.
-- `scripts/build-release.ps1`: führt Prüfungen aus und erzeugt automatisch nacheinander `artifacts`, `dist` und `Final-Share`.
-- `packaging`: Installationsdefinition und Hinweise zur portablen Version.
-- `Final-Share`: lokaler, von Git ignorierter Freigabeordner mit einem mehrsprachigen Installationsprogramm, allen sieben Dokumentsätzen, Versionshinweisen und SHA-256-Prüfsummen.
+- `ConnectionWatcher.Core` enthält Regeln, Windows-TCP-Lesen, Verbindungsverfolgung, Prozesskontext, CSV-Protokolle und Einstellungen.
+- `ConnectionWatcher.App` enthält Oberfläche, Regelbearbeitung, Ereignisdetails, Hilfe, Hinweise, Warnungen, Sprachen und Startbildschirm.
+- `tests` schützt das Kernverhalten und prüft verschiedene Sprachen und Anzeigeskalierungen.
+- `scripts` erstellt, testet und veröffentlicht die eigenständige Anwendung, erzeugt den Installer, kopiert aktuelle Dokumente und erstellt SHA-256-Prüfsummen.
+- `artifacts` ist die rohe Veröffentlichungs-Ausgabe, `dist` die Installer-Ausgabe und `Final-Share` das fertige Benutzerpaket. Alle drei können neu erstellt werden.
+
+Benutzer laden einen Installer herunter: `SocketSight-Setup-win-x64.exe`. Die installierte Anwendung ist eigenständig und mehrteilig; eine separate .NET-Laufzeit ist nicht erforderlich.
+
+## Start, Sprache und Hilfe
+
+Der Installer unterstützt sieben Sprachen. Die bei der Installation gewählte Sprache wird auch zur Sprache der SocketSight-Oberfläche. Bei einer Aktualisierung ersetzt eine neue Auswahl die bisherige Sprache einmal; Regeln, Einstellungen und Protokolle bleiben erhalten.
+
+Wenn der Start länger als etwa 0,5 Sekunden dauert, zeigt SocketSight einen kurzen lokalen Startbildschirm. Die wechselnden Texte sind nur Statusmeldungen und bedeuten weder eine Internetverbindung noch einen zusätzlichen Scan. Der Bildschirm schließt sich, sobald das Hauptfenster bereit ist.
+
+Das Hilfezentrum in den Einstellungen zeigt Projektübersicht und Benutzerhandbuch in der aktuellen Sprache. Updates werden nur manuell geprüft und nicht automatisch heruntergeladen, installiert oder ausgeführt.
 
 ## Erstellen und Prüfen
 
-Zum Erstellen unter Windows ist das .NET 8 SDK erforderlich.
+Für den Windows-Build werden das .NET 8 SDK und Inno Setup benötigt.
 
 ```powershell
 dotnet build ConnectionWatcher.sln --configuration Release
 dotnet run --project tests\ConnectionWatcher.Tests\ConnectionWatcher.Tests.csproj --configuration Release
 ```
 
-Veröffentlichte Pakete enthalten `SHA256SUMS.txt`. Empfänger können die Prüfsummen mit `Get-FileHash` in PowerShell überprüfen.
+Maintainer können ausführen:
 
-Verantwortliche können `scripts\build-release.ps1` ausführen, um Build, Tests, Veröffentlichung, Paketierung, das Kopieren der aktuellen Dokumente und die Prüfsummenerzeugung in einem Ablauf zu erledigen.
+```powershell
+scripts\build-release.ps1
+```
+
+Das Skript erstellt, testet und veröffentlicht die Anwendung, erzeugt den Installer, sammelt aktuelle Dokumente und erstellt SHA-256-Prüfsummen. Empfänger können den Installer mit `Get-FileHash` in PowerShell prüfen.

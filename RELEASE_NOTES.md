@@ -1,5 +1,16 @@
 # Release Notes
 
+## v1.4.0
+
+### Added
+
+- A localized **Feedback** form that opens a pre-filled GitHub Issue for the user to review and submit. Logs and connection records are not attached by default.
+- The latest project overview and user guide are included for all supported interface languages.
+
+### Notes
+
+- Feedback is sent only after the user reviews the pre-filled issue page and submits it on GitHub. The app does not use a GitHub account token or upload logs automatically.
+
 ## v1.3.0
 
 ### Added

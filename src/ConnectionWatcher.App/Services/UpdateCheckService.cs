@@ -26,7 +26,7 @@ public sealed class UpdateCheckService
         if (!_client.DefaultRequestHeaders.UserAgent.Any())
         {
             _client.DefaultRequestHeaders.UserAgent.Add(
-                new ProductInfoHeaderValue("TCP-Connection-Watcher", "1.3"));
+                new ProductInfoHeaderValue("SocketSight", "1.4"));
         }
     }
 

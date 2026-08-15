@@ -1,61 +1,94 @@
-# TCP Connection Watcher User Guide
+# SocketSight User Guide
 
-## Main purpose
+## Contents
 
-Simply put, this tool helps you **watch an IP address or port that you choose**. It can:
+- [What is this tool?](#what-is-this-tool)
+- [Installation and quick start](#installation-and-quick-start)
+- [Check interval](#check-interval)
+- [What happens after a match?](#what-happens-after-a-match)
+- [Viewing events](#viewing-events)
+- [Understanding a record](#understanding-a-record)
+- [Help center and updates](#help-center-and-updates)
+- [Logs, sound, and other settings](#logs-sound-and-other-settings)
+- [Privacy, permissions, and uninstall](#privacy-permissions-and-uninstall)
 
-- Automatically record when a connection appears
-- Record the local and remote IP addresses and ports
-- Record the connection owner reported by Windows, PID, executable path, file information, parent or host processes, and related Windows services whenever available
-- Log silently, show a tray notice, or display a pop-up alert according to your settings
-- Save records for later review or for sharing with cybersecurity staff
-- Help you confirm whether a new connection to the same target appears later
+## What is this tool?
 
-## How the tool works
+SocketSight helps you watch a specific IP address or port.
 
-First, create a rule to tell the app which IP address or port to watch. Then enable the rule and start monitoring. The app checks the Windows TCP connection list once per second by default. You can change the interval on **Home** from 0.5 to 10 seconds in 0.5-second steps. Shorter intervals are more likely to catch brief connections; longer intervals use fewer resources but may miss them. The app processes only connections that match an enabled rule. Other normal connections do not create records or alerts.
+When a TCP connection matches a rule, the app records its time, IP, port, and process information available from Windows, then follows your alert setting.
 
-When a connection matches a rule, the app follows your selected action:
+It only observes, records, and alerts. It does not close programs, change the firewall, or block an IP address.
 
-- **Log silently:** Writes the event to the CSV log without changing the tray icon or showing an unread count.
-- **Tray notice and log:** Does not show a pop-up. The tray icon changes to a warning state, and opening the Event log page clears the notice.
-- **Pop up alert and log:** Shows a window as soon as the first match appears. While the window is open, later matches update the same window. After it is closed, the rule's repeat interval controls when another alert can appear.
+## Installation and quick start
 
-The Home page shows a compact symbol for each action. **Monitoring Rules** combines the symbol with a short name, while the **Action** column in the Event Log shows the symbol alone so it remains clear in a narrow column:
+The language selected during installation is also used by the app. When upgrading, choosing a different language changes the app language once; existing rules, settings, and logs remain.
 
-- `1 ●` gray circle: Log silently
-- `2 ▲` orange triangle: Tray notice and log
-- `3 ◆` red diamond: Pop up alert and log
+If startup takes longer than about 0.5 seconds, SocketSight shows a short startup screen. It closes when the main window is ready.
 
-The number and shape also distinguish the actions when color is difficult to see. Point to a rule or Event Log symbol to view its full action name.
+1. Open **Monitoring Rules**.
+2. Select **New rule**.
+3. Enter the IP address or port to watch.
+4. Save and enable the rule.
+5. Return to **Home** and select **Start monitoring**.
 
-#### *Important note:*
+For example, to watch `103.1.40.235:1433`:
 
-1. A rule match means only that a connection you chose to watch has appeared. It does not prove that the computer has a virus.
-2. This tool **only records connections and shows alerts**. Decisions about further security action should also consider antivirus scan results and advice from qualified professionals.
-
-## First run
-
-1. Choose one of the seven supported languages during installation. A portable edition asks for the language when it first opens.
-2. Open **Monitoring Rules**.
-3. Select **New rule**.
-4. Enter the monitoring conditions in the form fields.
-5. Check the rule preview at the bottom of the form.
-6. Save and enable the rule.
-7. Return to **Home** and select **Start monitoring**.
-
-### Example
-
-To monitor whether any local port on your computer connects again to `103.1.40.235:1433` (the remote server's IP address and port), create this rule:
-
-- Rule type: TCP connection
 - Remote IP: `103.1.40.235`
 - Remote port: `1433`
 - Local port: Any
-- Action on match: Pop up alert and log
+- Action: Pop up alert and log
 - Repeat alert interval: 5 minutes
 
-## Log records
+## Check interval
+
+The default interval is one second. On **Home**, you can choose 0.5–10 seconds in 0.5-second steps.
+
+A shorter interval is more likely to catch a brief connection but uses more resources. Even at 0.5 seconds, a connection that appears and disappears between two checks can be missed.
+
+Only enabled rules create records or alerts.
+
+## What happens after a match?
+
+- **Log silently:** writes to the log without an alert.
+- **Tray notice and log:** changes the tray icon to a warning state; opening the Event Log clears the notice.
+- **Pop-up alert and log:** shows a window for the first match; later matches update the same window.
+
+The numbers and shapes on Home and in the event list help distinguish these three actions.
+
+## Viewing events
+
+The same connection appears as one record, not a new row every second.
+
+- An existing connection shows **Active**.
+- A finished connection shows **Ended**.
+- **Observed duration** updates while active and stops changing after the connection ends.
+- **Application** shows the file product name when available; otherwise it shows the process name.
+- Double-click a record to see the process, PID, path, parent processes, Windows services, and other details. You can also copy the record.
+
+A connection is marked ended after it has been absent from the Windows list for two seconds. If it returns within two seconds, it remains the same record; a later return creates a new record.
+
+The duration starts when the app first sees the connection, so it may not equal the connection's actual lifetime. The app cannot observe while monitoring is stopped; starting again creates a new record.
+
+## Understanding a record
+
+A rule match only means that a connection you chose to watch appeared. It does not prove that the computer has malware.
+
+Browsers, proxies, VPNs, or web components may already be running in the background. Process information can help identify a related application, but it cannot guarantee which application ultimately caused the connection.
+
+The TCP connection list cannot reliably show which side initiated a connection. Windows permissions may also prevent the app from reading some paths, file details, parent processes, or services.
+
+For a security decision, combine these records with antivirus scans or professional advice.
+
+## Help center and updates
+
+In **Settings**, select **Open** beside Help Center to read the project overview and user guide. The documents follow the current interface language.
+
+Select **Check now** to ask GitHub for a newer public release. The app does not download, install, or run updates automatically.
+
+In **Settings**, open **Feedback** to write a suggestion or problem report. The app opens a pre-filled GitHub Issue page in your browser. Review the text and submit it yourself. Logs and connection records are not attached by default.
+
+## Logs, sound, and other settings
 
 Logs are stored in:
 
@@ -63,52 +96,25 @@ Logs are stored in:
 %LOCALAPPDATA%\ConnectionWatcher\Logs\
 ```
 
-Each new matching connection appears as one row in the **Event Log**. If it stays open for several hours, it is not recorded again every second. **Status** shows whether it is active or ended, while **Observed duration** updates while it is active and becomes fixed after it ends.
+CSV is written when a connection is found and when its observation ends, not every second. The Event Log combines the same connection into one row.
 
-For easier reading, the table shows only the main fields. Its **Application** column uses available file product information and falls back to the process name. Double-click a row to open **Event details**, where you can see the connection owner reported by Windows, PID, path, file product information, up to three parent or host processes, related Windows services, and the remaining connection fields. Active status and duration continue to update there, and **Copy details** copies the complete record.
+**Clear display** hides rows from the Event Log without deleting CSV files. The old rows stay hidden after a restart; new events appear normally.
 
-This context can help identify which application is related to a connection, but it may not prove which app ultimately triggered it. For example, a browser, proxy, VPN, or embedded web component may already be running in the background.
+The default log limit is 25 MB. You can change it to 5–500 MB in **Settings**. The app keeps up to five files and removes the oldest file when the limit is reached.
 
-Observed duration starts when the app first sees the connection, so it may not equal the connection's full lifetime. After monitoring stops, the app cannot tell whether the connection ended during that gap. Starting monitoring again therefore creates a new observation. The background CSV writes lifecycle information only when the connection is detected and when the observation ends; the app combines those records into one Event Log row.
+**Launch app at Windows sign-in** opens the app but does not start monitoring. **Start monitoring automatically when the app opens** starts monitoring with enabled rules.
 
-A connection is marked ended only after it has been absent from the Windows connection table for two seconds. If it reappears during that grace period, it remains the same observation. The end time uses the last moment when the app actually saw the connection. A later appearance after the grace period creates a new record.
+The urgent alert sound is used for pop-up alerts. You can adjust its volume in **Settings**; **Test sound** uses the same volume, and Windows system volume still applies.
 
-Select **Clear display** when you want an uncluttered Event Log. This hides existing rows from the interface without deleting the CSV logs. Earlier events stay hidden after the app restarts, while newly detected events appear normally.
+## Privacy, permissions, and uninstall
 
-The total log limit is 25 MB by default and can be changed to 5–500 MB in **Settings**. The app uses up to five log files and automatically removes the oldest records when the selected limit is reached.
+- Administrator rights, an account, and a password are not required.
+- The app does not read packet contents.
+- Rules and logs are not uploaded.
+- GitHub is contacted only when you manually check for updates or open the feedback page.
 
-## Help center
+When uninstalled, settings and logs are kept by default. If you no longer need them, you can manually delete:
 
-In **Settings**, select **Open help center** to read the project overview and user guide inside the app. The documents follow the current interface language.
-
-## Software updates
-
-In **Settings**, select **Check now** to ask GitHub for the latest public release. The app does this only when you request it. If a newer version exists, you can open its GitHub Release page, read the release notes, and download it yourself. The app does not download, install, or run updates automatically, and it does not upload rules or logs.
-
-## Startup and alert-sound settings
-
-- **Launch app at Windows sign-in:** Opens the app after you sign in, helping prevent forgotten monitoring sessions. It does not start monitoring by itself.
-- **Start monitoring automatically when the app opens:** Starts monitoring with enabled rules whenever the app opens.
-- **Urgent alert sound:** Uses a short sound built into the app, so it does not depend on the Windows event-sound scheme. Set its volume from 10% to 100% (40% by default). **Test sound** appears beside the volume control; it and real urgent alerts use the same setting, and the Windows volume still applies.
-
-## Important limitations
-
-1. The app checks every second by default. Even at the 0.5-second setting, a connection that appears and disappears between two checks may be missed.
-2. Version 1 **monitors TCP only**. It does not monitor UDP.
-3. The Windows TCP connection table does not provide a completely reliable connection-initiator field, so the app cannot determine which side started a connection.
-4. Windows permissions or a process ending quickly may prevent the app from reading a path, file information, parent process, or related service. The PID and any available process name are still recorded. Parent and service context is investigative evidence, not a guaranteed root-cause verdict.
-5. The app does not monitor while it is closed, monitoring is stopped, or the computer is asleep.
-6. Observed duration begins when the app first detects a connection. Its precision depends on the selected check interval, and it is not an exact connection-start time supplied by Windows.
-7. The app only records connections and shows alerts. It does not close programs, change firewall settings, or block IP addresses.
-
-## Privacy and permissions
-
-1. Administrator rights are not required.
-2. No login, username, password, or email address is required.
-3. The app connects to GitHub only after you manually select **Check now**. It does not connect to a developer server or upload rules or logs.
-4. It does not read packet contents.
-5. Settings are stored in `%LOCALAPPDATA%\ConnectionWatcher\config.json`.
-
-## Uninstall
-
-You can remove the installed version through **Installed apps** in Windows. Uninstalling removes the program but keeps the settings and logs in `%LOCALAPPDATA%\ConnectionWatcher` by default, so investigation records are not lost by accident. If you are sure you no longer need them, you can delete that folder manually.
+```text
+%LOCALAPPDATA%\ConnectionWatcher
+```

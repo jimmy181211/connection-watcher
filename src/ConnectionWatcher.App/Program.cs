@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using ConnectionWatcher.App.Localization;
+using ConnectionWatcher.App.Services;
 using ConnectionWatcher.App.UI;
 using ConnectionWatcher.Core.Configuration;
 using ConnectionWatcher.Core.Logging;
@@ -18,58 +20,43 @@ internal static class Program
         if (!createdNew)
         {
             MessageBox.Show(
-                "TCP Connection Watcher is already running.\n\n" +
-                "TCP连接监视器已经在运行。\n\n" +
-                "El Monitor de conexiones TCP ya está en ejecución.",
-                "TCP Connection Watcher",
+                "SocketSight is already running.\n\n" +
+                "SocketSight 已经在运行。\n\n" +
+                "SocketSight ya está en ejecución.",
+                "SocketSight",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
             return;
         }
 
-        string dataRoot = Environment.GetEnvironmentVariable("CONNECTION_WATCHER_DATA_DIR") ??
+        long startupStarted = Stopwatch.GetTimestamp();
+
+        string dataRoot = Environment.GetEnvironmentVariable("SOCKETSIGHT_DATA_DIR") ??
+            Environment.GetEnvironmentVariable("CONNECTION_WATCHER_DATA_DIR") ??
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "ConnectionWatcher");
         SettingsStore settingsStore = new(dataRoot);
         AppSettings settings = settingsStore.Load();
 
-        if (string.IsNullOrWhiteSpace(settings.Language))
-        {
-            string installerLanguagePath = Path.Combine(
-                AppContext.BaseDirectory,
-                "install-language.txt");
-            string installerLanguage = string.Empty;
-            try
-            {
-                if (File.Exists(installerLanguagePath))
-                {
-                    installerLanguage = File.ReadAllText(installerLanguagePath).Trim();
-                }
-            }
-            catch (IOException)
-            {
-                // Fall back to the first-run language selector.
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // Fall back to the first-run language selector.
-            }
-            if (installerLanguage is
-                "zh-CN" or "zh-TW" or "en" or "es" or "fr" or "de" or "pt-BR")
-            {
-                settings.Language = installerLanguage;
-            }
-            else
-            {
-                using LanguageSelectionForm selection = new();
-                if (selection.ShowDialog() != DialogResult.OK)
-                {
-                    return;
-                }
+        StartupManager.TryMigrateLegacyRegistration();
 
-                settings.Language = selection.SelectedLanguage;
+        string? installerLanguage = InstallerLanguagePreference.Consume(
+            AppContext.BaseDirectory);
+        if (installerLanguage is not null)
+        {
+            settings.Language = installerLanguage;
+            settingsStore.Save(settings);
+        }
+        else if (string.IsNullOrWhiteSpace(settings.Language))
+        {
+            using LanguageSelectionForm selection = new();
+            if (selection.ShowDialog() != DialogResult.OK)
+            {
+                return;
             }
+
+            settings.Language = selection.SelectedLanguage;
             settingsStore.Save(settings);
         }
 
@@ -88,7 +75,18 @@ internal static class Program
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
 
+        TimeSpan splashThreshold = TimeSpan.FromMilliseconds(500);
+        TimeSpan elapsed = Stopwatch.GetElapsedTime(startupStarted);
+        TimeSpan splashDelay = elapsed >= splashThreshold
+            ? TimeSpan.Zero
+            : splashThreshold - elapsed;
+        using DelayedSplashScreen splash = new(
+            StartupText.Get(settings.Language),
+            settings.Language,
+            splashDelay);
+        splash.Start();
         using MainForm mainForm = new(settings, settingsStore, logger);
+        mainForm.Shown += (_, _) => splash.Complete();
         Application.Run(mainForm);
         GC.KeepAlive(instance);
     }
