@@ -9,9 +9,9 @@
     <RootNamespace>ConnectionWatcher.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\ConnectionWatcher.ico</ApplicationIcon>
-    <Version>1.2.0</Version>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
-    <FileVersion>1.2.0.0</FileVersion>
+    <Version>1.3.0</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <FileVersion>1.3.0.0</FileVersion>
     <Product>TCP Connection Watcher</Product>
     <Description>Rule-based local TCP connection monitoring for Windows.</Description>
   </PropertyGroup>

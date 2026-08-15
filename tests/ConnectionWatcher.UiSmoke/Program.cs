@@ -51,8 +51,17 @@ internal static class Program
         RenderHelpCenter(output, "fr", "fr");
         RenderHelpCenter(output, "de", "de");
         RenderHelpCenter(output, "pt-BR", "pt-br");
+        foreach (string language in new[]
+                 {
+                     "zh-CN", "zh-TW", "en", "es", "fr", "de", "pt-BR"
+                 })
+        {
+            AssertMainWindowScaling(output, language, 1.25F);
+            AssertMainWindowScaling(output, language, 1.50F);
+        }
         RenderLanguageSelection(output);
         AssertEmbeddedAlertSound();
+        AssertUpdateVersionParsing();
         Console.WriteLine(output);
         return 0;
     }
@@ -109,6 +118,18 @@ internal static class Program
         AssertNoHorizontalOverlap(form, homeSubtitle, monitorButton);
         AssertActionLegend(form);
         AssertHomeLayout(form);
+        NumericUpDown checkInterval = form.Controls.Find("CheckIntervalInput", true)
+            .OfType<NumericUpDown>()
+            .Single();
+        if (checkInterval.Minimum != AppSettings.MinimumCheckIntervalSeconds ||
+            checkInterval.Maximum != AppSettings.MaximumCheckIntervalSeconds ||
+            checkInterval.Increment != AppSettings.CheckIntervalStepSeconds ||
+            checkInterval.Value != AppSettings.DefaultCheckIntervalSeconds)
+        {
+            throw new InvalidOperationException(
+                "The check interval control has the wrong range, step, or default.");
+        }
+        AssertFullyVisible(form, checkInterval);
         Capture(form, Path.Combine(output, $"main-{filePrefix}-home-minimum.png"));
         AssertFontFamily(
             form,
@@ -120,6 +141,8 @@ internal static class Program
         form.Size = new Size(1100, 720);
         Application.DoEvents();
         ClickNavigation(form, UiText.Get("Events"));
+        form.Size = form.MinimumSize;
+        Application.DoEvents();
         AssertEventActionMarkers(form);
         AssertEventDoubleClickOpensDetails(form);
         Label eventHint = form.Controls.Find("EventDetailsHint", true)
@@ -127,6 +150,14 @@ internal static class Program
             .Single();
         AssertFullyVisible(form, eventHint);
         AssertTextFits(eventHint);
+        Button clearDisplay = form.Controls.Find("ClearEventsButton", true)
+            .OfType<Button>()
+            .Single();
+        AssertFullyVisible(form, clearDisplay);
+        AssertTextFits(clearDisplay);
+        Capture(form, Path.Combine(output, $"main-{filePrefix}-events-minimum.png"));
+        form.Size = new Size(1100, 720);
+        Application.DoEvents();
         Capture(form, Path.Combine(output, $"main-{filePrefix}-events.png"));
 
         ClickNavigation(form, UiText.Get("Settings"));
@@ -144,7 +175,68 @@ internal static class Program
         AssertFullyVisible(form, testSound);
         AssertTextFits(testSound);
         AssertSettingsControlAlignment(form, testSound);
+        Button checkUpdates = form.Controls.Find("CheckUpdatesButton", true)
+            .OfType<Button>()
+            .Single();
+        AssertTextFits(checkUpdates);
         Capture(form, Path.Combine(output, $"main-{filePrefix}-settings.png"));
+        form.Hide();
+    }
+
+    private static void AssertMainWindowScaling(
+        string output,
+        string language,
+        float scale)
+    {
+        UiText.SetLanguage(language);
+        string data = Path.Combine(
+            output,
+            $"scale-data-{language}-{scale:0.00}");
+        Directory.CreateDirectory(data);
+        AppSettings settings = new()
+        {
+            Language = language,
+            Rules = SampleRules()
+        };
+        SettingsStore store = new(data);
+        store.Save(settings);
+        CsvEventLogger logger = new(Path.Combine(data, "Logs"));
+        using MainForm form = new(settings, store, logger)
+        {
+            Opacity = 0,
+            ShowInTaskbar = false
+        };
+        form.Show();
+        form.Scale(new SizeF(scale, scale));
+        form.Size = new Size(
+            (int)Math.Ceiling(1100 * scale),
+            (int)Math.Ceiling(720 * scale));
+        Application.DoEvents();
+
+        ClickNavigation(form, UiText.Get("Home"));
+        Button monitor = form.Controls.Find("MonitorButton", true)
+            .OfType<Button>()
+            .Single();
+        NumericUpDown interval = form.Controls.Find("CheckIntervalInput", true)
+            .OfType<NumericUpDown>()
+            .Single();
+        AssertFullyVisible(form, monitor);
+        AssertTextFits(monitor);
+        AssertFullyVisible(form, interval);
+
+        PopulateSampleEvents(form);
+        ClickNavigation(form, UiText.Get("Events"));
+        Button clear = form.Controls.Find("ClearEventsButton", true)
+            .OfType<Button>()
+            .Single();
+        AssertFullyVisible(form, clear);
+        AssertTextFits(clear);
+
+        ClickNavigation(form, UiText.Get("Settings"));
+        Button checkUpdates = form.Controls.Find("CheckUpdatesButton", true)
+            .OfType<Button>()
+            .Single();
+        AssertTextFits(checkUpdates);
         form.Hide();
     }
 
@@ -315,7 +407,9 @@ internal static class Program
             "StartTimeValue", "EndTimeValue", "ConnectionStatusValue",
             "ObservedDurationValue", "MatchedRulesValue",
             "RemoteEndpointValue", "LocalEndpointValue", "TcpStateValue",
-            "PIDValue", "ProgramValue", "ProcessPathValue", "ActionColumnValue"
+            "PIDValue", "ConnectionOwnerValue", "ProcessPathValue",
+            "ProductNameValue", "CompanyNameValue", "FileDescriptionValue",
+            "ParentProcessesValue", "RelatedServicesValue", "ActionColumnValue"
         ];
         TextBox[] values = valueNames
             .Select(name => form.Controls.Find(name, true).OfType<TextBox>().Single())
@@ -353,6 +447,7 @@ internal static class Program
         string copied = (string)buildCopyText.Invoke(form, null)!;
         if (!copied.Contains(entry.RemoteAddress, StringComparison.Ordinal) ||
             !copied.Contains(entry.ProcessPath!, StringComparison.Ordinal) ||
+            !copied.Contains(entry.ProcessProductName!, StringComparison.Ordinal) ||
             !copied.Contains(entry.RuleNames[0], StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
@@ -509,10 +604,13 @@ internal static class Program
             .Single();
         int[] leftEdges = [ControlLeft(form, start), ControlLeft(form, resume), ControlLeft(form, alert)];
         if (leftEdges.Max() - leftEdges.Min() > 5 ||
-            ControlLeft(form, testSound) >= ControlLeft(form, alert))
+            ControlLeft(form, testSound) >= ControlLeft(form, volume) ||
+            Math.Abs(
+                (testSound.Top + testSound.Height / 2) -
+                (volume.Top + volume.Height / 2)) > 6)
         {
             throw new InvalidOperationException(
-                "Settings checkboxes are not aligned or Test sound is not before its checkbox.");
+                "Settings checkboxes are not aligned or Test sound is not beside the volume control.");
         }
         if (volume.Minimum != AppSettings.MinimumAlertVolumePercent ||
             volume.Maximum != AppSettings.MaximumAlertVolumePercent ||
@@ -548,6 +646,25 @@ internal static class Program
         {
             throw new InvalidOperationException(
                 "The embedded alert sound is invalid or its volume is not scaled.");
+        }
+    }
+
+    private static void AssertUpdateVersionParsing()
+    {
+        if (!ConnectionWatcher.App.Services.UpdateCheckService.TryParseVersion(
+                "v1.3.0",
+                out Version? stable) ||
+            stable != new Version(1, 3, 0) ||
+            !ConnectionWatcher.App.Services.UpdateCheckService.TryParseVersion(
+                "1.4.0-beta+build.1",
+                out Version? prerelease) ||
+            prerelease != new Version(1, 4, 0) ||
+            ConnectionWatcher.App.Services.UpdateCheckService.TryParseVersion(
+                "not-a-version",
+                out _))
+        {
+            throw new InvalidOperationException(
+                "GitHub release version parsing is incorrect.");
         }
     }
 
@@ -867,7 +984,27 @@ internal static class Program
             State = System.Net.NetworkInformation.TcpState.Established,
             ProcessId = 2400 + index,
             ProcessName = $"sample{index + 1}.exe",
-            ProcessPath = $@"C:\Sample\sample{index + 1}.exe"
+            ProcessPath = $@"C:\Sample\sample{index + 1}.exe",
+            ProcessProductName = $"Sample Product {index + 1}",
+            ProcessCompanyName = "Sample Company",
+            ProcessFileDescription = "Sample network component",
+            ParentProcesses =
+            [
+                new ProcessSnapshot(
+                    1200 + index,
+                    "sample-host.exe",
+                    @"C:\Sample\sample-host.exe",
+                    "Sample Host",
+                    "Sample Company",
+                    "Sample host process")
+            ],
+            RelatedServices =
+            [
+                new WindowsServiceSnapshot(
+                    2400 + index,
+                    "SampleService",
+                    "Sample Service")
+            ]
         }).ToList();
         events[1].MarkHistoricalInactive();
         return events;

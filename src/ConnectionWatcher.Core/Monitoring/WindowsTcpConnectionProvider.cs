@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -16,15 +15,12 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
     public IReadOnlyList<TcpConnectionInfo> GetConnections()
     {
         List<TcpConnectionInfo> connections = [];
-        Dictionary<int, (string Name, string? Path)> processCache = [];
-        ReadIpv4(connections, processCache);
-        ReadIpv6(connections, processCache);
+        ReadIpv4(connections);
+        ReadIpv6(connections);
         return connections;
     }
 
-    private static void ReadIpv4(
-        List<TcpConnectionInfo> destination,
-        Dictionary<int, (string Name, string? Path)> processCache)
+    private static void ReadIpv4(List<TcpConnectionInfo> destination)
     {
         ReadTable(AfInet, (buffer, count) =>
         {
@@ -33,24 +29,22 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
             for (int index = 0; index < count; index++)
             {
                 MibTcpRowOwnerPid row = Marshal.PtrToStructure<MibTcpRowOwnerPid>(rowPointer);
-                (string name, string? path) = GetProcessDetails((int)row.OwningPid, processCache);
+                int processId = (int)row.OwningPid;
                 destination.Add(new TcpConnectionInfo(
                     new IPAddress(row.LocalAddress),
                     ConvertPort(row.LocalPort),
                     new IPAddress(row.RemoteAddress),
                     ConvertPort(row.RemotePort),
                     (TcpState)row.State,
-                    (int)row.OwningPid,
-                    name,
-                    path));
+                    processId,
+                    ProcessFallbackName(processId),
+                    null));
                 rowPointer += rowSize;
             }
         });
     }
 
-    private static void ReadIpv6(
-        List<TcpConnectionInfo> destination,
-        Dictionary<int, (string Name, string? Path)> processCache)
+    private static void ReadIpv6(List<TcpConnectionInfo> destination)
     {
         ReadTable(AfInet6, (buffer, count) =>
         {
@@ -59,16 +53,16 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
             for (int index = 0; index < count; index++)
             {
                 MibTcp6RowOwnerPid row = Marshal.PtrToStructure<MibTcp6RowOwnerPid>(rowPointer);
-                (string name, string? path) = GetProcessDetails((int)row.OwningPid, processCache);
+                int processId = (int)row.OwningPid;
                 destination.Add(new TcpConnectionInfo(
                     new IPAddress(row.LocalAddress, row.LocalScopeId),
                     ConvertPort(row.LocalPort),
                     new IPAddress(row.RemoteAddress, row.RemoteScopeId),
                     ConvertPort(row.RemotePort),
                     (TcpState)row.State,
-                    (int)row.OwningPid,
-                    name,
-                    path));
+                    processId,
+                    ProcessFallbackName(processId),
+                    null));
                 rowPointer += rowSize;
             }
         });
@@ -112,44 +106,8 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
         }
     }
 
-    private static (string Name, string? Path) GetProcessDetails(
-        int processId,
-        Dictionary<int, (string Name, string? Path)> processCache)
-    {
-        if (processCache.TryGetValue(processId, out (string Name, string? Path) cached))
-        {
-            return cached;
-        }
-
-        (string Name, string? Path) result;
-        if (processId <= 0)
-        {
-            result = ("System", null);
-            processCache[processId] = result;
-            return result;
-        }
-
-        try
-        {
-            using Process process = Process.GetProcessById(processId);
-            string name = process.ProcessName;
-            try
-            {
-                result = (name, process.MainModule?.FileName);
-            }
-            catch
-            {
-                result = (name, null);
-            }
-        }
-        catch
-        {
-            result = ($"PID {processId}", null);
-        }
-
-        processCache[processId] = result;
-        return result;
-    }
+    private static string ProcessFallbackName(int processId) =>
+        processId <= 0 ? "System" : $"PID {processId}";
 
     private static int ConvertPort(uint port)
     {

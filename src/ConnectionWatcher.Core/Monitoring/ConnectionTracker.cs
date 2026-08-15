@@ -9,6 +9,9 @@ public sealed record ConnectionTrackingResult(
 
 public sealed class ConnectionTracker
 {
+    public static readonly TimeSpan DisappearanceGracePeriod =
+        TimeSpan.FromSeconds(2);
+
     private readonly Dictionary<ConnectionKey, TrackedConnection> _tracked = [];
 
     public ConnectionTrackingResult Process(
@@ -40,7 +43,6 @@ public sealed class ConnectionTracker
                 _tracked[key] = tracked;
             }
 
-            tracked.MissedPolls = 0;
             foreach (ConnectionEvent trackedEvent in tracked.Events)
             {
                 trackedEvent.MarkSeen(detectedAt);
@@ -67,8 +69,10 @@ public sealed class ConnectionTracker
                 continue;
             }
 
-            tracked.MissedPolls++;
-            if (tracked.MissedPolls >= 2)
+            DateTimeOffset lastSeenAt = tracked.Events.Count == 0
+                ? detectedAt
+                : tracked.Events.Max(connectionEvent => connectionEvent.LastSeenAt);
+            if (detectedAt - lastSeenAt >= DisappearanceGracePeriod)
             {
                 completedEvents.AddRange(Complete(tracked));
                 _tracked.Remove(key);
@@ -109,6 +113,5 @@ public sealed class ConnectionTracker
     {
         public HashSet<Guid> MatchedRuleIds { get; } = [];
         public List<ConnectionEvent> Events { get; } = [];
-        public int MissedPolls { get; set; }
     }
 }

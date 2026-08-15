@@ -4,6 +4,10 @@ namespace ConnectionWatcher.Core.Configuration;
 
 public sealed class AppSettings
 {
+    public const decimal DefaultCheckIntervalSeconds = 1.0m;
+    public const decimal MinimumCheckIntervalSeconds = 0.5m;
+    public const decimal MaximumCheckIntervalSeconds = 10.0m;
+    public const decimal CheckIntervalStepSeconds = 0.5m;
     public const int DefaultLogLimitMb = 25;
     public const int MinimumLogLimitMb = 5;
     public const int MaximumLogLimitMb = 500;
@@ -17,5 +21,7 @@ public sealed class AppSettings
     public bool AlertSound { get; set; }
     public int AlertVolumePercent { get; set; } = DefaultAlertVolumePercent;
     public int LogLimitMb { get; set; } = DefaultLogLimitMb;
+    public decimal CheckIntervalSeconds { get; set; } = DefaultCheckIntervalSeconds;
+    public DateTimeOffset? EventLogDisplayCutoff { get; set; }
     public List<MonitoringRule> Rules { get; set; } = [];
 }

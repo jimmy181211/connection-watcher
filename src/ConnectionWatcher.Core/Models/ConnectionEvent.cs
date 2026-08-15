@@ -19,8 +19,20 @@ public sealed class ConnectionEvent
     public int RemotePort { get; init; }
     public TcpState State { get; init; }
     public int ProcessId { get; init; }
-    public string ProcessName { get; init; } = string.Empty;
-    public string? ProcessPath { get; init; }
+    public string ProcessName { get; set; } = string.Empty;
+    public string? ProcessPath { get; set; }
+    public string? ProcessProductName { get; set; }
+    public string? ProcessCompanyName { get; set; }
+    public string? ProcessFileDescription { get; set; }
+    public IReadOnlyList<ProcessSnapshot> ParentProcesses { get; set; } =
+        Array.Empty<ProcessSnapshot>();
+    public IReadOnlyList<WindowsServiceSnapshot> RelatedServices { get; set; } =
+        Array.Empty<WindowsServiceSnapshot>();
+
+    public string ApplicationDisplayName =>
+        string.IsNullOrWhiteSpace(ProcessProductName)
+            ? ProcessName
+            : ProcessProductName;
 
     public bool IsActive => EndedAt is null;
 
@@ -73,6 +85,17 @@ public sealed class ConnectionEvent
         }
 
         EndedAt = LastSeenAt;
+    }
+
+    internal void ApplyProcessContext(ProcessContext context)
+    {
+        ProcessName = context.Owner.ProcessName;
+        ProcessPath = context.Owner.ProcessPath;
+        ProcessProductName = context.Owner.ProductName;
+        ProcessCompanyName = context.Owner.CompanyName;
+        ProcessFileDescription = context.Owner.FileDescription;
+        ParentProcesses = context.ParentProcesses;
+        RelatedServices = context.RelatedServices;
     }
 
     public static ConnectionEvent Create(

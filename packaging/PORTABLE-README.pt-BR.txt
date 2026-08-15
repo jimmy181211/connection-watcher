@@ -1,4 +1,4 @@
-Monitor de conexões TCP 1.2.0
+Monitor de conexões TCP 1.3.0
 
 Como usar
 ---------

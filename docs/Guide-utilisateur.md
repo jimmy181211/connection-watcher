@@ -6,14 +6,14 @@ Cet outil vous aide à **surveiller l'adresse IP ou le port que vous choisissez*
 
 - Enregistrer automatiquement l'apparition d'une connexion
 - Enregistrer les adresses IP et les ports locaux et distants
-- Enregistrer le programme, le PID et le chemin de l'exécutable lorsqu'ils sont disponibles
+- Enregistrer, lorsqu'ils sont disponibles, le propriétaire de la connexion indiqué par Windows, le PID, le chemin de l'exécutable, les informations du fichier, les processus parents ou hôtes et les services Windows associés
 - Enregistrer silencieusement, afficher une notification ou ouvrir une alerte selon vos paramètres
 - Conserver les informations pour les consulter ou les transmettre à un service de cybersécurité
 - Confirmer si une nouvelle connexion vers la même cible apparaît plus tard
 
 ## Fonctionnement
 
-Créez d'abord une règle indiquant l'adresse IP ou le port à surveiller. Activez ensuite la règle et démarrez la surveillance. L'application consulte la liste des connexions TCP Windows une fois par seconde. Seules les connexions correspondant à une règle activée sont traitées ; les autres ne produisent ni enregistrement ni alerte.
+Créez d'abord une règle indiquant l'adresse IP ou le port à surveiller. Activez ensuite la règle et démarrez la surveillance. Par défaut, l'application consulte la liste des connexions TCP Windows une fois par seconde. Sur la page **Accueil**, vous pouvez régler l'intervalle de 0,5 à 10 secondes, par pas de 0,5 seconde. Un intervalle court détecte plus facilement les connexions brèves ; un intervalle long utilise moins de ressources, mais peut les manquer. Seules les connexions correspondant à une règle activée sont traitées ; les autres ne produisent ni enregistrement ni alerte.
 
 Lorsqu'une connexion correspond à une règle, l'application exécute l'action choisie :
 
@@ -65,11 +65,15 @@ Les journaux sont stockés dans :
 
 Chaque nouvelle connexion correspondante apparaît sur une seule ligne du **journal des événements**. Une connexion ouverte pendant plusieurs heures n'est pas réenregistrée chaque seconde. **État** indique si elle est active ou terminée, et **Durée observée** se met à jour pendant son activité puis se fige à sa fin.
 
-Pour faciliter la lecture, le tableau n'affiche que les champs principaux. Double-cliquez sur une ligne pour ouvrir les **Détails de l’événement** et consulter les règles, l'extrémité locale, l'état TCP, le PID, le chemin du programme et l'action. L'état actif et la durée continuent de s'y actualiser, et **Copier les détails** copie l'enregistrement complet.
+Pour faciliter la lecture, le tableau n'affiche que les champs principaux. Sa colonne **Application** utilise les informations disponibles sur le produit du fichier et, à défaut, le nom du processus. Double-cliquez sur une ligne pour ouvrir les **Détails de l’événement** et consulter le propriétaire de la connexion indiqué par Windows, le PID, le chemin, les informations sur le produit, jusqu'à trois processus parents ou hôtes, les services Windows associés et les autres champs de la connexion. L'état actif et la durée continuent de s'y actualiser, et **Copier les détails** copie l'enregistrement complet.
+
+Ce contexte peut aider à repérer l'application liée à une connexion, mais ne prouve pas toujours quelle application l'a finalement déclenchée. Par exemple, un navigateur, un proxy, un VPN ou un composant Web intégré peut déjà fonctionner en arrière-plan.
 
 La durée observée commence lorsque l'application voit la connexion pour la première fois ; elle peut donc être inférieure à sa durée réelle. Lorsque la surveillance est arrêtée, l'application ne sait pas si la connexion s'est interrompue. Un nouveau démarrage crée donc une nouvelle observation. Le CSV interne écrit les informations uniquement lors de la détection et de la fin ; l'application les regroupe sur une seule ligne du journal.
 
-Un nouvel enregistrement est également créé si la connexion disparaît pendant deux vérifications, puis réapparaît.
+Une connexion n'est marquée comme terminée qu'après avoir été absente de la table des connexions Windows pendant deux secondes. Si elle réapparaît pendant ce délai, elle reste la même observation. L'heure de fin correspond au dernier moment où l'application a réellement vu la connexion. Une apparition ultérieure après ce délai crée un nouvel enregistrement.
+
+Sélectionnez **Effacer l'affichage** pour désencombrer le journal des événements. Cette action masque les lignes existantes dans l'interface sans supprimer les journaux CSV. Les événements antérieurs restent masqués après le redémarrage de l'application, tandis que les nouveaux apparaissent normalement.
 
 La limite totale est de 25 Mo par défaut et peut être réglée entre 5 et 500 Mo dans **Paramètres**. L'application utilise jusqu'à cinq fichiers et supprime les plus anciens lorsque la limite est atteinte.
 
@@ -77,27 +81,31 @@ La limite totale est de 25 Mo par défaut et peut être réglée entre 5 et 500 
 
 Dans **Paramètres**, sélectionnez **Ouvrir le centre d'aide** pour lire la présentation du projet et le guide. Les documents suivent la langue actuelle de l'interface.
 
+## Mises à jour du logiciel
+
+Dans **Paramètres**, sélectionnez **Vérifier maintenant** pour demander à GitHub la dernière version publique. L'application le fait uniquement à votre demande. Si une version plus récente existe, vous pouvez ouvrir sa page GitHub Release, lire les notes de version et la télécharger vous-même. L'application ne télécharge, n'installe et n'exécute aucune mise à jour automatiquement, et elle ne transmet ni règles ni journaux.
+
 ## Démarrage et son d'alerte
 
 - **Lancer l'application à l'ouverture de session Windows :** ouvre l'application après la connexion, sans démarrer la surveillance.
 - **Démarrer automatiquement la surveillance à l'ouverture :** démarre la surveillance avec les règles activées.
-- **Son de l'alerte urgente :** utilise un bref son intégré, indépendant du modèle de sons Windows. Réglez le volume entre 10 % et 100 % (40 % par défaut). Le test et les alertes réelles utilisent le même réglage ; le volume Windows reste actif.
+- **Son de l'alerte urgente :** utilise un bref son intégré, indépendant du modèle de sons Windows. Réglez le volume entre 10 % et 100 % (40 % par défaut). **Tester le son** apparaît à côté du réglage du volume ; le test et les alertes réelles utilisent le même niveau, et le volume Windows reste actif.
 
 ## Limites importantes
 
-1. La vérification a lieu une fois par seconde ; une connexion de moins d'une seconde peut être manquée.
+1. La vérification a lieu une fois par seconde par défaut. Même avec le réglage de 0,5 seconde, une connexion qui apparaît et disparaît entre deux vérifications peut être manquée.
 2. La version 1 **surveille uniquement TCP**, pas UDP.
 3. La table TCP Windows n'indique pas toujours de manière fiable qui a initié la connexion.
-4. Les autorisations Windows peuvent empêcher la lecture du chemin de certains processus système ou protégés ; le PID et tout nom disponible restent enregistrés.
+4. Les autorisations Windows ou l'arrêt rapide d'un processus peuvent empêcher la lecture d'un chemin, des informations du fichier, d'un processus parent ou d'un service associé. Le PID et tout nom disponible restent enregistrés. Le contexte des processus et services constitue un indice d'enquête, pas une conclusion garantie sur la cause première.
 5. Aucune surveillance n'a lieu lorsque l'application est fermée, arrêtée ou que l'ordinateur est en veille.
-6. La durée observée commence à la première détection et sa précision est d'environ une seconde ; ce n'est pas une heure de début exacte fournie par Windows.
+6. La durée observée commence à la première détection. Sa précision dépend de l'intervalle choisi ; ce n'est pas une heure de début exacte fournie par Windows.
 7. L'application ne ferme aucun programme, ne modifie pas le pare-feu et ne bloque aucune adresse IP.
 
 ## Confidentialité et autorisations
 
 1. Aucun droit d'administrateur n'est requis.
 2. Aucun compte, nom d'utilisateur, mot de passe ou courriel n'est requis.
-3. L'application ne se connecte pas à un serveur du développeur et ne téléverse aucun journal.
+3. L'application se connecte à GitHub uniquement lorsque vous sélectionnez manuellement **Vérifier maintenant**. Elle ne se connecte pas à un serveur du développeur et ne téléverse ni règles ni journaux.
 4. Elle ne lit pas le contenu des paquets.
 5. Les paramètres sont enregistrés dans `%LOCALAPPDATA%\ConnectionWatcher\config.json`.
 

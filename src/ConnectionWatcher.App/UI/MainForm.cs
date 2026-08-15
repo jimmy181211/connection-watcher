@@ -17,6 +17,7 @@ public sealed class MainForm : Form
     private readonly SettingsStore _settingsStore;
     private readonly CsvEventLogger _logger;
     private readonly MonitoringEngine _engine;
+    private readonly UpdateCheckService _updateCheckService = new();
     private readonly object _settingsGate = new();
     private readonly List<ConnectionEvent> _events = [];
     private readonly Dictionary<string, Panel> _pages = [];
@@ -38,7 +39,18 @@ public sealed class MainForm : Form
     private readonly Label _homeRulesCaption = new();
     private readonly Label _homeRules = ValueLabel();
     private readonly Label _homeIntervalCaption = new();
-    private readonly Label _homeInterval = ValueLabel();
+    private readonly NumericUpDown _checkInterval = new()
+    {
+        Name = "CheckIntervalInput",
+        Minimum = AppSettings.MinimumCheckIntervalSeconds,
+        Maximum = AppSettings.MaximumCheckIntervalSeconds,
+        Increment = AppSettings.CheckIntervalStepSeconds,
+        DecimalPlaces = 1,
+        Width = 86,
+        TextAlign = HorizontalAlignment.Right
+    };
+    private readonly Label _checkIntervalUnit = new() { AutoSize = true };
+    private readonly Label _checkIntervalHint = SubtitleLabel();
     private readonly Label _actionLegendTitle = new();
     private readonly Label _silentActionLegend = new() { Name = "SilentActionLegend" };
     private readonly Label _trayActionLegend = new() { Name = "TrayActionLegend" };
@@ -57,6 +69,12 @@ public sealed class MainForm : Form
     private readonly TextBox _eventSearch = new();
     private readonly Button _exportButton = new();
     private readonly Button _openLogsButton = new();
+    private readonly Button _clearEventsButton = new()
+    {
+        Name = "ClearEventsButton",
+        AutoSize = true,
+        MinimumSize = new Size(118, 34)
+    };
     private readonly DataGridView _eventsGrid = NewGrid();
     private readonly Label _eventDetailsHint = SubtitleLabel();
     private Font? _eventStatusFont;
@@ -88,9 +106,10 @@ public sealed class MainForm : Form
         AutoSize = true,
         MinimumSize = new Size(105, 34)
     };
-    private readonly FlowLayoutPanel _alertSoundControls = new()
+    private readonly FlowLayoutPanel _alertVolumeControls = new()
     {
         AutoSize = true,
+        AutoSizeMode = AutoSizeMode.GrowAndShrink,
         FlowDirection = FlowDirection.LeftToRight,
         WrapContents = false
     };
@@ -123,6 +142,22 @@ public sealed class MainForm : Form
         AutoSize = true,
         MinimumSize = new Size(150, 36)
     };
+    private readonly Label _updateCaption = new();
+    private readonly Label _updateHint = SubtitleLabel();
+    private readonly Label _currentVersion = new() { AutoSize = true };
+    private readonly Button _checkUpdatesButton = new()
+    {
+        Name = "CheckUpdatesButton",
+        AutoSize = true,
+        MinimumSize = new Size(120, 36)
+    };
+    private readonly FlowLayoutPanel _updateControls = new()
+    {
+        AutoSize = true,
+        AutoSizeMode = AutoSizeMode.GrowAndShrink,
+        FlowDirection = FlowDirection.LeftToRight,
+        WrapContents = false
+    };
 
     private bool _refreshingRules;
     private bool _refreshingSettings;
@@ -142,7 +177,9 @@ public sealed class MainForm : Form
         _engine = new MonitoringEngine(
             new WindowsTcpConnectionProvider(),
             logger,
-            GetRulesSnapshot);
+            GetRulesSnapshot,
+            new WindowsProcessContextProvider(),
+            TimeSpan.FromSeconds((double)_settings.CheckIntervalSeconds));
         _engine.EventDetected += EngineEventDetected;
         _engine.EventCompleted += EngineEventCompleted;
         _engine.MonitoringError += EngineMonitoringError;
@@ -326,8 +363,9 @@ public sealed class MainForm : Form
         _homeTitle.Name = "HomeTitle";
         _homeSubtitle.Name = "HomeSubtitle";
         _monitorButton.Name = "MonitorButton";
-        _monitorButton.AutoSize = false;
-        _monitorButton.Size = new Size(180, 38);
+        _monitorButton.AutoSize = true;
+        _monitorButton.MinimumSize = new Size(180, 38);
+        _monitorButton.Padding = new Padding(12, 2, 12, 2);
         _monitorButton.Click += async (_, _) => await ToggleMonitoringAsync();
         TableLayoutPanel header = Header(
             _homeTitle,
@@ -348,7 +386,25 @@ public sealed class MainForm : Form
         summary.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
         summary.Controls.Add(SummaryBox(_homeStatusCaption, _homeStatus), 0, 0);
         summary.Controls.Add(SummaryBox(_homeRulesCaption, _homeRules), 1, 0);
-        summary.Controls.Add(SummaryBox(_homeIntervalCaption, _homeInterval), 2, 0);
+        FlowLayoutPanel intervalValue = new()
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false
+        };
+        _checkInterval.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        _checkIntervalUnit.Font = new Font("Segoe UI", 10F);
+        _checkIntervalUnit.Margin = new Padding(4, 7, 0, 0);
+        intervalValue.Controls.AddRange([_checkInterval, _checkIntervalUnit]);
+        summary.Controls.Add(
+            SummaryBox(
+                _homeIntervalCaption,
+                intervalValue,
+                _checkIntervalHint),
+            2,
+            0);
+        _checkInterval.ValueChanged += (_, _) => CheckIntervalChanged();
 
         TableLayoutPanel legend = BuildActionLegend();
 
@@ -414,7 +470,10 @@ public sealed class MainForm : Form
         label.Margin = Padding.Empty;
     }
 
-    private static Panel SummaryBox(Label caption, Label value)
+    private static Panel SummaryBox(
+        Label caption,
+        Control value,
+        Label? hint = null)
     {
         Panel panel = new()
         {
@@ -430,6 +489,14 @@ public sealed class MainForm : Form
         value.Location = new Point(16, 46);
         panel.Controls.Add(caption);
         panel.Controls.Add(value);
+        if (hint is not null)
+        {
+            hint.AutoSize = false;
+            hint.Location = new Point(16, 84);
+            hint.Size = new Size(225, 34);
+            hint.AutoEllipsis = true;
+            panel.Controls.Add(hint);
+        }
         return panel;
     }
 
@@ -533,18 +600,23 @@ public sealed class MainForm : Form
 
         FlowLayoutPanel tools = new()
         {
-            Dock = DockStyle.Top,
-            Height = 44,
+            Dock = DockStyle.Fill,
+            AutoSize = true,
             Padding = new Padding(0, 5, 0, 5),
-            WrapContents = false
+            WrapContents = true
         };
-        _eventSearch.Width = 320;
+        _eventSearch.Width = 250;
+        _eventSearch.Margin = new Padding(0, 3, 8, 3);
         _eventSearch.TextChanged += (_, _) => RefreshEvents();
         _exportButton.AutoSize = true;
         _openLogsButton.AutoSize = true;
+        _exportButton.MinimumSize = new Size(96, 34);
+        _openLogsButton.MinimumSize = new Size(118, 34);
         _exportButton.Click += async (_, _) => await ExportEventsAsync();
         _openLogsButton.Click += (_, _) => OpenLogFolder();
-        tools.Controls.AddRange([_eventSearch, _exportButton, _openLogsButton]);
+        _clearEventsButton.Click += (_, _) => ClearEventDisplay();
+        tools.Controls.AddRange(
+            [_eventSearch, _exportButton, _openLogsButton, _clearEventsButton]);
 
         _eventsGrid.Name = "EventsGrid";
         _eventsGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
@@ -604,7 +676,7 @@ public sealed class MainForm : Form
             RowCount = 4
         };
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         header.Dock = DockStyle.Fill;
@@ -636,11 +708,14 @@ public sealed class MainForm : Form
         AddSetting(settings, "LanguageLabel", null, _language, 0);
         AddSetting(settings, string.Empty, _startWithWindowsHint, _startWithWindows, 1, _startWithWindowsCaption);
         AddSetting(settings, string.Empty, _resumeMonitoringHint, _resumeMonitoring, 2, _resumeMonitoringCaption);
-        _alertSoundControls.Controls.AddRange([_testAlertSoundButton, _alertSound]);
-        AddSetting(settings, string.Empty, _alertSoundHint, _alertSoundControls, 3, _alertSoundCaption);
-        AddSetting(settings, string.Empty, _alertVolumeHint, _alertVolume, 4, _alertVolumeCaption);
+        AddSetting(settings, string.Empty, _alertSoundHint, _alertSound, 3, _alertSoundCaption);
+        _alertVolumeControls.Controls.AddRange([_testAlertSoundButton, _alertVolume]);
+        AddSetting(settings, string.Empty, _alertVolumeHint, _alertVolumeControls, 4, _alertVolumeCaption);
         AddSetting(settings, string.Empty, _logLimitHint, _logLimit, 5, _logLimitCaption);
         AddSetting(settings, string.Empty, _helpCenterHint, _helpCenterButton, 6, _helpCenterCaption);
+        _currentVersion.Margin = new Padding(0, 10, 10, 0);
+        _updateControls.Controls.AddRange([_currentVersion, _checkUpdatesButton]);
+        AddSetting(settings, string.Empty, _updateHint, _updateControls, 7, _updateCaption);
 
         _language.SelectedIndexChanged += LanguageChanged;
         _startWithWindows.CheckedChanged += StartWithWindowsChanged;
@@ -670,6 +745,7 @@ public sealed class MainForm : Form
             using HelpCenterForm helpCenter = new();
             helpCenter.ShowDialog(this);
         };
+        _checkUpdatesButton.Click += async (_, _) => await CheckForUpdatesAsync();
 
         Panel body = new() { Dock = DockStyle.Fill, AutoScroll = true };
         body.Controls.Add(settings);
@@ -776,7 +852,7 @@ public sealed class MainForm : Form
             entry.MarkHistoricalInactive();
         }
         _events.Clear();
-        _events.AddRange(existing);
+        _events.AddRange(existing.Where(IsVisibleAfterDisplayCutoff));
         RefreshEvents();
 
         if (_settings.ResumeMonitoring && _settings.Rules.Any(rule => rule.Enabled))
@@ -823,7 +899,8 @@ public sealed class MainForm : Form
         _homeStatusCaption.Text = UiText.Get("MonitoringStatus");
         _homeRulesCaption.Text = UiText.Get("EnabledRules");
         _homeIntervalCaption.Text = UiText.Get("CheckInterval");
-        _homeInterval.Text = UiText.Get("OneSecond");
+        _checkIntervalUnit.Text = UiText.Get("SecondsUnit");
+        UpdateCheckIntervalHint();
         _actionLegendTitle.Text = UiText.Get("ActionLegend");
         _silentActionLegend.Text = ActionLegendText(MatchAction.SilentLog);
         _trayActionLegend.Text = ActionLegendText(MatchAction.TrayNotice);
@@ -845,10 +922,11 @@ public sealed class MainForm : Form
         _eventSearch.PlaceholderText = UiText.Get("SearchEvents");
         _exportButton.Text = UiText.Get("ExportCsv");
         _openLogsButton.Text = UiText.Get("OpenLogFolder");
+        _clearEventsButton.Text = UiText.Get("ClearDisplay");
         string[] eventHeaders =
         [
             "Time", "ConnectionStatus", "ObservedDuration",
-            "RemoteEndpoint", "Program", "ActionColumn"
+            "RemoteEndpoint", "Application", "ActionColumn"
         ];
         for (int index = 0; index < eventHeaders.Length; index++)
         {
@@ -876,6 +954,12 @@ public sealed class MainForm : Form
         _helpCenterCaption.Text = UiText.Get("HelpCenter");
         _helpCenterHint.Text = UiText.Get("HelpCenterHint");
         _helpCenterButton.Text = UiText.Get("OpenHelpCenter");
+        _updateCaption.Text = UiText.Get("SoftwareUpdates");
+        _updateHint.Text = UiText.Get("SoftwareUpdatesHint");
+        _checkUpdatesButton.Text = UiText.Get("CheckNow");
+        _currentVersion.Text = string.Format(
+            UiText.Get("CurrentVersion"),
+            CurrentVersion().ToString(3));
 
         _trayOpen.Text = UiText.Get("Open");
         _trayExit.Text = UiText.Get("Exit");
@@ -1130,7 +1214,10 @@ public sealed class MainForm : Form
 
     private void HandleDetectedEvent(ConnectionEvent connectionEvent)
     {
-        _events.Insert(0, connectionEvent);
+        if (IsVisibleAfterDisplayCutoff(connectionEvent))
+        {
+            _events.Insert(0, connectionEvent);
+        }
         if (_events.Count > 2000)
         {
             _events.RemoveRange(2000, _events.Count - 2000);
@@ -1194,19 +1281,29 @@ public sealed class MainForm : Form
 
     private IEnumerable<ConnectionEvent> FilteredEvents()
     {
+        IEnumerable<ConnectionEvent> visible =
+            _events.Where(IsVisibleAfterDisplayCutoff);
         string query = _eventSearch.Text.Trim();
         if (string.IsNullOrEmpty(query))
         {
-            return _events;
+            return visible;
         }
 
-        return _events.Where(entry =>
+        return visible.Where(entry =>
             string.Join(" ", entry.RuleNames).Contains(query, StringComparison.OrdinalIgnoreCase) ||
             entry.RemoteAddress.Contains(query, StringComparison.OrdinalIgnoreCase) ||
             entry.RemotePort.ToString(CultureInfo.InvariantCulture).Contains(query, StringComparison.OrdinalIgnoreCase) ||
             entry.LocalAddress.Contains(query, StringComparison.OrdinalIgnoreCase) ||
             entry.LocalPort.ToString(CultureInfo.InvariantCulture).Contains(query, StringComparison.OrdinalIgnoreCase) ||
-            entry.ProcessName.Contains(query, StringComparison.OrdinalIgnoreCase));
+            entry.ProcessName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+            (entry.ProcessProductName?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (entry.ProcessCompanyName?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            entry.ParentProcesses.Any(parent =>
+                parent.ProcessName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                (parent.ProductName?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)) ||
+            entry.RelatedServices.Any(service =>
+                service.ServiceName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                service.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)));
     }
 
     private void RefreshEvents()
@@ -1224,7 +1321,7 @@ public sealed class MainForm : Form
                 FormatConnectionStatus(entry),
                 FormatObservedDuration(entry, DateTimeOffset.Now),
                 FormatEndpoint(entry.RemoteAddress, entry.RemotePort),
-                entry.ProcessName,
+                entry.ApplicationDisplayName,
                 UiText.ActionMarker(entry.Action));
             _eventsGrid.Rows[row].Tag = entry;
             DataGridViewCell statusCell = _eventsGrid.Rows[row].Cells[1];
@@ -1233,7 +1330,11 @@ public sealed class MainForm : Form
             statusCell.Style.SelectionForeColor = SystemColors.HighlightText;
             statusCell.Style.Font = _eventStatusFont;
             _eventsGrid.Rows[row].Cells[4].ToolTipText =
-                entry.ProcessPath ?? UiText.Get("ProcessPathUnavailable");
+                string.Format(
+                    UiText.Get("ApplicationTooltip"),
+                    entry.ProcessName,
+                    entry.ProcessId,
+                    entry.ProcessPath ?? UiText.Get("ProcessPathUnavailable"));
             DataGridViewCell actionCell = _eventsGrid.Rows[row].Cells[5];
             actionCell.ToolTipText = UiText.Action(entry.Action);
             Color actionColor = ActionColor(entry.Action);
@@ -1241,6 +1342,30 @@ public sealed class MainForm : Form
             actionCell.Style.SelectionForeColor = actionColor;
             actionCell.Style.SelectionBackColor = SystemColors.Window;
         }
+        _clearEventsButton.Enabled = _events.Any(IsVisibleAfterDisplayCutoff);
+    }
+
+    private bool IsVisibleAfterDisplayCutoff(ConnectionEvent entry) =>
+        _settings.EventLogDisplayCutoff is not DateTimeOffset cutoff ||
+        entry.DetectedAt > cutoff;
+
+    private void ClearEventDisplay()
+    {
+        if (MessageBox.Show(
+                this,
+                UiText.Get("ClearDisplayQuestion"),
+                UiText.Get("ClearDisplayTitle"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question) != DialogResult.Yes)
+        {
+            return;
+        }
+
+        DateTimeOffset cutoff = DateTimeOffset.Now;
+        _settings.EventLogDisplayCutoff = cutoff;
+        SaveSettings();
+        _events.RemoveAll(entry => entry.DetectedAt <= cutoff);
+        RefreshEvents();
     }
 
     private void ShowEventDetails(ConnectionEvent entry)
@@ -1317,7 +1442,10 @@ public sealed class MainForm : Form
             UiText.Get("Time"), UiText.Get("ConnectionStatus"),
             UiText.Get("ObservedDuration"), UiText.Get("MatchedRules"),
             UiText.Get("MatchAction"), UiText.Get("TcpState"), UiText.Get("LocalEndpoint"),
-            UiText.Get("RemoteEndpoint"), "PID", UiText.Get("Program"), "Path"
+            UiText.Get("RemoteEndpoint"), "PID", UiText.Get("ConnectionOwner"),
+            UiText.Get("ProcessPath"), UiText.Get("ProductName"),
+            UiText.Get("CompanyName"), UiText.Get("FileDescription"),
+            UiText.Get("ParentProcesses"), UiText.Get("RelatedServices")
         }.Select(CsvEscape)));
         foreach (ConnectionEvent entry in FilteredEvents())
         {
@@ -1333,7 +1461,12 @@ public sealed class MainForm : Form
                 FormatEndpoint(entry.RemoteAddress, entry.RemotePort),
                 entry.ProcessId.ToString(CultureInfo.InvariantCulture),
                 entry.ProcessName,
-                entry.ProcessPath ?? string.Empty
+                entry.ProcessPath ?? string.Empty,
+                entry.ProcessProductName ?? string.Empty,
+                entry.ProcessCompanyName ?? string.Empty,
+                entry.ProcessFileDescription ?? string.Empty,
+                FormatParentProcesses(entry.ParentProcesses),
+                FormatRelatedServices(entry.RelatedServices)
             }.Select(CsvEscape)));
         }
 
@@ -1356,6 +1489,20 @@ public sealed class MainForm : Form
             ? $"[{address}]:{port}"
             : $"{address}:{port}";
     }
+
+    private static string FormatParentProcesses(
+        IEnumerable<ProcessSnapshot> parents) =>
+        string.Join(
+            " -> ",
+            parents.Select(parent =>
+                $"{parent.ProcessName} (PID {parent.ProcessId})"));
+
+    private static string FormatRelatedServices(
+        IEnumerable<WindowsServiceSnapshot> services) =>
+        string.Join(
+            " | ",
+            services.Select(service =>
+                $"{service.DisplayName} [{service.ServiceName}] (PID {service.ProcessId})"));
 
     private void OpenLogFolder()
     {
@@ -1400,6 +1547,11 @@ public sealed class MainForm : Form
                 _settings.LogLimitMb,
                 AppSettings.MinimumLogLimitMb,
                 AppSettings.MaximumLogLimitMb);
+            _checkInterval.Value = Math.Clamp(
+                _settings.CheckIntervalSeconds,
+                AppSettings.MinimumCheckIntervalSeconds,
+                AppSettings.MaximumCheckIntervalSeconds);
+            UpdateCheckIntervalHint();
         }
         finally
         {
@@ -1476,6 +1628,91 @@ public sealed class MainForm : Form
             _refreshingSettings = false;
         }
     }
+
+    private void CheckIntervalChanged()
+    {
+        if (_refreshingSettings)
+        {
+            return;
+        }
+
+        decimal seconds = _checkInterval.Value;
+        _settings.CheckIntervalSeconds = seconds;
+        _engine.UpdateInterval(TimeSpan.FromSeconds((double)seconds));
+        SaveSettings();
+        UpdateCheckIntervalHint();
+    }
+
+    private void UpdateCheckIntervalHint()
+    {
+        bool showHint = _checkInterval.Value >
+            AppSettings.DefaultCheckIntervalSeconds;
+        _checkIntervalHint.Text = showHint
+            ? UiText.Get("LongIntervalHint")
+            : string.Empty;
+        _checkIntervalHint.Visible = showHint;
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        _checkUpdatesButton.Enabled = false;
+        _checkUpdatesButton.Text = UiText.Get("CheckingUpdates");
+        try
+        {
+            UpdateCheckResult result = await _updateCheckService.CheckAsync(
+                CurrentVersion());
+            if (result.IsUpdateAvailable)
+            {
+                DialogResult choice = MessageBox.Show(
+                    this,
+                    string.Format(
+                        UiText.Get("UpdateAvailableMessage"),
+                        result.LatestTag,
+                        result.ReleaseName),
+                    UiText.Get("UpdateAvailableTitle"),
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Information);
+                if (choice == DialogResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = result.ReleasePage.AbsoluteUri,
+                        UseShellExecute = true
+                    });
+                }
+            }
+            else
+            {
+                MessageBox.Show(
+                    this,
+                    string.Format(
+                        UiText.Get("UpToDateMessage"),
+                        result.CurrentVersion.ToString(3)),
+                    UiText.Get("SoftwareUpdates"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
+        catch (Exception ex) when (
+            ex is HttpRequestException or TaskCanceledException or
+            InvalidDataException or UriFormatException)
+        {
+            MessageBox.Show(
+                this,
+                string.Format(UiText.Get("UpdateCheckFailed"), ex.Message),
+                UiText.Get("Error"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            _checkUpdatesButton.Enabled = true;
+            _checkUpdatesButton.Text = UiText.Get("CheckNow");
+        }
+    }
+
+    private static Version CurrentVersion() =>
+        typeof(MainForm).Assembly.GetName().Version ?? new Version(1, 0, 0);
 
     private void SaveSettings()
     {
