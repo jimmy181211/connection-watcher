@@ -1,114 +1,120 @@
-# Guide d'utilisation du Moniteur de connexions TCP
+# Guide d'utilisation de SocketSight
 
-## Objectif principal
+## Sommaire
 
-Cet outil vous aide à **surveiller l'adresse IP ou le port que vous choisissez**. Il peut :
+- [Qu'est-ce que cet outil ?](#quest-ce-que-cet-outil)
+- [Installation et démarrage rapide](#installation-et-démarrage-rapide)
+- [Intervalle de vérification](#intervalle-de-vérification)
+- [Après une correspondance](#après-une-correspondance)
+- [Consulter les événements](#consulter-les-événements)
+- [Comprendre un enregistrement](#comprendre-un-enregistrement)
+- [Centre d'aide et mises à jour](#centre-daide-et-mises-à-jour)
+- [Journaux, son et autres paramètres](#journaux-son-et-autres-paramètres)
+- [Confidentialité, droits et désinstallation](#confidentialité-droits-et-désinstallation)
 
-- Enregistrer automatiquement l'apparition d'une connexion
-- Enregistrer les adresses IP et les ports locaux et distants
-- Enregistrer, lorsqu'ils sont disponibles, le propriétaire de la connexion indiqué par Windows, le PID, le chemin de l'exécutable, les informations du fichier, les processus parents ou hôtes et les services Windows associés
-- Enregistrer silencieusement, afficher une notification ou ouvrir une alerte selon vos paramètres
-- Conserver les informations pour les consulter ou les transmettre à un service de cybersécurité
-- Confirmer si une nouvelle connexion vers la même cible apparaît plus tard
+## Qu'est-ce que cet outil ?
 
-## Fonctionnement
+SocketSight vous aide à surveiller une adresse IP ou un port précis.
 
-Créez d'abord une règle indiquant l'adresse IP ou le port à surveiller. Activez ensuite la règle et démarrez la surveillance. Par défaut, l'application consulte la liste des connexions TCP Windows une fois par seconde. Sur la page **Accueil**, vous pouvez régler l'intervalle de 0,5 à 10 secondes, par pas de 0,5 seconde. Un intervalle court détecte plus facilement les connexions brèves ; un intervalle long utilise moins de ressources, mais peut les manquer. Seules les connexions correspondant à une règle activée sont traitées ; les autres ne produisent ni enregistrement ni alerte.
+Lorsqu'une connexion TCP correspond à une règle, l'application enregistre l'heure, l'IP, le port et les informations de processus disponibles dans Windows, puis applique le mode d'alerte choisi.
 
-Lorsqu'une connexion correspond à une règle, l'application exécute l'action choisie :
+Elle observe, enregistre et alerte uniquement. Elle ne ferme pas les programmes, ne modifie pas le pare-feu et ne bloque pas d'adresse IP.
 
-- **Enregistrer silencieusement :** écrit l'événement dans le journal CSV sans modifier l'icône de la zone de notification ni afficher de compteur.
-- **Notification et journal :** n'ouvre aucune fenêtre. L'icône passe en état d'avertissement, effacé à l'ouverture du journal des événements.
-- **Alerte contextuelle et journal :** ouvre une fenêtre dès la première correspondance. Tant qu'elle reste ouverte, les correspondances suivantes mettent à jour la même fenêtre. Après sa fermeture, l'intervalle défini dans la règle détermine quand une nouvelle alerte peut apparaître.
+## Installation et démarrage rapide
 
-La page Accueil affiche un symbole compact pour chaque action. **Règles de surveillance** associe le symbole à un nom court, tandis que la colonne **Action** du journal n'affiche que le symbole :
+La langue choisie pendant l'installation est aussi celle de l'application. Lors d'une mise à niveau, choisir une autre langue la modifie une fois ; les règles, paramètres et journaux restent présents.
 
-- `1 ●` cercle gris : Enregistrer silencieusement
-- `2 ▲` triangle orange : Notification et journal
-- `3 ◆` losange rouge : Alerte contextuelle et journal
+Si le démarrage prend plus d'environ 0,5 seconde, SocketSight affiche un court écran qui disparaît lorsque la fenêtre principale est prête.
 
-Le nombre et la forme permettent aussi de distinguer les actions sans se fier à la couleur. Placez le pointeur sur un symbole pour afficher le nom complet.
+1. Ouvrez **Règles de surveillance**.
+2. Sélectionnez **Nouvelle règle**.
+3. Saisissez l'IP ou le port à surveiller.
+4. Enregistrez et activez la règle.
+5. Revenez à **Accueil** et choisissez **Démarrer la surveillance**.
 
-#### *Remarque importante :*
+Exemple pour surveiller `103.1.40.235:1433` :
 
-1. Une correspondance signifie seulement qu'une connexion choisie est apparue. Elle ne prouve pas que l'ordinateur est infecté.
-2. Cet outil **enregistre les connexions et affiche des alertes uniquement**. Toute autre mesure de sécurité doit aussi tenir compte d'une analyse antivirus et de l'avis de professionnels qualifiés.
-
-## Première utilisation
-
-1. Choisissez l'une des sept langues proposées pendant l'installation ; la version portable demande également la langue au premier démarrage.
-2. Ouvrez **Règles de surveillance**.
-3. Sélectionnez **Nouvelle règle**.
-4. Saisissez les conditions dans les champs du formulaire.
-5. Vérifiez l'aperçu au bas du formulaire.
-6. Enregistrez et activez la règle.
-7. Revenez à **Accueil** et sélectionnez **Démarrer la surveillance**.
-
-### Exemple
-
-Pour surveiller si un port local se reconnecte à `103.1.40.235:1433`, créez cette règle :
-
-- Type : Connexion TCP
 - IP distante : `103.1.40.235`
 - Port distant : `1433`
 - Port local : Tous
-- Action : Alerte contextuelle et journal
+- Action : alerte contextuelle et journal
 - Intervalle de répétition : 5 minutes
 
-## Journaux
+## Intervalle de vérification
 
-Les journaux sont stockés dans :
+L'intervalle par défaut est d'une seconde. Dans **Accueil**, choisissez 0,5 à 10 secondes par pas de 0,5 seconde.
+
+Un intervalle court détecte mieux les connexions brèves mais consomme davantage de ressources. Même à 0,5 seconde, une connexion apparaissant et disparaissant entre deux vérifications peut être manquée.
+
+Seules les règles activées créent des enregistrements ou des alertes.
+
+## Après une correspondance
+
+- **Journal silencieux :** écrit dans le journal sans alerte.
+- **Notification de zone et journal :** l'icône de notification passe en avertissement ; ouvrir le journal des événements efface la notification.
+- **Alerte contextuelle et journal :** affiche une fenêtre pour la première correspondance ; les suivantes mettent à jour cette même fenêtre.
+
+Les nombres et les formes de l'accueil et de la liste d'événements aident à distinguer ces trois actions.
+
+## Consulter les événements
+
+Une même connexion n'apparaît que dans une ligne, pas dans une nouvelle ligne chaque seconde.
+
+- Une connexion présente est **Active**.
+- Une connexion terminée est **Terminée**.
+- La **durée observée** se met à jour pendant l'activité puis reste fixe.
+- **Application** affiche le nom de produit du fichier s'il est disponible, sinon le nom du processus.
+- Double-cliquez sur une ligne pour voir le processus, le PID, le chemin, les processus parents, les services Windows et les autres détails. Vous pouvez aussi copier l'enregistrement.
+
+Une connexion est marquée terminée après deux secondes d'absence dans la liste Windows. Si elle revient dans ces deux secondes, elle reste la même observation ; un retour plus tard crée une nouvelle ligne.
+
+La durée commence lorsque l'application voit la connexion pour la première fois et peut donc différer de sa durée réelle. La surveillance arrêtée n'est pas observée ; son redémarrage crée une nouvelle observation.
+
+## Comprendre un enregistrement
+
+Une correspondance signifie seulement qu'une connexion que vous vouliez surveiller est apparue. Cela ne prouve pas la présence d'un logiciel malveillant.
+
+Un navigateur, un proxy, un VPN ou un composant web peut déjà fonctionner en arrière-plan. Les informations de processus aident à identifier une application liée, mais ne prouvent pas laquelle a finalement déclenché la connexion.
+
+La table TCP ne permet pas de déterminer de façon fiable quel côté a initié la connexion. Les droits Windows peuvent aussi empêcher la lecture de certains chemins, fichiers, processus parents ou services.
+
+Pour évaluer un problème de sécurité, combinez ces informations avec un antivirus ou l'avis d'un professionnel.
+
+## Centre d'aide et mises à jour
+
+Dans **Paramètres**, cliquez sur **Ouvrir** à côté du centre d'aide pour lire la présentation du projet et le guide d'utilisation. Les documents suivent la langue de l'interface.
+
+Cliquez sur **Vérifier maintenant** pour demander à GitHub la dernière version publique. L'application ne télécharge, n'installe ni n'exécute automatiquement les mises à jour.
+
+Dans **Paramètres**, ouvrez **Commentaires** pour écrire une suggestion ou un problème. Le navigateur ouvre une Issue GitHub préremplie ; vérifiez-la puis envoyez-la vous-même. Les journaux et connexions ne sont pas joints par défaut.
+
+## Journaux, son et autres paramètres
+
+Les journaux sont enregistrés dans :
 
 ```text
 %LOCALAPPDATA%\ConnectionWatcher\Logs\
 ```
 
-Chaque nouvelle connexion correspondante apparaît sur une seule ligne du **journal des événements**. Une connexion ouverte pendant plusieurs heures n'est pas réenregistrée chaque seconde. **État** indique si elle est active ou terminée, et **Durée observée** se met à jour pendant son activité puis se fige à sa fin.
+Le CSV est écrit à la découverte d'une connexion et à la fin de son observation, pas chaque seconde. Le journal des événements regroupe une même connexion sur une ligne.
 
-Pour faciliter la lecture, le tableau n'affiche que les champs principaux. Sa colonne **Application** utilise les informations disponibles sur le produit du fichier et, à défaut, le nom du processus. Double-cliquez sur une ligne pour ouvrir les **Détails de l’événement** et consulter le propriétaire de la connexion indiqué par Windows, le PID, le chemin, les informations sur le produit, jusqu'à trois processus parents ou hôtes, les services Windows associés et les autres champs de la connexion. L'état actif et la durée continuent de s'y actualiser, et **Copier les détails** copie l'enregistrement complet.
+**Effacer l'affichage** masque les lignes sans supprimer les fichiers CSV. Elles restent masquées après un redémarrage ; les nouveaux événements apparaissent normalement.
 
-Ce contexte peut aider à repérer l'application liée à une connexion, mais ne prouve pas toujours quelle application l'a finalement déclenchée. Par exemple, un navigateur, un proxy, un VPN ou un composant Web intégré peut déjà fonctionner en arrière-plan.
+La limite par défaut est de 25 Mo, réglable de 5 à 500 Mo dans **Paramètres**. Jusqu'à cinq fichiers sont conservés et le plus ancien est supprimé lorsque la limite est atteinte.
 
-La durée observée commence lorsque l'application voit la connexion pour la première fois ; elle peut donc être inférieure à sa durée réelle. Lorsque la surveillance est arrêtée, l'application ne sait pas si la connexion s'est interrompue. Un nouveau démarrage crée donc une nouvelle observation. Le CSV interne écrit les informations uniquement lors de la détection et de la fin ; l'application les regroupe sur une seule ligne du journal.
+**Lancer l'application à l'ouverture de session Windows** ouvre seulement l'application. **Démarrer automatiquement la surveillance à l'ouverture** démarre la surveillance avec les règles activées.
 
-Une connexion n'est marquée comme terminée qu'après avoir été absente de la table des connexions Windows pendant deux secondes. Si elle réapparaît pendant ce délai, elle reste la même observation. L'heure de fin correspond au dernier moment où l'application a réellement vu la connexion. Une apparition ultérieure après ce délai crée un nouvel enregistrement.
+Le son d'alerte urgente sert aux alertes contextuelles. Réglez son volume dans **Paramètres** ; **Tester le son** utilise le même volume et le volume Windows s'applique également.
 
-Sélectionnez **Effacer l'affichage** pour désencombrer le journal des événements. Cette action masque les lignes existantes dans l'interface sans supprimer les journaux CSV. Les événements antérieurs restent masqués après le redémarrage de l'application, tandis que les nouveaux apparaissent normalement.
+## Confidentialité, droits et désinstallation
 
-La limite totale est de 25 Mo par défaut et peut être réglée entre 5 et 500 Mo dans **Paramètres**. L'application utilise jusqu'à cinq fichiers et supprime les plus anciens lorsque la limite est atteinte.
+- Aucun droit administrateur, compte ou mot de passe n'est nécessaire.
+- L'application ne lit pas le contenu des paquets.
+- Les règles et journaux ne sont pas envoyés.
+- GitHub n'est contacté que lors d'une vérification manuelle ou de l'ouverture de la page de commentaires.
 
-## Centre d'aide
+La désinstallation conserve les paramètres et journaux par défaut. Si vous n'en avez plus besoin, supprimez manuellement :
 
-Dans **Paramètres**, sélectionnez **Ouvrir le centre d'aide** pour lire la présentation du projet et le guide. Les documents suivent la langue actuelle de l'interface.
-
-## Mises à jour du logiciel
-
-Dans **Paramètres**, sélectionnez **Vérifier maintenant** pour demander à GitHub la dernière version publique. L'application le fait uniquement à votre demande. Si une version plus récente existe, vous pouvez ouvrir sa page GitHub Release, lire les notes de version et la télécharger vous-même. L'application ne télécharge, n'installe et n'exécute aucune mise à jour automatiquement, et elle ne transmet ni règles ni journaux.
-
-## Démarrage et son d'alerte
-
-- **Lancer l'application à l'ouverture de session Windows :** ouvre l'application après la connexion, sans démarrer la surveillance.
-- **Démarrer automatiquement la surveillance à l'ouverture :** démarre la surveillance avec les règles activées.
-- **Son de l'alerte urgente :** utilise un bref son intégré, indépendant du modèle de sons Windows. Réglez le volume entre 10 % et 100 % (40 % par défaut). **Tester le son** apparaît à côté du réglage du volume ; le test et les alertes réelles utilisent le même niveau, et le volume Windows reste actif.
-
-## Limites importantes
-
-1. La vérification a lieu une fois par seconde par défaut. Même avec le réglage de 0,5 seconde, une connexion qui apparaît et disparaît entre deux vérifications peut être manquée.
-2. La version 1 **surveille uniquement TCP**, pas UDP.
-3. La table TCP Windows n'indique pas toujours de manière fiable qui a initié la connexion.
-4. Les autorisations Windows ou l'arrêt rapide d'un processus peuvent empêcher la lecture d'un chemin, des informations du fichier, d'un processus parent ou d'un service associé. Le PID et tout nom disponible restent enregistrés. Le contexte des processus et services constitue un indice d'enquête, pas une conclusion garantie sur la cause première.
-5. Aucune surveillance n'a lieu lorsque l'application est fermée, arrêtée ou que l'ordinateur est en veille.
-6. La durée observée commence à la première détection. Sa précision dépend de l'intervalle choisi ; ce n'est pas une heure de début exacte fournie par Windows.
-7. L'application ne ferme aucun programme, ne modifie pas le pare-feu et ne bloque aucune adresse IP.
-
-## Confidentialité et autorisations
-
-1. Aucun droit d'administrateur n'est requis.
-2. Aucun compte, nom d'utilisateur, mot de passe ou courriel n'est requis.
-3. L'application se connecte à GitHub uniquement lorsque vous sélectionnez manuellement **Vérifier maintenant**. Elle ne se connecte pas à un serveur du développeur et ne téléverse ni règles ni journaux.
-4. Elle ne lit pas le contenu des paquets.
-5. Les paramètres sont enregistrés dans `%LOCALAPPDATA%\ConnectionWatcher\config.json`.
-
-## Désinstallation
-
-Vous pouvez supprimer la version installée depuis **Applications installées** dans Windows. La désinstallation supprime le programme, mais conserve par défaut les paramètres et journaux dans `%LOCALAPPDATA%\ConnectionWatcher` afin d'éviter la perte accidentelle d'informations. Supprimez manuellement ce dossier lorsque vous êtes certain de ne plus en avoir besoin.
+```text
+%LOCALAPPDATA%\ConnectionWatcher
+```

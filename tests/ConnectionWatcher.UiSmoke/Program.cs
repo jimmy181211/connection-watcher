@@ -51,6 +51,13 @@ internal static class Program
         RenderHelpCenter(output, "fr", "fr");
         RenderHelpCenter(output, "de", "de");
         RenderHelpCenter(output, "pt-BR", "pt-br");
+        RenderStartupSplash(output, "zh-CN", "zh");
+        RenderStartupSplash(output, "zh-TW", "zh-tw");
+        RenderStartupSplash(output, "en", "en");
+        RenderStartupSplash(output, "es", "es");
+        RenderStartupSplash(output, "fr", "fr");
+        RenderStartupSplash(output, "de", "de");
+        RenderStartupSplash(output, "pt-BR", "pt-br");
         foreach (string language in new[]
                  {
                      "zh-CN", "zh-TW", "en", "es", "fr", "de", "pt-BR"
@@ -62,6 +69,7 @@ internal static class Program
         RenderLanguageSelection(output);
         AssertEmbeddedAlertSound();
         AssertUpdateVersionParsing();
+        AssertInstallerLanguageHandoff(output);
         Console.WriteLine(output);
         return 0;
     }
@@ -130,6 +138,20 @@ internal static class Program
                 "The check interval control has the wrong range, step, or default.");
         }
         AssertFullyVisible(form, checkInterval);
+        checkInterval.Value = 2.0m;
+        Application.DoEvents();
+        if (Descendants(form).OfType<Label>().Any(label =>
+                label.Visible &&
+                string.Equals(
+                    label.Text,
+                    UiText.Get("LongIntervalHint"),
+                    StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException(
+                "The removed long-interval hint is still visible on Home.");
+        }
+        checkInterval.Value = AppSettings.DefaultCheckIntervalSeconds;
+        Application.DoEvents();
         Capture(form, Path.Combine(output, $"main-{filePrefix}-home-minimum.png"));
         AssertFontFamily(
             form,
@@ -169,16 +191,55 @@ internal static class Program
             throw new InvalidOperationException(
                 $"Expected 7 interface languages, found {languageBox.Items.Count}.");
         }
+        if (languageBox.DrawMode != DrawMode.OwnerDrawFixed)
+        {
+            throw new InvalidOperationException(
+                "The selected interface language is not using the centered display renderer.");
+        }
         Button testSound = form.Controls.Find("TestAlertSoundButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, testSound);
         AssertTextFits(testSound);
         AssertSettingsControlAlignment(form, testSound);
+        Button helpCenter = form.Controls.Find("HelpCenterButton", true)
+            .OfType<Button>()
+            .Single();
+        AssertFullyVisible(form, helpCenter);
+        AssertTextFits(helpCenter);
         Button checkUpdates = form.Controls.Find("CheckUpdatesButton", true)
             .OfType<Button>()
             .Single();
+        AssertFullyVisible(form, checkUpdates);
         AssertTextFits(checkUpdates);
+        Label updatesCaption = form.Controls.Find("SoftwareUpdatesCaption", true)
+            .OfType<Label>()
+            .Single();
+        Label updateHint = form.Controls.Find("SoftwareUpdatesHint", true)
+            .OfType<Label>()
+            .Single();
+        AssertFullyVisible(form, updatesCaption);
+        AssertTextFits(updatesCaption);
+        AssertFullyVisible(form, updateHint);
+        AssertTextFits(updateHint);
+        string expectedUpdatesCaption = string.Format(
+            UiText.Get("SoftwareUpdatesWithVersion"),
+            typeof(MainForm).Assembly.GetName().Version!.ToString(3));
+        if (!updatesCaption.Font.Bold ||
+            !string.Equals(
+                updatesCaption.Text,
+                expectedUpdatesCaption,
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                updateHint.Text,
+                UiText.Get("SoftwareUpdatesHint"),
+                StringComparison.Ordinal) ||
+            updateHint.Text.Contains(Environment.NewLine, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "Software update version and hint hierarchy is incorrect.");
+        }
+        AssertSettingsRightInset(form, helpCenter, checkUpdates);
         Capture(form, Path.Combine(output, $"main-{filePrefix}-settings.png"));
         form.Hide();
     }
@@ -233,10 +294,17 @@ internal static class Program
         AssertTextFits(clear);
 
         ClickNavigation(form, UiText.Get("Settings"));
+        Button helpCenter = form.Controls.Find("HelpCenterButton", true)
+            .OfType<Button>()
+            .Single();
         Button checkUpdates = form.Controls.Find("CheckUpdatesButton", true)
             .OfType<Button>()
             .Single();
+        AssertFullyVisible(form, helpCenter);
+        AssertTextFits(helpCenter);
+        AssertFullyVisible(form, checkUpdates);
         AssertTextFits(checkUpdates);
+        AssertSettingsRightInset(form, helpCenter, checkUpdates);
         form.Hide();
     }
 
@@ -467,6 +535,11 @@ internal static class Program
         };
         form.Show();
         Application.DoEvents();
+        if (form.Text != "Choose Language")
+        {
+            throw new InvalidOperationException(
+                "The first-run language selector title must use title case.");
+        }
         Button[] languageButtons = Descendants(form).OfType<Button>().ToArray();
         if (languageButtons.Length != 7)
         {
@@ -479,6 +552,51 @@ internal static class Program
             AssertTextFits(button);
         }
         Capture(form, Path.Combine(output, "language-selection.png"));
+        form.Hide();
+    }
+
+    private static void RenderStartupSplash(
+        string output,
+        string language,
+        string filePrefix)
+    {
+        ConnectionWatcher.App.Localization.StartupPresentation presentation =
+            ConnectionWatcher.App.Localization.StartupText.Get(language);
+        if (string.IsNullOrWhiteSpace(presentation.Tagline) ||
+            presentation.Messages.Count < 6 ||
+            presentation.Messages.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new InvalidOperationException(
+                $"Startup text is incomplete for {language}.");
+        }
+
+        using StartupSplashForm form = new(presentation, language)
+        {
+            Opacity = 0,
+            ShowInTaskbar = false
+        };
+        form.Show();
+        Application.DoEvents();
+        string[] names =
+        [
+            "StartupLogo", "StartupBrand", "StartupTagline",
+            "StartupMessage", "StartupProgress"
+        ];
+        foreach (string name in names)
+        {
+            Control control = form.Controls.Find(name, true).Single();
+            AssertFullyVisible(form, control);
+            if (control is Label)
+            {
+                AssertTextFits(control);
+            }
+        }
+        AssertFontFamily(
+            form,
+            language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                ? "Microsoft YaHei UI"
+                : "Segoe UI");
+        Capture(form, Path.Combine(output, $"startup-{filePrefix}.png"));
         form.Hide();
     }
 
@@ -623,6 +741,23 @@ internal static class Program
         AssertFullyVisible(form, volume);
     }
 
+    private static void AssertSettingsRightInset(Form form, params Control[] controls)
+    {
+        TableLayoutPanel settings = form.Controls.Find("SettingsTable", true)
+            .OfType<TableLayoutPanel>()
+            .Single();
+        foreach (Control control in controls)
+        {
+            Rectangle bounds = settings.RectangleToClient(
+                control.Parent!.RectangleToScreen(control.Bounds));
+            if (settings.ClientSize.Width - bounds.Right < 8)
+            {
+                throw new InvalidOperationException(
+                    $"Control '{control.Name}' is too close to the Settings right edge.");
+            }
+        }
+    }
+
     private static int ControlLeft(Form form, Control control)
     {
         return form.RectangleToClient(
@@ -668,6 +803,32 @@ internal static class Program
         }
     }
 
+    private static void AssertInstallerLanguageHandoff(string output)
+    {
+        string directory = Path.Combine(output, "installer-language-handoff");
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(
+            directory,
+            ConnectionWatcher.App.Services.InstallerLanguagePreference.FileName);
+        File.WriteAllText(path, "en");
+        string? selected = ConnectionWatcher.App.Services
+            .InstallerLanguagePreference.Consume(directory);
+        if (selected != "en" || File.Exists(path))
+        {
+            throw new InvalidOperationException(
+                "The installer language was not applied once and consumed.");
+        }
+
+        File.WriteAllText(path, "unsupported-language");
+        selected = ConnectionWatcher.App.Services
+            .InstallerLanguagePreference.Consume(directory);
+        if (selected is not null || File.Exists(path))
+        {
+            throw new InvalidOperationException(
+                "An unsupported installer language was accepted or retained.");
+        }
+    }
+
     private static bool IsWave(byte[] wave) =>
         wave.Length >= 1_000 &&
         System.Text.Encoding.ASCII.GetString(wave, 0, 4) == "RIFF" &&
@@ -698,7 +859,12 @@ internal static class Program
         }
         if (language == "en" &&
             (UiText.Get("Rules") != "Monitoring Rules" ||
-             UiText.Get("Events") != "Event Log"))
+             UiText.Get("Events") != "Event Log" ||
+             UiText.Get("AppTitle") != "SocketSight" ||
+             UiText.Get("StartMonitoring") != "Start Monitoring" ||
+             UiText.Get("MonitoringStatus") != "Monitoring Status" ||
+             UiText.Get("SoftwareUpdatesWithVersion") !=
+                 "Software Updates (Current Version: {0})"))
         {
             throw new InvalidOperationException(
                 "English page titles must use title case.");
@@ -827,6 +993,17 @@ internal static class Program
         {
             throw new InvalidOperationException(
                 "Active status must remain readable when its row is selected.");
+        }
+        if (grid.Columns.Cast<DataGridViewColumn>().Any(column =>
+                column.HeaderCell.InheritedStyle.Alignment !=
+                    DataGridViewContentAlignment.MiddleCenter) ||
+            grid.Rows.Cast<DataGridViewRow>().Any(row =>
+                row.Cells.Cast<DataGridViewCell>().Any(cell =>
+                    cell.InheritedStyle.Alignment !=
+                        DataGridViewContentAlignment.MiddleLeft)))
+        {
+            throw new InvalidOperationException(
+                "Event Log headings must be centered while event values stay left-aligned.");
         }
 
         int totalWidth = grid.Columns

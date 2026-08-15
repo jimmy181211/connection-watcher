@@ -5,7 +5,7 @@ public sealed class LanguageSelectionForm : Form
     public LanguageSelectionForm()
     {
         Icon = AppIconProvider.Load();
-        Text = "Choose language";
+        Text = "Choose Language";
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -15,7 +15,7 @@ public sealed class LanguageSelectionForm : Form
 
         Label prompt = new()
         {
-            Text = "Choose the interface language",
+            Text = "Choose the Interface Language",
             AutoSize = true,
             Location = new Point(30, 24),
             Font = new Font("Segoe UI", 11F, FontStyle.Bold)

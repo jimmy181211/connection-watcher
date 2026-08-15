@@ -102,8 +102,6 @@ Reset-GeneratedDirectory $publishDirectory
     --runtime win-x64 `
     --self-contained true `
     --output $publishDirectory `
-    -p:PublishSingleFile=true `
-    -p:IncludeNativeLibrariesForSelfExtract=true `
     -p:DebugType=None `
     -p:DebugSymbols=false
 if ($LASTEXITCODE -ne 0) { throw "Application publish failed." }
@@ -116,7 +114,7 @@ if ($LASTEXITCODE -ne 0) { throw "Installer build failed." }
 
 Write-Host "[6/7] Preparing Final-Share"
 Reset-GeneratedDirectory $finalShareDirectory
-$installer = Join-Path $distDirectory "TCP-Connection-Watcher-Setup-win-x64.exe"
+$installer = Join-Path $distDirectory "SocketSight-Setup-win-x64.exe"
 Copy-Item -LiteralPath $installer -Destination $finalShareDirectory
 Copy-Item -LiteralPath (Join-Path $projectRoot "RELEASE_NOTES.md") -Destination $finalShareDirectory
 

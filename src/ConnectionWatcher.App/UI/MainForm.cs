@@ -50,7 +50,6 @@ public sealed class MainForm : Form
         TextAlign = HorizontalAlignment.Right
     };
     private readonly Label _checkIntervalUnit = new() { AutoSize = true };
-    private readonly Label _checkIntervalHint = SubtitleLabel();
     private readonly Label _actionLegendTitle = new();
     private readonly Label _silentActionLegend = new() { Name = "SilentActionLegend" };
     private readonly Label _trayActionLegend = new() { Name = "TrayActionLegend" };
@@ -89,6 +88,7 @@ public sealed class MainForm : Form
     {
         Name = "LanguageComboBox",
         DropDownStyle = ComboBoxStyle.DropDownList,
+        DrawMode = DrawMode.OwnerDrawFixed,
         Width = 165
     };
     private readonly Label _startWithWindowsCaption = new();
@@ -139,24 +139,34 @@ public sealed class MainForm : Form
     private readonly Label _helpCenterHint = SubtitleLabel();
     private readonly Button _helpCenterButton = new()
     {
+        Name = "HelpCenterButton",
         AutoSize = true,
-        MinimumSize = new Size(150, 36)
+        MinimumSize = new Size(120, 36)
     };
-    private readonly Label _updateCaption = new();
-    private readonly Label _updateHint = SubtitleLabel();
-    private readonly Label _currentVersion = new() { AutoSize = true };
+    private readonly Label _feedbackCaption = new();
+    private readonly Label _feedbackHint = SubtitleLabel();
+    private readonly Button _feedbackButton = new()
+    {
+        Name = "FeedbackButton",
+        AutoSize = true,
+        MinimumSize = new Size(120, 36)
+    };
+    private readonly Label _updateCaption = new()
+    {
+        Name = "SoftwareUpdatesCaption"
+    };
+    private readonly Label _updateHint = new()
+    {
+        Name = "SoftwareUpdatesHint",
+        AutoSize = true,
+        ForeColor = SystemColors.GrayText,
+        MaximumSize = new Size(780, 0)
+    };
     private readonly Button _checkUpdatesButton = new()
     {
         Name = "CheckUpdatesButton",
         AutoSize = true,
         MinimumSize = new Size(120, 36)
-    };
-    private readonly FlowLayoutPanel _updateControls = new()
-    {
-        AutoSize = true,
-        AutoSizeMode = AutoSizeMode.GrowAndShrink,
-        FlowDirection = FlowDirection.LeftToRight,
-        WrapContents = false
     };
 
     private bool _refreshingRules;
@@ -400,8 +410,7 @@ public sealed class MainForm : Form
         summary.Controls.Add(
             SummaryBox(
                 _homeIntervalCaption,
-                intervalValue,
-                _checkIntervalHint),
+                intervalValue),
             2,
             0);
         _checkInterval.ValueChanged += (_, _) => CheckIntervalChanged();
@@ -620,6 +629,10 @@ public sealed class MainForm : Form
 
         _eventsGrid.Name = "EventsGrid";
         _eventsGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+        _eventsGrid.ColumnHeadersDefaultCellStyle.Alignment =
+            DataGridViewContentAlignment.MiddleCenter;
+        _eventsGrid.RowsDefaultCellStyle.Alignment =
+            DataGridViewContentAlignment.MiddleLeft;
         _eventsGrid.ColumnHeadersHeightSizeMode =
             DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
@@ -650,11 +663,7 @@ public sealed class MainForm : Form
         _eventsGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             FillWeight = 11,
-            MinimumWidth = 68,
-            DefaultCellStyle = new DataGridViewCellStyle
-            {
-                Alignment = DataGridViewContentAlignment.MiddleCenter
-            }
+            MinimumWidth = 68
         });
         _eventsGrid.CellDoubleClick += (_, args) =>
         {
@@ -697,10 +706,11 @@ public sealed class MainForm : Form
         TableLayoutPanel header = Header(_settingsTitle, _settingsSubtitle);
         TableLayoutPanel settings = new()
         {
+            Name = "SettingsTable",
             Dock = DockStyle.Top,
             AutoSize = true,
             ColumnCount = 2,
-            Padding = new Padding(0, 20, 0, 0)
+            Padding = new Padding(0, 20, 12, 0)
         };
         settings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70));
         settings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
@@ -713,10 +723,16 @@ public sealed class MainForm : Form
         AddSetting(settings, string.Empty, _alertVolumeHint, _alertVolumeControls, 4, _alertVolumeCaption);
         AddSetting(settings, string.Empty, _logLimitHint, _logLimit, 5, _logLimitCaption);
         AddSetting(settings, string.Empty, _helpCenterHint, _helpCenterButton, 6, _helpCenterCaption);
-        _currentVersion.Margin = new Padding(0, 10, 10, 0);
-        _updateControls.Controls.AddRange([_currentVersion, _checkUpdatesButton]);
-        AddSetting(settings, string.Empty, _updateHint, _updateControls, 7, _updateCaption);
+        AddSetting(settings, string.Empty, _feedbackHint, _feedbackButton, 7, _feedbackCaption);
+        AddSetting(
+            settings,
+            string.Empty,
+            _updateHint,
+            _checkUpdatesButton,
+            8,
+            _updateCaption);
 
+        _language.DrawItem += DrawLanguageItem;
         _language.SelectedIndexChanged += LanguageChanged;
         _startWithWindows.CheckedChanged += StartWithWindowsChanged;
         _resumeMonitoring.CheckedChanged += (_, _) =>
@@ -744,6 +760,11 @@ public sealed class MainForm : Form
         {
             using HelpCenterForm helpCenter = new();
             helpCenter.ShowDialog(this);
+        };
+        _feedbackButton.Click += (_, _) =>
+        {
+            using FeedbackForm feedback = new();
+            feedback.ShowDialog(this);
         };
         _checkUpdatesButton.Click += async (_, _) => await CheckForUpdatesAsync();
 
@@ -818,7 +839,7 @@ public sealed class MainForm : Form
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
             AutoSize = true,
-            Margin = new Padding(0, 10, 12, 14)
+            Margin = new Padding(0, 6, 12, 8)
         };
         Label label = explicitLabel ?? new Label();
         label.Name = string.IsNullOrEmpty(labelName) ? label.Name : labelName;
@@ -827,11 +848,12 @@ public sealed class MainForm : Form
         text.Controls.Add(label);
         if (hint is not null)
         {
+            hint.Margin = new Padding(0, 2, 0, 0);
             text.Controls.Add(hint);
         }
 
         value.Anchor = AnchorStyles.Right;
-        value.Margin = new Padding(8, 12, 0, 0);
+        value.Margin = new Padding(8, 8, 0, 0);
         layout.Controls.Add(text, 0, row);
         layout.Controls.Add(value, 1, row);
     }
@@ -900,7 +922,6 @@ public sealed class MainForm : Form
         _homeRulesCaption.Text = UiText.Get("EnabledRules");
         _homeIntervalCaption.Text = UiText.Get("CheckInterval");
         _checkIntervalUnit.Text = UiText.Get("SecondsUnit");
-        UpdateCheckIntervalHint();
         _actionLegendTitle.Text = UiText.Get("ActionLegend");
         _silentActionLegend.Text = ActionLegendText(MatchAction.SilentLog);
         _trayActionLegend.Text = ActionLegendText(MatchAction.TrayNotice);
@@ -954,12 +975,14 @@ public sealed class MainForm : Form
         _helpCenterCaption.Text = UiText.Get("HelpCenter");
         _helpCenterHint.Text = UiText.Get("HelpCenterHint");
         _helpCenterButton.Text = UiText.Get("OpenHelpCenter");
-        _updateCaption.Text = UiText.Get("SoftwareUpdates");
+        _feedbackCaption.Text = UiText.Get("Feedback");
+        _feedbackHint.Text = UiText.Get("FeedbackHint");
+        _feedbackButton.Text = UiText.Get("OpenFeedback");
+        _updateCaption.Text = string.Format(
+            UiText.Get("SoftwareUpdatesWithVersion"),
+            CurrentVersion().ToString(3));
         _updateHint.Text = UiText.Get("SoftwareUpdatesHint");
         _checkUpdatesButton.Text = UiText.Get("CheckNow");
-        _currentVersion.Text = string.Format(
-            UiText.Get("CurrentVersion"),
-            CurrentVersion().ToString(3));
 
         _trayOpen.Text = UiText.Get("Open");
         _trayExit.Text = UiText.Get("Exit");
@@ -1551,7 +1574,6 @@ public sealed class MainForm : Form
                 _settings.CheckIntervalSeconds,
                 AppSettings.MinimumCheckIntervalSeconds,
                 AppSettings.MaximumCheckIntervalSeconds);
-            UpdateCheckIntervalHint();
         }
         finally
         {
@@ -1570,6 +1592,40 @@ public sealed class MainForm : Form
         UiText.SetLanguage(option.Code);
         SaveSettings();
         ApplyLanguage();
+    }
+
+    private void DrawLanguageItem(object? sender, DrawItemEventArgs e)
+    {
+        e.DrawBackground();
+        LanguageOption? option = e.Index >= 0 && e.Index < _language.Items.Count
+            ? _language.Items[e.Index] as LanguageOption
+            : _language.SelectedItem as LanguageOption;
+        if (option is not null)
+        {
+            bool selectedDisplay = e.State.HasFlag(DrawItemState.ComboBoxEdit);
+            Rectangle bounds = selectedDisplay
+                ? e.Bounds
+                : new Rectangle(
+                    e.Bounds.X + 4,
+                    e.Bounds.Y,
+                    Math.Max(0, e.Bounds.Width - 8),
+                    e.Bounds.Height);
+            TextFormatFlags flags = TextFormatFlags.VerticalCenter |
+                TextFormatFlags.EndEllipsis |
+                TextFormatFlags.NoPrefix |
+                (selectedDisplay
+                    ? TextFormatFlags.HorizontalCenter
+                    : TextFormatFlags.Left);
+            TextRenderer.DrawText(
+                e.Graphics,
+                option.Label,
+                e.Font,
+                bounds,
+                e.ForeColor,
+                flags);
+        }
+
+        e.DrawFocusRectangle();
     }
 
     private void StartWithWindowsChanged(object? sender, EventArgs e)
@@ -1640,17 +1696,6 @@ public sealed class MainForm : Form
         _settings.CheckIntervalSeconds = seconds;
         _engine.UpdateInterval(TimeSpan.FromSeconds((double)seconds));
         SaveSettings();
-        UpdateCheckIntervalHint();
-    }
-
-    private void UpdateCheckIntervalHint()
-    {
-        bool showHint = _checkInterval.Value >
-            AppSettings.DefaultCheckIntervalSeconds;
-        _checkIntervalHint.Text = showHint
-            ? UiText.Get("LongIntervalHint")
-            : string.Empty;
-        _checkIntervalHint.Visible = showHint;
     }
 
     private async Task CheckForUpdatesAsync()

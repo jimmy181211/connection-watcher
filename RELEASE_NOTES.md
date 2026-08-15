@@ -8,6 +8,7 @@
 - Configurable TCP check intervals from **0.5 to 10.0 seconds**, in 0.5-second steps.
 - Deeper application context for newly matched connections: the owner reported by Windows, file metadata, up to three parent/host processes, and related Windows services when available.
 - A manual **Check for updates** action that reads the latest public GitHub release only when requested.
+- A localized **Feedback** form that opens a pre-filled GitHub Issue for the user to review and submit. Logs and connection records are not attached by default.
 
 ### Changed
 
