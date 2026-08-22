@@ -1,5 +1,14 @@
 # Release Notes
 
+## v1.4.1
+
+### Changed
+
+- The setup language selector now appears first and controls both the installer and the SocketSight interface.
+- The setup welcome and completion pages now use a cleaner SocketSight brand layout with better visual balance.
+- The startup screen is more compact, with clearer loading text and progress feedback.
+- Settings rows have more breathing room while remaining scrollable at smaller window sizes and display scales.
+
 ## v1.4.0
 
 ### Added

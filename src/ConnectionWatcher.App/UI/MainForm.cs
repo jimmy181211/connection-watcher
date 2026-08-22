@@ -839,7 +839,8 @@ public sealed class MainForm : Form
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
             AutoSize = true,
-            Margin = new Padding(0, 6, 12, 8)
+            // Keep each setting visually separated without making the page feel sparse.
+            Margin = new Padding(0, 7, 12, 14)
         };
         Label label = explicitLabel ?? new Label();
         label.Name = string.IsNullOrEmpty(labelName) ? label.Name : labelName;
@@ -853,7 +854,7 @@ public sealed class MainForm : Form
         }
 
         value.Anchor = AnchorStyles.Right;
-        value.Margin = new Padding(8, 8, 0, 0);
+        value.Margin = new Padding(8, 11, 0, 0);
         layout.Controls.Add(text, 0, row);
         layout.Controls.Add(value, 1, row);
     }

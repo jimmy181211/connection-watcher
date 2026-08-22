@@ -1,5 +1,5 @@
 #define MyAppName "SocketSight"
-#define MyAppVersion "1.4.0"
+#define MyAppVersion "1.4.1"
 #define MyAppPublisher "SocketSight Project"
 #define MyAppExeName "SocketSight.exe"
 
@@ -18,6 +18,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={localappdata}\Programs\SocketSight
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
+DisableWelcomePage=no
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -48,6 +49,15 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+
+[Messages]
+english.SelectLanguageLabel=Select the language to use during installation and in SocketSight:
+chinesesimplified.SelectLanguageLabel=请选择安装过程和 SocketSight 软件使用的语言：
+chinesetraditional.SelectLanguageLabel=請選擇安裝過程和 SocketSight 軟體使用的語言：
+spanish.SelectLanguageLabel=Seleccione el idioma que se usará durante la instalación y en SocketSight:
+french.SelectLanguageLabel=Sélectionnez la langue à utiliser pendant l’installation et dans SocketSight :
+german.SelectLanguageLabel=Wählen Sie die Sprache für die Installation und für SocketSight aus:
+brazilianportuguese.SelectLanguageLabel=Selecione o idioma usado durante a instalação e no SocketSight:
 
 [CustomMessages]
 english.InstallMessage1=Preparing SocketSight…
@@ -97,6 +107,7 @@ brazilianportuguese.InstallMessage6=Nenhum pacote foi ferido durante esta instal
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
+Source: "..\src\ConnectionWatcher.App\Assets\ConnectionWatcher.png"; Flags: dontcopy
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\docs\项目说明.md"; DestDir: "{app}\Docs"; DestName: "项目说明.md"; Flags: ignoreversion
 Source: "..\docs\使用说明.md"; DestDir: "{app}\Docs"; Flags: ignoreversion
@@ -134,8 +145,73 @@ Type: files; Name: "{autodesktop}\TCP Connection Watcher.lnk"
 
 [Code]
 var
+  WelcomeBrandPanel: TPanel;
+  WelcomeBrandLogo: TBitmapImage;
+  WelcomeBrandNameLabel: TNewStaticText;
+  WelcomeBrandTaglineLabel: TNewStaticText;
+  FinishedBrandPanel: TPanel;
+  FinishedBrandLogo: TBitmapImage;
+  FinishedBrandNameLabel: TNewStaticText;
+  FinishedBrandTaglineLabel: TNewStaticText;
   InstallMessageLabel: TNewStaticText;
   InstallMessageIndex: Integer;
+
+procedure CreateBrandBlock(
+  ParentControl: TWinControl;
+  BackgroundColor: TColor;
+  var BrandPanel: TPanel;
+  var BrandLogo: TBitmapImage;
+  var BrandNameLabel: TNewStaticText;
+  var BrandTaglineLabel: TNewStaticText);
+begin
+  BrandPanel := TPanel.Create(WizardForm);
+  BrandPanel.Parent := ParentControl;
+  BrandPanel.Left := 0;
+  BrandPanel.Top := 0;
+  BrandPanel.Width := ScaleX(190);
+  BrandPanel.Height := ParentControl.ClientHeight;
+  BrandPanel.BevelOuter := bvNone;
+  BrandPanel.Color := BackgroundColor;
+
+  BrandLogo := TBitmapImage.Create(WizardForm);
+  BrandLogo.Parent := BrandPanel;
+  BrandLogo.Left := ScaleX(31);
+  BrandLogo.Top := ScaleY(50);
+  BrandLogo.Width := ScaleX(128);
+  BrandLogo.Height := ScaleY(128);
+  BrandLogo.Stretch := True;
+  BrandLogo.PngImage.LoadFromFile(
+    ExpandConstant('{tmp}\ConnectionWatcher.png'));
+
+  BrandNameLabel := TNewStaticText.Create(WizardForm);
+  BrandNameLabel.Parent := BrandPanel;
+  BrandNameLabel.Left := ScaleX(8);
+  BrandNameLabel.Top := BrandLogo.Top + BrandLogo.Height + ScaleY(16);
+  BrandNameLabel.Width := BrandPanel.Width - ScaleX(16);
+  BrandNameLabel.Height := ScaleY(32);
+  BrandNameLabel.AutoSize := False;
+  BrandNameLabel.Alignment := taCenter;
+  BrandNameLabel.Caption := 'SocketSight';
+  BrandNameLabel.Font.Name := 'Segoe UI';
+  BrandNameLabel.Font.Size := 17;
+  BrandNameLabel.Font.Style := [fsBold];
+  BrandNameLabel.Font.Color := $00492B11;
+
+  BrandTaglineLabel := TNewStaticText.Create(WizardForm);
+  BrandTaglineLabel.Parent := BrandPanel;
+  BrandTaglineLabel.Left := ScaleX(16);
+  BrandTaglineLabel.Top := BrandNameLabel.Top +
+    BrandNameLabel.Height + ScaleY(6);
+  BrandTaglineLabel.Width := BrandPanel.Width - ScaleX(32);
+  BrandTaglineLabel.Height := ScaleY(46);
+  BrandTaglineLabel.AutoSize := False;
+  BrandTaglineLabel.WordWrap := True;
+  BrandTaglineLabel.Alignment := taCenter;
+  BrandTaglineLabel.Caption := 'See the connections that matter.';
+  BrandTaglineLabel.Font.Name := 'Segoe UI';
+  BrandTaglineLabel.Font.Size := 9;
+  BrandTaglineLabel.Font.Color := $009D6F2D;
+end;
 
 procedure ShowInstallMessage(MessageIndex: Integer);
 begin
@@ -145,7 +221,41 @@ begin
 end;
 
 procedure InitializeWizard;
+var
+  ContentLeft: Integer;
 begin
+  ExtractTemporaryFile('ConnectionWatcher.png');
+
+  WizardForm.WizardBitmapImage.Visible := False;
+  WizardForm.WizardBitmapImage2.Visible := False;
+
+  CreateBrandBlock(
+    WizardForm.WelcomePage,
+    WizardForm.WelcomePage.Color,
+    WelcomeBrandPanel,
+    WelcomeBrandLogo,
+    WelcomeBrandNameLabel,
+    WelcomeBrandTaglineLabel);
+  CreateBrandBlock(
+    WizardForm.FinishedPage,
+    WizardForm.FinishedPage.Color,
+    FinishedBrandPanel,
+    FinishedBrandLogo,
+    FinishedBrandNameLabel,
+    FinishedBrandTaglineLabel);
+
+  ContentLeft := WelcomeBrandPanel.Width + ScaleX(28);
+  WizardForm.WelcomeLabel1.Left := ContentLeft;
+  WizardForm.WelcomeLabel1.Width :=
+    WizardForm.WelcomePage.ClientWidth - ContentLeft - ScaleX(16);
+  WizardForm.WelcomeLabel1.Top := ScaleY(91);
+  WizardForm.WelcomeLabel1.AdjustHeight;
+  WizardForm.WelcomeLabel2.Left := ContentLeft;
+  WizardForm.WelcomeLabel2.Width := WizardForm.WelcomeLabel1.Width;
+  WizardForm.WelcomeLabel2.Top :=
+    WizardForm.WelcomeLabel1.Top + WizardForm.WelcomeLabel1.Height + ScaleY(24);
+  WizardForm.WelcomeLabel2.AdjustHeight;
+
   InstallMessageLabel := TNewStaticText.Create(WizardForm);
   InstallMessageLabel.Parent := WizardForm.InstallingPage;
   InstallMessageLabel.Left := WizardForm.ProgressGauge.Left;
