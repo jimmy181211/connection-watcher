@@ -23,9 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
-      ASSETS_DIR: ${{ runner.temp }}/socket-release-assets
-      RELEASE_JSON: ${{ runner.temp }}/socket-release.json
-      SITE_DIR: ${{ runner.temp }}/gamma-site
     steps:
       - name: Resolve Release Tag
         id: release
@@ -35,6 +32,9 @@ jobs:
           INPUT_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
+          echo "ASSETS_DIR=$RUNNER_TEMP/socket-release-assets" >> "$GITHUB_ENV"
+          echo "RELEASE_JSON=$RUNNER_TEMP/socket-release.json" >> "$GITHUB_ENV"
+          echo "SITE_DIR=$RUNNER_TEMP/gamma-site" >> "$GITHUB_ENV"
           tag="${EVENT_TAG:-${INPUT_TAG:-}}"
           if [[ -z "$tag" ]]; then
             tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name)"
