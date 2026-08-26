@@ -1,0 +1,46 @@
+name: SocketSight CI
+
+on:
+  push:
+    branches:
+      - main
+      - agent/release-v1.4.1
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: socketsight-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Build and Test on Windows
+    runs-on: windows-latest
+    steps:
+      - name: Check Out Repository
+        uses: actions/checkout@v7
+
+      - name: Set Up .NET 8
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore ConnectionWatcher.sln
+
+      - name: Build Release
+        run: dotnet build ConnectionWatcher.sln --configuration Release --no-restore
+
+      - name: Run Functional Tests
+        run: dotnet run --project tests/ConnectionWatcher.Tests/ConnectionWatcher.Tests.csproj --configuration Release --no-build
+
+      - name: Run Multilingual UI Smoke Tests
+        run: dotnet run --project tests/ConnectionWatcher.UiSmoke/ConnectionWatcher.UiSmoke.csproj --configuration Release --no-build -- "${{ runner.temp }}\ConnectionWatcherUiSmoke"
+
+      - name: Verify Windows x64 Publish
+        run: dotnet publish src/ConnectionWatcher.App/ConnectionWatcher.App.csproj --configuration Release --runtime win-x64 --self-contained true --output "${{ runner.temp }}\SocketSightPublish" -p:DebugType=None -p:DebugSymbols=false
