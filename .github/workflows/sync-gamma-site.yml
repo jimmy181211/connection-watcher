@@ -1,0 +1,156 @@
+name: Sync Gamma ACC Download Page
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to synchronize; leave blank to use the latest Release
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-gamma-acc-release
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Validate and Sync Release
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ASSETS_DIR: ${{ runner.temp }}/socket-release-assets
+      RELEASE_JSON: ${{ runner.temp }}/socket-release.json
+      SITE_DIR: ${{ runner.temp }}/gamma-site
+    steps:
+      - name: Resolve Release Tag
+        id: release
+        shell: bash
+        env:
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          tag="${EVENT_TAG:-${INPUT_TAG:-}}"
+          if [[ -z "$tag" ]]; then
+            tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name)"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check Out Released Source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.release.outputs.tag }}
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Download and Normalize Release Assets
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$ASSETS_DIR"
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir "$ASSETS_DIR"
+
+          installer="$ASSETS_DIR/SocketSight-Setup-win-x64.exe"
+          if [[ ! -f "$installer" ]]; then
+            direct_installer="$(find "$ASSETS_DIR" -maxdepth 1 -type f -iregex '.*SocketSight.*\(Setup\|Installer\).*\.exe' -print -quit)"
+            if [[ -n "$direct_installer" ]]; then
+              cp "$direct_installer" "$installer"
+            else
+              archive="$(find "$ASSETS_DIR" -maxdepth 1 -type f -iname '*.zip' -print -quit)"
+              if [[ -z "$archive" ]]; then
+                echo "No SocketSight installer or ZIP archive was found in Release $RELEASE_TAG." >&2
+                exit 1
+              fi
+              entry="$(unzip -Z1 "$archive" | grep -Ei 'SocketSight.*(Setup|Installer).*\.exe$' | head -n 1 || true)"
+              if [[ -z "$entry" ]]; then
+                echo "The Release ZIP does not contain a SocketSight installer executable." >&2
+                exit 1
+              fi
+              unzip -p "$archive" "$entry" > "$installer"
+            fi
+            gh release upload "$RELEASE_TAG" "$installer" --repo "$GITHUB_REPOSITORY" --clobber
+          fi
+
+          notes="$ASSETS_DIR/RELEASE_NOTES.md"
+          if [[ ! -f "$notes" ]]; then
+            alternate_notes="$(find "$ASSETS_DIR" -maxdepth 1 -type f -iregex '.*release[_-]*notes*\.md' -print -quit)"
+            if [[ -n "$alternate_notes" ]]; then
+              cp "$alternate_notes" "$notes"
+            elif [[ -f "$GITHUB_WORKSPACE/RELEASE_NOTES.md" ]]; then
+              cp "$GITHUB_WORKSPACE/RELEASE_NOTES.md" "$notes"
+            else
+              echo "RELEASE_NOTES.md is missing from both the Release and the tagged source." >&2
+              exit 1
+            fi
+            gh release upload "$RELEASE_TAG" "$notes" --repo "$GITHUB_REPOSITORY" --clobber
+          fi
+
+          checksum="$ASSETS_DIR/SHA256SUMS.txt"
+          if [[ -f "$checksum" ]]; then
+            (cd "$ASSETS_DIR" && sha256sum --check SHA256SUMS.txt)
+          else
+            (cd "$ASSETS_DIR" && sha256sum SocketSight-Setup-win-x64.exe > SHA256SUMS.txt)
+            gh release upload "$RELEASE_TAG" "$checksum" --repo "$GITHUB_REPOSITORY" --clobber
+          fi
+
+          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" > "$RELEASE_JSON"
+
+      - name: Configure Gamma Site Deploy Key
+        shell: bash
+        env:
+          DEPLOY_KEY: ${{ secrets.GAMMA_SITE_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$DEPLOY_KEY" ]]; then
+            echo "GAMMA_SITE_DEPLOY_KEY is not configured." >&2
+            exit 1
+          fi
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/gamma_site"
+          chmod 600 "$HOME/.ssh/gamma_site"
+          ssh-keyscan -t ed25519 github.com >> "$HOME/.ssh/known_hosts"
+          printf '%s\n' \
+            'Host github-gamma' \
+            '  HostName github.com' \
+            '  User git' \
+            '  IdentityFile ~/.ssh/gamma_site' \
+            '  IdentitiesOnly yes' > "$HOME/.ssh/config"
+
+      - name: Synchronize Gamma Accelerator Site
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git clone git@github-gamma:jimmy181211/gamma-accelerator-official-site.git "$SITE_DIR"
+          node "$SITE_DIR/scripts/sync-socketsight-release.mjs" \
+            --release-json "$RELEASE_JSON" \
+            --assets-dir "$ASSETS_DIR"
+
+          cd "$SITE_DIR"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            socketsight/index.html \
+            socketsight/RELEASE_NOTES.md \
+            socketsight/release.json \
+            socketsight/release-notes/index.html
+
+          if git diff --cached --quiet; then
+            echo "Gamma ACC already reflects SocketSight $RELEASE_TAG."
+            exit 0
+          fi
+
+          git commit -m "Sync SocketSight $RELEASE_TAG"
+          git push origin main
