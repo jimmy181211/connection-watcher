@@ -35,7 +35,7 @@ public sealed class StartupSplashForm : Form
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         TopMost = true;
-        ClientSize = new Size(560, 270);
+        ClientSize = new Size(540, 250);
         BackColor = Color.FromArgb(247, 249, 252);
         Padding = new Padding(1);
         Font = new Font(FontFamily(language), 9F, FontStyle.Regular);
@@ -50,7 +50,7 @@ public sealed class StartupSplashForm : Form
         {
             Dock = DockStyle.Fill,
             BackColor = BackColor,
-            Padding = new Padding(34, 25, 34, 22)
+            Padding = new Padding(44, 20, 44, 20)
         };
         TableLayoutPanel layout = new()
         {
@@ -59,11 +59,11 @@ public sealed class StartupSplashForm : Form
             RowCount = 5,
             BackColor = BackColor
         };
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 43));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 10));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 39));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 9));
 
         PictureBox logo = new()
         {
@@ -79,14 +79,14 @@ public sealed class StartupSplashForm : Form
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleCenter,
             ForeColor = Color.FromArgb(17, 43, 73),
-            Font = new Font(FontFamily(language), 23F, FontStyle.Bold)
+            Font = new Font(FontFamily(language), 22F, FontStyle.Bold)
         };
         Label tagline = new()
         {
             Name = "StartupTagline",
             Text = presentation.Tagline,
             Dock = DockStyle.Fill,
-            TextAlign = ContentAlignment.TopCenter,
+            TextAlign = ContentAlignment.MiddleCenter,
             ForeColor = Color.FromArgb(45, 111, 157),
             Font = new Font(FontFamily(language), 10.5F, FontStyle.Regular)
         };
@@ -95,7 +95,9 @@ public sealed class StartupSplashForm : Form
         ProgressBar progress = new()
         {
             Name = "StartupProgress",
-            Dock = DockStyle.Fill,
+            Anchor = AnchorStyles.Left | AnchorStyles.Right,
+            Height = 7,
+            Margin = new Padding(42, 1, 42, 1),
             Style = ProgressBarStyle.Marquee,
             MarqueeAnimationSpeed = 28
         };
