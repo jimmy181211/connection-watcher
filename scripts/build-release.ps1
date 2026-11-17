@@ -117,6 +117,8 @@ Reset-GeneratedDirectory $finalShareDirectory
 $installer = Join-Path $distDirectory "SocketSight-Setup-win-x64.exe"
 Copy-Item -LiteralPath $installer -Destination $finalShareDirectory
 Copy-Item -LiteralPath (Join-Path $projectRoot "RELEASE_NOTES.md") -Destination $finalShareDirectory
+Copy-Item -LiteralPath (Join-Path $projectRoot "PRIVACY.md") -Destination $finalShareDirectory
+Copy-Item -LiteralPath (Join-Path $projectRoot "TERMS.md") -Destination $finalShareDirectory
 
 Copy-ReleaseDocument "Project-Overview.md" "English"
 Copy-ReleaseDocument "User-Guide.md" "English"

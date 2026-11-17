@@ -49,6 +49,12 @@ public sealed class HelpCenterForm : Form
         documents.TabPages.Add(CreateDocumentTab(
             UiText.Get("UserGuide"),
             "UserGuide"));
+        documents.TabPages.Add(CreateDocumentTab(
+            UiText.Get("PrivacyPolicy"),
+            "PrivacyPolicy"));
+        documents.TabPages.Add(CreateDocumentTab(
+            UiText.Get("TermsOfUse"),
+            "TermsOfUse"));
 
         FlowLayoutPanel buttons = new()
         {
@@ -96,6 +102,12 @@ public sealed class HelpCenterForm : Form
         string resourceName = $"ConnectionWatcher.Help.{documentName}.{language}.md";
         using Stream? stream = Assembly.GetExecutingAssembly()
             .GetManifestResourceStream(resourceName);
+        if (stream is null && !language.Equals("en", StringComparison.OrdinalIgnoreCase))
+        {
+            resourceName = $"ConnectionWatcher.Help.{documentName}.en.md";
+            stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+        }
+
         if (stream is null)
         {
             return $"# {UiText.Get("HelpDocumentUnavailable")}";

@@ -135,6 +135,8 @@ public static partial class UiText
             ["UpdateCheckFailed"] = "Impossible de vérifier les mises à jour : {0}",
             ["ProjectOverview"] = "Présentation du projet",
             ["UserGuide"] = "Guide d'utilisation",
+            ["PrivacyPolicy"] = "Politique de confidentialité",
+            ["TermsOfUse"] = "Conditions d'utilisation",
             ["HelpDocumentUnavailable"] = "Le document d'aide n'a pas pu être chargé.",
             ["LogLimitUpdateError"] = "Impossible de modifier la limite du journal : {0}",
             ["Privacy"] = "Cet outil se connecte à Internet uniquement lors d’une vérification manuelle des mises à jour ou de l’ouverture de la page de commentaires. Il n’envoie aucun journal, ne lit pas les paquets et ne bloque rien automatiquement.",

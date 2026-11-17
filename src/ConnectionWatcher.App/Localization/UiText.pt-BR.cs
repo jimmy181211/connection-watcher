@@ -135,6 +135,8 @@ public static partial class UiText
             ["UpdateCheckFailed"] = "Não foi possível verificar atualizações: {0}",
             ["ProjectOverview"] = "Visão geral do projeto",
             ["UserGuide"] = "Guia do usuário",
+            ["PrivacyPolicy"] = "Política de privacidade",
+            ["TermsOfUse"] = "Termos de uso",
             ["HelpDocumentUnavailable"] = "Não foi possível carregar o documento de ajuda.",
             ["LogLimitUpdateError"] = "Não foi possível atualizar o limite do registro: {0}",
             ["Privacy"] = "Esta ferramenta só se conecta à Internet durante uma verificação manual de atualizações ou ao abrir a página de feedback. Ela não envia registros, não lê pacotes e não bloqueia conexões automaticamente.",

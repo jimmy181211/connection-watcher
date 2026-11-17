@@ -135,6 +135,8 @@ public static partial class UiText
             ["UpdateCheckFailed"] = "Updates konnten nicht geprüft werden: {0}",
             ["ProjectOverview"] = "Projektübersicht",
             ["UserGuide"] = "Benutzerhandbuch",
+            ["PrivacyPolicy"] = "Datenschutzerklärung",
+            ["TermsOfUse"] = "Nutzungsbedingungen",
             ["HelpDocumentUnavailable"] = "Das Hilfedokument konnte nicht geladen werden.",
             ["LogLimitUpdateError"] = "Das Protokolllimit konnte nicht geändert werden: {0}",
             ["Privacy"] = "Dieses Tool verbindet sich nur bei einer manuellen Updateprüfung oder beim Öffnen der Feedbackseite mit dem Internet. Es lädt keine Protokolle hoch, liest keine Pakete und blockiert nichts automatisch.",

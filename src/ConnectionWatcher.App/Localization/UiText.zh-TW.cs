@@ -135,6 +135,8 @@ public static partial class UiText
             ["UpdateCheckFailed"] = "無法檢查更新：{0}",
             ["ProjectOverview"] = "專案說明",
             ["UserGuide"] = "使用說明",
+            ["PrivacyPolicy"] = "隱私政策",
+            ["TermsOfUse"] = "使用條款",
             ["HelpDocumentUnavailable"] = "無法載入說明文件。",
             ["LogLimitUpdateError"] = "無法更新事件記錄上限：{0}",
             ["Privacy"] = "除非您手動檢查更新或開啟回饋頁面，否則本工具不會連線網路；它不會上傳記錄、讀取封包內容或自動封鎖連線。",

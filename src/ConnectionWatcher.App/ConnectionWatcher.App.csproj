@@ -25,8 +25,12 @@
     <EmbeddedResource Include="Assets\ConnectionWatcher.ico" LogicalName="ConnectionWatcher.AppIcon.ico" />
     <EmbeddedResource Include="..\..\docs\Project-Overview.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.en.md" />
     <EmbeddedResource Include="..\..\docs\User-Guide.md" LogicalName="ConnectionWatcher.Help.UserGuide.en.md" />
+    <EmbeddedResource Include="..\..\PRIVACY.md" LogicalName="ConnectionWatcher.Help.PrivacyPolicy.en.md" />
+    <EmbeddedResource Include="..\..\TERMS.md" LogicalName="ConnectionWatcher.Help.TermsOfUse.en.md" />
     <EmbeddedResource Include="..\..\docs\项目说明.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.zh-CN.md" />
     <EmbeddedResource Include="..\..\docs\使用说明.md" LogicalName="ConnectionWatcher.Help.UserGuide.zh-CN.md" />
+    <EmbeddedResource Include="..\..\docs\隐私政策.md" LogicalName="ConnectionWatcher.Help.PrivacyPolicy.zh-CN.md" />
+    <EmbeddedResource Include="..\..\docs\使用条款.md" LogicalName="ConnectionWatcher.Help.TermsOfUse.zh-CN.md" />
     <EmbeddedResource Include="..\..\docs\Descripcion-del-proyecto.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.es.md" />
     <EmbeddedResource Include="..\..\docs\Guia-del-usuario.md" LogicalName="ConnectionWatcher.Help.UserGuide.es.md" />
     <EmbeddedResource Include="..\..\docs\專案說明.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.zh-TW.md" />
