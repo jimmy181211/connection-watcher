@@ -11,12 +11,14 @@ public enum RuleValidationError
     InvalidLocalPort,
     AtLeastOneConditionRequired,
     LocalListenerPortRequired,
-    InvalidRepeatInterval
+    InvalidRepeatInterval,
 }
 
 public static class RuleValidator
 {
-    public static IReadOnlyList<RuleValidationError> Validate(MonitoringRule rule)
+    public static IReadOnlyList<RuleValidationError> Validate(
+        MonitoringRule rule
+    )
     {
         List<RuleValidationError> errors = [];
 
@@ -25,8 +27,10 @@ public static class RuleValidator
             errors.Add(RuleValidationError.NameRequired);
         }
 
-        if (!string.IsNullOrWhiteSpace(rule.RemoteIp) &&
-            !IPAddress.TryParse(rule.RemoteIp, out _))
+        if (
+            !string.IsNullOrWhiteSpace(rule.RemoteIp)
+            && !IPAddress.TryParse(rule.RemoteIp, out _)
+        )
         {
             errors.Add(RuleValidationError.InvalidRemoteIp);
         }
@@ -48,14 +52,19 @@ public static class RuleValidator
                 errors.Add(RuleValidationError.LocalListenerPortRequired);
             }
         }
-        else if (string.IsNullOrWhiteSpace(rule.RemoteIp) &&
-                 rule.RemotePort.IsAny && rule.LocalPort.IsAny)
+        else if (
+            string.IsNullOrWhiteSpace(rule.RemoteIp)
+            && rule.RemotePort.IsAny
+            && rule.LocalPort.IsAny
+        )
         {
             errors.Add(RuleValidationError.AtLeastOneConditionRequired);
         }
 
-        if (rule.Action == MatchAction.PopupAlert &&
-            rule.RepeatAlertMinutes is not (0 or 1 or 5 or 15))
+        if (
+            rule.Action == MatchAction.PopupAlert
+            && rule.RepeatAlertMinutes is not (0 or 1 or 5 or 15)
+        )
         {
             errors.Add(RuleValidationError.InvalidRepeatInterval);
         }

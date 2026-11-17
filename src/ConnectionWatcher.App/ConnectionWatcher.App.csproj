@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ProductRole>Rule-Based TCP Connection Monitoring for Windows</ProductRole>
+    <ProductTagline>See the connections that matter.</ProductTagline>
+    <UiLanguages>de;es;fr;pt-BR;zh-Hans;zh-Hant</UiLanguages>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
@@ -9,37 +12,96 @@
     <RootNamespace>ConnectionWatcher.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\ConnectionWatcher.ico</ApplicationIcon>
-    <SatelliteResourceLanguages>de;es;fr;pt-BR;zh-Hans;zh-Hant</SatelliteResourceLanguages>
+    <SatelliteResourceLanguages>$(UiLanguages)</SatelliteResourceLanguages>
     <Version>1.4.1</Version>
     <AssemblyVersion>1.4.1.0</AssemblyVersion>
     <FileVersion>1.4.1.0</FileVersion>
-    <AssemblyTitle>SocketSight - Rule-Based TCP Connection Monitoring for Windows</AssemblyTitle>
+    <AssemblyTitle>SocketSight - $(ProductRole)</AssemblyTitle>
     <Product>SocketSight</Product>
-    <Description>Rule-Based TCP Connection Monitoring for Windows. See the connections that matter.</Description>
+    <Description>$(ProductRole). $(ProductTagline)</Description>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConnectionWatcher.Core\ConnectionWatcher.Core.csproj" />
+    <ProjectReference
+      Include="..\$(CoreProjectName)\$(CoreProjectName).csproj"
+    />
     <PackageReference Include="Markdig" Version="1.3.2" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\ConnectionWatcher.ico" LogicalName="ConnectionWatcher.AppIcon.ico" />
-    <EmbeddedResource Include="..\..\docs\Project-Overview.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.en.md" />
-    <EmbeddedResource Include="..\..\docs\User-Guide.md" LogicalName="ConnectionWatcher.Help.UserGuide.en.md" />
-    <EmbeddedResource Include="..\..\PRIVACY.md" LogicalName="ConnectionWatcher.Help.PrivacyPolicy.en.md" />
-    <EmbeddedResource Include="..\..\TERMS.md" LogicalName="ConnectionWatcher.Help.TermsOfUse.en.md" />
-    <EmbeddedResource Include="..\..\docs\项目说明.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.zh-CN.md" />
-    <EmbeddedResource Include="..\..\docs\使用说明.md" LogicalName="ConnectionWatcher.Help.UserGuide.zh-CN.md" />
-    <EmbeddedResource Include="..\..\docs\隐私政策.md" LogicalName="ConnectionWatcher.Help.PrivacyPolicy.zh-CN.md" />
-    <EmbeddedResource Include="..\..\docs\使用条款.md" LogicalName="ConnectionWatcher.Help.TermsOfUse.zh-CN.md" />
-    <EmbeddedResource Include="..\..\docs\Descripcion-del-proyecto.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.es.md" />
-    <EmbeddedResource Include="..\..\docs\Guia-del-usuario.md" LogicalName="ConnectionWatcher.Help.UserGuide.es.md" />
-    <EmbeddedResource Include="..\..\docs\專案說明.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.zh-TW.md" />
-    <EmbeddedResource Include="..\..\docs\使用說明-繁體中文.md" LogicalName="ConnectionWatcher.Help.UserGuide.zh-TW.md" />
-    <EmbeddedResource Include="..\..\docs\Presentation-du-projet.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.fr.md" />
-    <EmbeddedResource Include="..\..\docs\Guide-utilisateur.md" LogicalName="ConnectionWatcher.Help.UserGuide.fr.md" />
-    <EmbeddedResource Include="..\..\docs\Projektuebersicht.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.de.md" />
-    <EmbeddedResource Include="..\..\docs\Benutzerhandbuch.md" LogicalName="ConnectionWatcher.Help.UserGuide.de.md" />
-    <EmbeddedResource Include="..\..\docs\Visao-geral-do-projeto.md" LogicalName="ConnectionWatcher.Help.ProjectOverview.pt-BR.md" />
-    <EmbeddedResource Include="..\..\docs\Guia-do-usuario.md" LogicalName="ConnectionWatcher.Help.UserGuide.pt-BR.md" />
+    <EmbeddedResource
+      Include="Assets\ConnectionWatcher.ico"
+      LogicalName="ConnectionWatcher.AppIcon.ico"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Project-Overview.md"
+      LogicalName="ConnectionWatcher.Help.ProjectOverview.en.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\User-Guide.md"
+      LogicalName="ConnectionWatcher.Help.UserGuide.en.md"
+    />
+    <EmbeddedResource
+      Include="..\..\PRIVACY.md"
+      LogicalName="ConnectionWatcher.Help.PrivacyPolicy.en.md"
+    />
+    <EmbeddedResource
+      Include="..\..\TERMS.md"
+      LogicalName="ConnectionWatcher.Help.TermsOfUse.en.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\项目说明.md"
+      LogicalName="ConnectionWatcher.Help.ProjectOverview.zh-CN.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\使用说明.md"
+      LogicalName="ConnectionWatcher.Help.UserGuide.zh-CN.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\隐私政策.md"
+      LogicalName="ConnectionWatcher.Help.PrivacyPolicy.zh-CN.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\使用条款.md"
+      LogicalName="ConnectionWatcher.Help.TermsOfUse.zh-CN.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Descripcion-del-proyecto.md"
+      LogicalName="ConnectionWatcher.Help.ProjectOverview.es.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Guia-del-usuario.md"
+      LogicalName="ConnectionWatcher.Help.UserGuide.es.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\專案說明.md"
+      LogicalName="ConnectionWatcher.Help.ProjectOverview.zh-TW.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\使用說明-繁體中文.md"
+      LogicalName="ConnectionWatcher.Help.UserGuide.zh-TW.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Presentation-du-projet.md"
+      LogicalName="ConnectionWatcher.Help.ProjectOverview.fr.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Guide-utilisateur.md"
+      LogicalName="ConnectionWatcher.Help.UserGuide.fr.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Projektuebersicht.md"
+      LogicalName="ConnectionWatcher.Help.ProjectOverview.de.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Benutzerhandbuch.md"
+      LogicalName="ConnectionWatcher.Help.UserGuide.de.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Visao-geral-do-projeto.md"
+      LogicalName="ConnectionWatcher.Help.ProjectOverview.pt-BR.md"
+    />
+    <EmbeddedResource
+      Include="..\..\docs\Guia-do-usuario.md"
+      LogicalName="ConnectionWatcher.Help.UserGuide.pt-BR.md"
+    />
   </ItemGroup>
 </Project>

@@ -15,7 +15,8 @@ internal sealed class DelayedSplashScreen : IDisposable
     public DelayedSplashScreen(
         StartupPresentation presentation,
         string language,
-        TimeSpan delay)
+        TimeSpan delay
+    )
     {
         _presentation = presentation;
         _language = language;
@@ -27,7 +28,7 @@ internal sealed class DelayedSplashScreen : IDisposable
         _thread = new Thread(Run)
         {
             IsBackground = true,
-            Name = "SocketSight Startup"
+            Name = "SocketSight Startup",
         };
         _thread.SetApartmentState(ApartmentState.STA);
         _thread.Start();

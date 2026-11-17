@@ -2,187 +2,297 @@ namespace ConnectionWatcher.App.Localization;
 
 public static partial class UiText
 {
-    private static readonly IReadOnlyDictionary<string, string> BrazilianPortuguese =
-        new Dictionary<string, string>
-        {
-            ["AppTitle"] = "SocketSight",
-            ["Home"] = "Início",
-            ["Rules"] = "Regras de monitoramento",
-            ["Events"] = "Registro de eventos",
-            ["Settings"] = "Configurações",
-            ["MonitoringStopped"] = "Parado",
-            ["MonitoringRunning"] = "Monitorando",
-            ["MonitoringInterrupted"] = "Erro de monitoramento",
-            ["MonitoringStatus"] = "Status do monitoramento",
-            ["StatusHint"] = "As conexões só são verificadas após selecionar Iniciar monitoramento.",
-            ["StartMonitoring"] = "Iniciar monitoramento",
-            ["StopMonitoring"] = "Parar monitoramento",
-            ["EnabledRules"] = "Regras ativadas",
-            ["CheckInterval"] = "Intervalo de verificação",
-            ["OneSecond"] = "1 segundo",
-            ["SecondsUnit"] = "segundos",
-            ["LongIntervalHint"] = "Intervalos maiores podem perder conexões muito breves.",
-            ["ActionLegend"] = "Símbolos de ação (o registro usa os mesmos símbolos)",
-            ["RulesDescription"] = "As regras definem o que monitorar e qual ação executar quando houver correspondência.",
-            ["NewRule"] = "Nova regra",
-            ["Edit"] = "Editar",
-            ["Delete"] = "Excluir",
-            ["Name"] = "Nome da regra",
-            ["Condition"] = "Condição de monitoramento",
-            ["MatchAction"] = "Ação ao corresponder",
-            ["ActionColumn"] = "Ação",
-            ["Enabled"] = "Ativada",
-            ["NoRules"] = "Ainda não há regras. Primeiro crie e ative uma regra.",
-            ["DeleteRuleTitle"] = "Excluir regra",
-            ["DeleteRuleQuestion"] = "Excluir a regra “{0}”? Os registros existentes não serão excluídos.",
-            ["SilentLog"] = "Registrar silenciosamente",
-            ["TrayNotice"] = "Aviso na bandeja e registro",
-            ["PopupAlert"] = "Alerta em janela e registro",
-            ["SilentShort"] = "Silencioso",
-            ["TrayShort"] = "Bandeja",
-            ["PopupShort"] = "Janela",
-            ["TcpConnection"] = "Conexão TCP",
-            ["LocalListener"] = "Porta de escuta local",
-            ["AnyRemoteIp"] = "Qualquer IP remoto",
-            ["RemoteIp"] = "IP remoto",
-            ["RemotePort"] = "Porta remota",
-            ["LocalPort"] = "Porta local",
-            ["AnyPort"] = "Qualquer porta",
-            ["ListenerOn"] = "Escutar na porta local {0}",
-            ["ConnectionCondition"] = "IP remoto: {0} · porta remota: {1} · porta local: {2}",
-            ["Any"] = "Qualquer",
-            ["SearchEvents"] = "Pesquisar regra, IP, porta ou programa",
-            ["ClearDisplay"] = "Limpar exibição",
-            ["ClearDisplayTitle"] = "Limpar exibição do registro",
-            ["ClearDisplayQuestion"] = "Limpar os eventos exibidos? Os arquivos CSV não serão excluídos e os eventos anteriores continuarão ocultos após reiniciar o aplicativo.",
-            ["EventsDescription"] = "Cada nova correspondência é registrada uma vez; o status e a duração observada são atualizados automaticamente.",
-            ["EventDoubleClickHint"] = "Clique duas vezes em um evento para ver todos os detalhes.",
-            ["EventDetailsTitle"] = "Detalhes do evento",
-            ["EventDetailsDescription"] = "Mostra o proprietário da conexão informado pelo Windows e o contexto relacionado. Isso ajuda na investigação, mas nem sempre prova qual aplicativo iniciou a conexão.",
-            ["StartTime"] = "Hora de início",
-            ["EndTime"] = "Hora de término",
-            ["ProcessPath"] = "Caminho do programa",
-            ["CopyDetails"] = "Copiar detalhes",
-            ["Copied"] = "Copiado",
-            ["CopyFailed"] = "Não foi possível copiar os detalhes. Tente novamente.",
-            ["ExportCsv"] = "Exportar CSV",
-            ["OpenLogFolder"] = "Abrir pasta de registros",
-            ["Time"] = "Hora",
-            ["ConnectionStatus"] = "Status",
-            ["ObservedDuration"] = "Duração observada",
-            ["ConnectionActive"] = "Ativa",
-            ["ConnectionEnded"] = "Encerrada",
-            ["MatchedRules"] = "Regras correspondentes",
-            ["RemoteEndpoint"] = "Destino remoto",
-            ["LocalEndpoint"] = "Destino local",
-            ["TcpState"] = "Estado TCP",
-            ["Program"] = "Programa",
-            ["Application"] = "Aplicativo",
-            ["ApplicationTooltip"] = "Proprietário informado pelo Windows: {0} (PID {1})\nCaminho: {2}",
-            ["ConnectionOwner"] = "Proprietário da conexão informado pelo Windows",
-            ["ProductName"] = "Nome do produto do arquivo",
-            ["CompanyName"] = "Empresa do arquivo",
-            ["FileDescription"] = "Descrição do arquivo",
-            ["ParentProcesses"] = "Processos pai/hospedeiros (até 3)",
-            ["RelatedServices"] = "Serviços do Windows relacionados",
-            ["ContextUnavailable"] = "Indisponível ou não informado",
-            ["NoneFound"] = "Nenhum encontrado",
-            ["NoEvents"] = "Nenhuma conexão correspondeu a uma regra até agora.",
-            ["ExportComplete"] = "Registro de eventos exportado.",
-            ["Language"] = "Idioma da interface",
-            ["Chinese"] = "简体中文",
-            ["TraditionalChinese"] = "繁體中文",
-            ["English"] = "English",
-            ["Spanish"] = "Español",
-            ["French"] = "Français",
-            ["German"] = "Deutsch",
-            ["BrazilianPortuguese"] = "Português (Brasil)",
-            ["StartWithWindows"] = "Abrir o aplicativo ao entrar no Windows",
-            ["StartWithWindowsHint"] = "Apenas abre o aplicativo; não inicia o monitoramento.",
-            ["ResumeMonitoring"] = "Iniciar o monitoramento automaticamente ao abrir",
-            ["ResumeMonitoringHint"] = "Desativado por padrão; usa somente regras ativadas.",
-            ["AlertSound"] = "Som do alerta urgente",
-            ["AlertSoundHint"] = "Usa o breve som de alerta integrado ao aplicativo.",
-            ["TestSound"] = "Testar som",
-            ["AlertVolume"] = "Volume do alerta urgente (%)",
-            ["AlertVolumeHint"] = "Aplica-se ao teste e aos alertas urgentes; o volume do Windows também continua valendo.",
-            ["LogLimit"] = "Limite do registro de eventos (MB)",
-            ["LogLimitHint"] = "Escolha de 5 a 500 MB. São usados cinco arquivos; os registros mais antigos são removidos primeiro.",
-            ["HelpCenter"] = "Central de ajuda",
-            ["HelpCenterHint"] = "Leia a visão geral do projeto e o guia do usuário dentro do aplicativo.",
-            ["OpenHelpCenter"] = "Abrir",
-            ["Feedback"] = "Feedback",
-            ["FeedbackHint"] = "Compartilhe feedback no GitHub; você o revisa antes de enviar.",
-            ["OpenFeedback"] = "Abrir",
-            ["FeedbackTitle"] = "Enviar feedback",
-            ["FeedbackDescription"] = "Escreva uma sugestão ou descreva um problema. Ao escolher Continuar para o GitHub, o navegador abrirá uma página preenchida para você revisar e enviar.",
-            ["FeedbackTextLabel"] = "Feedback",
-            ["FeedbackPlaceholder"] = "Descreva um problema, uma sugestão ou uma melhoria.",
-            ["IncludeDiagnostics"] = "Incluir informações básicas de diagnóstico",
-            ["DiagnosticsHint"] = "Somente a versão do aplicativo, a versão do Windows e o idioma; nenhum registro é anexado.",
-            ["ContinueToGitHub"] = "Continuar para o GitHub",
-            ["FeedbackEmpty"] = "Digite o feedback primeiro.",
-            ["FeedbackOpenFailed"] = "Não foi possível abrir a página do GitHub: {0}",
-            ["SoftwareUpdates"] = "Atualizações",
-            ["SoftwareUpdatesWithVersion"] = "Atualizações (versão atual: {0})",
-            ["SoftwareUpdatesHint"] = "As atualizações não são instaladas automaticamente.",
-            ["CheckNow"] = "Verificar agora",
-            ["CurrentVersion"] = "Versão atual: {0}",
-            ["CheckingUpdates"] = "Verificando…",
-            ["UpdateAvailableTitle"] = "Atualização disponível",
-            ["UpdateAvailableMessage"] = "Uma versão mais recente, {0} ({1}), está disponível no GitHub.\n\nAbrir a página da versão para ler as notas e baixá-la manualmente?",
-            ["UpToDateMessage"] = "A versão {0} é a versão pública mais recente no GitHub.",
-            ["UpdateCheckFailed"] = "Não foi possível verificar atualizações: {0}",
-            ["ProjectOverview"] = "Visão geral do projeto",
-            ["UserGuide"] = "Guia do usuário",
-            ["PrivacyPolicy"] = "Política de privacidade",
-            ["TermsOfUse"] = "Termos de uso",
-            ["HelpDocumentUnavailable"] = "Não foi possível carregar o documento de ajuda.",
-            ["LogLimitUpdateError"] = "Não foi possível atualizar o limite do registro: {0}",
-            ["Privacy"] = "Esta ferramenta só se conecta à Internet durante uma verificação manual de atualizações ou ao abrir a página de feedback. Ela não envia registros, não lê pacotes e não bloqueia conexões automaticamente.",
-            ["CreateRule"] = "Criar regra de monitoramento",
-            ["EditRule"] = "Editar regra de monitoramento",
-            ["RuleType"] = "Tipo de regra",
-            ["AnyRemoteIpCheck"] = "Qualquer IP remoto",
-            ["AnyRemotePortCheck"] = "Qualquer porta remota",
-            ["AnyLocalPortCheck"] = "Qualquer porta local",
-            ["PortFormat"] = "Digite uma porta (1433) ou um intervalo (1400-1500)",
-            ["RepeatInterval"] = "Intervalo de repetição após fechar a janela",
-            ["EveryTime"] = "Sempre",
-            ["OneMinute"] = "1 minuto",
-            ["FiveMinutes"] = "5 minutos",
-            ["FifteenMinutes"] = "15 minutos",
-            ["EnableAfterSave"] = "Ativar esta regra depois de salvar",
-            ["RulePreview"] = "Visualização da regra",
-            ["Save"] = "Salvar",
-            ["Cancel"] = "Cancelar",
-            ["PreviewConnection"] = "Quando uma conexão TCP corresponder a estas condições: {0}, {1}.",
-            ["PreviewListener"] = "Quando um programa escutar na porta local {0}, {1}.",
-            ["NameRequired"] = "Digite um nome para a regra.",
-            ["InvalidRemoteIp"] = "O endereço IP remoto é inválido.",
-            ["InvalidRemotePort"] = "A porta remota deve ser uma porta ou intervalo de 1 a 65535.",
-            ["InvalidLocalPort"] = "A porta local deve ser uma porta ou intervalo de 1 a 65535.",
-            ["ConditionRequired"] = "Restrinja pelo menos um endereço IP ou uma porta.",
-            ["ListenerPortRequired"] = "Uma regra de escuta exige uma porta local.",
-            ["InvalidRepeatInterval"] = "O intervalo de repetição é inválido.",
-            ["NeedEnabledRule"] = "Crie e ative pelo menos uma regra antes de iniciar o monitoramento.",
-            ["UrgentTitle"] = "Regra de monitoramento correspondida",
-            ["FirstSeen"] = "Primeira detecção",
-            ["LatestSeen"] = "Detecção mais recente",
-            ["Occurrences"] = "Durante este alerta",
-            ["Times"] = "vezes",
-            ["NotMalwareVerdict"] = "Esta conexão correspondeu a uma regra criada por você, mas isso, por si só, não significa que o computador esteja infectado.",
-            ["ViewDetails"] = "Ver detalhes",
-            ["Close"] = "Fechar",
-            ["Open"] = "Abrir",
-            ["Exit"] = "Sair",
-            ["CloseWhileRunning"] = "O monitoramento está ativo. Escolha Sim para minimizar para a bandeja ou Não para parar e sair.",
-            ["CloseWhileRunningTitle"] = "O monitoramento ainda está ativo",
-            ["TrayNormal"] = "SocketSight: monitorando",
-            ["TrayNotices"] = "SocketSight: {0} avisos",
-            ["Error"] = "Erro",
-            ["UnexpectedError"] = "Erro inesperado",
-            ["StartupSettingError"] = "Não foi possível alterar a configuração de inicialização do Windows: {0}",
-            ["ProcessPathUnavailable"] = "Indisponível (permissão insuficiente)"
-        };
+    private static readonly IReadOnlyDictionary<
+        string,
+        string
+    > BrazilianPortuguese = new Dictionary<string, string>
+    {
+        ["AppTitle"] = "SocketSight",
+        ["Home"] = "Início",
+        ["Rules"] = "Regras de monitoramento",
+        ["Events"] = "Registro de eventos",
+        ["Settings"] = "Configurações",
+        ["MonitoringStopped"] = "Parado",
+        ["MonitoringRunning"] = "Monitorando",
+        ["MonitoringInterrupted"] = "Erro de monitoramento",
+        ["MonitoringStatus"] = "Status do monitoramento",
+        ["StatusHint"] = (
+            "As conexões só são verificadas após "
+            + "selecionar Iniciar monitoramento."
+        ),
+        ["StartMonitoring"] = "Iniciar monitoramento",
+        ["StopMonitoring"] = "Parar monitoramento",
+        ["EnabledRules"] = "Regras ativadas",
+        ["CheckInterval"] = "Intervalo de verificação",
+        ["OneSecond"] = "1 segundo",
+        ["SecondsUnit"] = "segundos",
+        ["LongIntervalHint"] = (
+            "Intervalos maiores podem perder " + "conexões muito breves."
+        ),
+        ["ActionLegend"] =
+            "Símbolos de ação (o registro usa os mesmos símbolos)",
+        ["RulesDescription"] = (
+            "As regras definem o que monitorar e "
+            + "qual ação executar quando houver "
+            + "correspondência."
+        ),
+        ["NewRule"] = "Nova regra",
+        ["Edit"] = "Editar",
+        ["Delete"] = "Excluir",
+        ["Name"] = "Nome da regra",
+        ["Condition"] = "Condição de monitoramento",
+        ["MatchAction"] = "Ação ao corresponder",
+        ["ActionColumn"] = "Ação",
+        ["Enabled"] = "Ativada",
+        ["NoRules"] = "Ainda não há regras. Primeiro crie e ative uma regra.",
+        ["DeleteRuleTitle"] = "Excluir regra",
+        ["DeleteRuleQuestion"] = (
+            "Excluir a regra “{0}”? Os registros "
+            + "existentes não serão excluídos."
+        ),
+        ["SilentLog"] = "Registrar silenciosamente",
+        ["TrayNotice"] = "Aviso na bandeja e registro",
+        ["PopupAlert"] = "Alerta em janela e registro",
+        ["SilentShort"] = "Silencioso",
+        ["TrayShort"] = "Bandeja",
+        ["PopupShort"] = "Janela",
+        ["TcpConnection"] = "Conexão TCP",
+        ["LocalListener"] = "Porta de escuta local",
+        ["AnyRemoteIp"] = "Qualquer IP remoto",
+        ["RemoteIp"] = "IP remoto",
+        ["RemotePort"] = "Porta remota",
+        ["LocalPort"] = "Porta local",
+        ["AnyPort"] = "Qualquer porta",
+        ["ListenerOn"] = "Escutar na porta local {0}",
+        ["ConnectionCondition"] =
+            "IP remoto: {0} · porta remota: {1} · porta local: {2}",
+        ["Any"] = "Qualquer",
+        ["SearchEvents"] = "Pesquisar regra, IP, porta ou programa",
+        ["ClearDisplay"] = "Limpar exibição",
+        ["ClearDisplayTitle"] = "Limpar exibição do registro",
+        ["ClearDisplayQuestion"] = (
+            "Limpar os eventos exibidos? Os "
+            + "arquivos CSV não serão excluídos e os "
+            + "eventos anteriores continuarão "
+            + "ocultos após reiniciar o aplicativo."
+        ),
+        ["EventsDescription"] = (
+            "Cada nova correspondência é "
+            + "registrada uma vez; o status e a "
+            + "duração observada são atualizados "
+            + "automaticamente."
+        ),
+        ["EventDoubleClickHint"] = (
+            "Clique duas vezes em um evento para " + "ver todos os detalhes."
+        ),
+        ["EventDetailsTitle"] = "Detalhes do evento",
+        ["EventDetailsDescription"] = (
+            "Mostra o proprietário da conexão "
+            + "informado pelo Windows e o contexto "
+            + "relacionado. Isso ajuda na "
+            + "investigação, mas nem sempre prova "
+            + "qual aplicativo iniciou a conexão."
+        ),
+        ["StartTime"] = "Hora de início",
+        ["EndTime"] = "Hora de término",
+        ["ProcessPath"] = "Caminho do programa",
+        ["CopyDetails"] = "Copiar detalhes",
+        ["Copied"] = "Copiado",
+        ["CopyFailed"] =
+            "Não foi possível copiar os detalhes. Tente novamente.",
+        ["ExportCsv"] = "Exportar CSV",
+        ["OpenLogFolder"] = "Abrir pasta de registros",
+        ["Time"] = "Hora",
+        ["ConnectionStatus"] = "Status",
+        ["ObservedDuration"] = "Duração observada",
+        ["ConnectionActive"] = "Ativa",
+        ["ConnectionEnded"] = "Encerrada",
+        ["MatchedRules"] = "Regras correspondentes",
+        ["RemoteEndpoint"] = "Destino remoto",
+        ["LocalEndpoint"] = "Destino local",
+        ["TcpState"] = "Estado TCP",
+        ["Program"] = "Programa",
+        ["Application"] = "Aplicativo",
+        ["ApplicationTooltip"] = (
+            "Proprietário informado pelo Windows: "
+            + "{0} (PID {1})\nCaminho: {2}"
+        ),
+        ["ConnectionOwner"] = "Proprietário da conexão informado pelo Windows",
+        ["ProductName"] = "Nome do produto do arquivo",
+        ["CompanyName"] = "Empresa do arquivo",
+        ["FileDescription"] = "Descrição do arquivo",
+        ["ParentProcesses"] = "Processos pai/hospedeiros (até 3)",
+        ["RelatedServices"] = "Serviços do Windows relacionados",
+        ["ContextUnavailable"] = "Indisponível ou não informado",
+        ["NoneFound"] = "Nenhum encontrado",
+        ["NoEvents"] = "Nenhuma conexão correspondeu a uma regra até agora.",
+        ["ExportComplete"] = "Registro de eventos exportado.",
+        ["Language"] = "Idioma da interface",
+        ["Chinese"] = "简体中文",
+        ["TraditionalChinese"] = "繁體中文",
+        ["English"] = "English",
+        ["Spanish"] = "Español",
+        ["French"] = "Français",
+        ["German"] = "Deutsch",
+        ["BrazilianPortuguese"] = "Português (Brasil)",
+        ["StartWithWindows"] = "Abrir o aplicativo ao entrar no Windows",
+        ["StartWithWindowsHint"] =
+            "Apenas abre o aplicativo; não inicia o monitoramento.",
+        ["ResumeMonitoring"] =
+            "Iniciar o monitoramento automaticamente ao abrir",
+        ["ResumeMonitoringHint"] =
+            "Desativado por padrão; usa somente regras ativadas.",
+        ["AlertSound"] = "Som do alerta urgente",
+        ["AlertSoundHint"] =
+            "Usa o breve som de alerta integrado ao aplicativo.",
+        ["TestSound"] = "Testar som",
+        ["AlertVolume"] = "Volume do alerta urgente (%)",
+        ["AlertVolumeHint"] = (
+            "Aplica-se ao teste e aos alertas "
+            + "urgentes; o volume do Windows também "
+            + "continua valendo."
+        ),
+        ["LogLimit"] = "Limite do registro de eventos (MB)",
+        ["LogLimitHint"] = (
+            "Escolha de 5 a 500 MB. São usados "
+            + "cinco arquivos; os registros mais "
+            + "antigos são removidos primeiro."
+        ),
+        ["HelpCenter"] = "Central de ajuda",
+        ["HelpCenterHint"] = (
+            "Leia a visão geral do projeto e o "
+            + "guia do usuário dentro do aplicativo."
+        ),
+        ["OpenHelpCenter"] = "Abrir",
+        ["Feedback"] = "Feedback",
+        ["FeedbackHint"] = (
+            "Compartilhe feedback no GitHub; você "
+            + "o revisa antes de enviar."
+        ),
+        ["OpenFeedback"] = "Abrir",
+        ["FeedbackTitle"] = "Enviar feedback",
+        ["FeedbackDescription"] = (
+            "Escreva uma sugestão ou descreva um "
+            + "problema. Ao escolher Continuar para "
+            + "o GitHub, o navegador abrirá uma "
+            + "página preenchida para você revisar e "
+            + "enviar."
+        ),
+        ["FeedbackTextLabel"] = "Feedback",
+        ["FeedbackPlaceholder"] =
+            "Descreva um problema, uma sugestão ou uma melhoria.",
+        ["IncludeDiagnostics"] = "Incluir informações básicas de diagnóstico",
+        ["DiagnosticsHint"] = (
+            "Somente a versão do aplicativo, a "
+            + "versão do Windows e o idioma; nenhum "
+            + "registro é anexado."
+        ),
+        ["ContinueToGitHub"] = "Continuar para o GitHub",
+        ["FeedbackEmpty"] = "Digite o feedback primeiro.",
+        ["FeedbackOpenFailed"] =
+            "Não foi possível abrir a página do GitHub: {0}",
+        ["SoftwareUpdates"] = "Atualizações",
+        ["SoftwareUpdatesWithVersion"] = "Atualizações (versão atual: {0})",
+        ["SoftwareUpdatesHint"] =
+            "As atualizações não são instaladas automaticamente.",
+        ["CheckNow"] = "Verificar agora",
+        ["CurrentVersion"] = "Versão atual: {0}",
+        ["CheckingUpdates"] = "Verificando…",
+        ["UpdateAvailableTitle"] = "Atualização disponível",
+        ["UpdateAvailableMessage"] = (
+            "Uma versão mais recente, {0} ({1}), "
+            + "está disponível no GitHub.\n\nAbrir a "
+            + "página da versão para ler as notas e "
+            + "baixá-la manualmente?"
+        ),
+        ["UpToDateMessage"] = (
+            "A versão {0} é a versão pública mais " + "recente no GitHub."
+        ),
+        ["UpdateCheckFailed"] = "Não foi possível verificar atualizações: {0}",
+        ["ProjectOverview"] = "Visão geral do projeto",
+        ["UserGuide"] = "Guia do usuário",
+        ["PrivacyPolicy"] = "Política de privacidade",
+        ["TermsOfUse"] = "Termos de uso",
+        ["HelpDocumentUnavailable"] =
+            "Não foi possível carregar o documento de ajuda.",
+        ["LogLimitUpdateError"] =
+            "Não foi possível atualizar o limite do registro: {0}",
+        ["Privacy"] = (
+            "Esta ferramenta só se conecta à "
+            + "Internet durante uma verificação "
+            + "manual de atualizações ou ao abrir a "
+            + "página de feedback. Ela não envia "
+            + "registros, não lê pacotes e não "
+            + "bloqueia conexões automaticamente."
+        ),
+        ["CreateRule"] = "Criar regra de monitoramento",
+        ["EditRule"] = "Editar regra de monitoramento",
+        ["RuleType"] = "Tipo de regra",
+        ["AnyRemoteIpCheck"] = "Qualquer IP remoto",
+        ["AnyRemotePortCheck"] = "Qualquer porta remota",
+        ["AnyLocalPortCheck"] = "Qualquer porta local",
+        ["PortFormat"] = "Digite uma porta (1433) ou um intervalo (1400-1500)",
+        ["RepeatInterval"] = "Intervalo de repetição após fechar a janela",
+        ["EveryTime"] = "Sempre",
+        ["OneMinute"] = "1 minuto",
+        ["FiveMinutes"] = "5 minutos",
+        ["FifteenMinutes"] = "15 minutos",
+        ["EnableAfterSave"] = "Ativar esta regra depois de salvar",
+        ["RulePreview"] = "Visualização da regra",
+        ["Save"] = "Salvar",
+        ["Cancel"] = "Cancelar",
+        ["PreviewConnection"] = (
+            "Quando uma conexão TCP corresponder a "
+            + "estas condições: {0}, {1}."
+        ),
+        ["PreviewListener"] =
+            "Quando um programa escutar na porta local {0}, {1}.",
+        ["NameRequired"] = "Digite um nome para a regra.",
+        ["InvalidRemoteIp"] = "O endereço IP remoto é inválido.",
+        ["InvalidRemotePort"] = (
+            "A porta remota deve ser uma porta ou " + "intervalo de 1 a 65535."
+        ),
+        ["InvalidLocalPort"] = (
+            "A porta local deve ser uma porta ou " + "intervalo de 1 a 65535."
+        ),
+        ["ConditionRequired"] =
+            "Restrinja pelo menos um endereço IP ou uma porta.",
+        ["ListenerPortRequired"] = "Uma regra de escuta exige uma porta local.",
+        ["InvalidRepeatInterval"] = "O intervalo de repetição é inválido.",
+        ["NeedEnabledRule"] = (
+            "Crie e ative pelo menos uma regra "
+            + "antes de iniciar o monitoramento."
+        ),
+        ["UrgentTitle"] = "Regra de monitoramento correspondida",
+        ["FirstSeen"] = "Primeira detecção",
+        ["LatestSeen"] = "Detecção mais recente",
+        ["Occurrences"] = "Durante este alerta",
+        ["Times"] = "vezes",
+        ["NotMalwareVerdict"] = (
+            "Esta conexão correspondeu a uma regra "
+            + "criada por você, mas isso, por si só, "
+            + "não significa que o computador esteja "
+            + "infectado."
+        ),
+        ["ViewDetails"] = "Ver detalhes",
+        ["Close"] = "Fechar",
+        ["Open"] = "Abrir",
+        ["Exit"] = "Sair",
+        ["CloseWhileRunning"] = (
+            "O monitoramento está ativo. Escolha "
+            + "Sim para minimizar para a bandeja ou "
+            + "Não para parar e sair."
+        ),
+        ["CloseWhileRunningTitle"] = "O monitoramento ainda está ativo",
+        ["TrayNormal"] = "SocketSight: monitorando",
+        ["TrayNotices"] = "SocketSight: {0} avisos",
+        ["Error"] = "Erro",
+        ["UnexpectedError"] = "Erro inesperado",
+        ["StartupSettingError"] = (
+            "Não foi possível alterar a "
+            + "configuração de inicialização do "
+            + "Windows: {0}"
+        ),
+        ["ProcessPathUnavailable"] = "Indisponível (permissão insuficiente)",
+    };
 }

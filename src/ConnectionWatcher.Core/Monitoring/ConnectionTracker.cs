@@ -5,7 +5,8 @@ namespace ConnectionWatcher.Core.Monitoring;
 
 public sealed record ConnectionTrackingResult(
     IReadOnlyList<ConnectionEvent> DetectedEvents,
-    IReadOnlyList<ConnectionEvent> CompletedEvents);
+    IReadOnlyList<ConnectionEvent> CompletedEvents
+);
 
 public sealed class ConnectionTracker
 {
@@ -14,15 +15,21 @@ public sealed class ConnectionTracker
 
     private readonly Dictionary<ConnectionKey, TrackedConnection> _tracked = [];
 
+    /// <summary>
+    /// Compare one TCP snapshot with tracked entries and apply enabled rules.
+    /// </summary>
     public ConnectionTrackingResult Process(
         IEnumerable<TcpConnectionInfo> connections,
         IReadOnlyList<MonitoringRule> rules,
-        DateTimeOffset detectedAt)
+        DateTimeOffset detectedAt
+    )
     {
         HashSet<ConnectionKey> seen = [];
         List<ConnectionEvent> detectedEvents = [];
         List<ConnectionEvent> completedEvents = [];
-        MonitoringRule[] enabledRules = rules.Where(rule => rule.Enabled).ToArray();
+        MonitoringRule[] enabledRules = rules
+            .Where(rule => rule.Enabled)
+            .ToArray();
 
         foreach (TcpConnectionInfo connection in connections)
         {
@@ -56,22 +63,28 @@ public sealed class ConnectionTracker
                 ConnectionEvent connectionEvent = ConnectionEvent.Create(
                     detectedAt,
                     connection,
-                    newlyMatched);
+                    newlyMatched
+                );
                 tracked.Events.Add(connectionEvent);
                 detectedEvents.Add(connectionEvent);
             }
         }
 
-        foreach ((ConnectionKey key, TrackedConnection tracked) in _tracked.ToArray())
+        foreach (
+            (ConnectionKey key, TrackedConnection tracked) in _tracked.ToArray()
+        )
         {
             if (seen.Contains(key))
             {
                 continue;
             }
 
-            DateTimeOffset lastSeenAt = tracked.Events.Count == 0
-                ? detectedAt
-                : tracked.Events.Max(connectionEvent => connectionEvent.LastSeenAt);
+            DateTimeOffset lastSeenAt =
+                tracked.Events.Count == 0
+                    ? detectedAt
+                    : tracked.Events.Max(connectionEvent =>
+                        connectionEvent.LastSeenAt
+                    );
             if (detectedAt - lastSeenAt >= DisappearanceGracePeriod)
             {
                 completedEvents.AddRange(Complete(tracked));
@@ -82,6 +95,9 @@ public sealed class ConnectionTracker
         return new ConnectionTrackingResult(detectedEvents, completedEvents);
     }
 
+    /// <summary>
+    /// Finish every active event when monitoring stops.
+    /// </summary>
     public IReadOnlyList<ConnectionEvent> CompleteAll()
     {
         List<ConnectionEvent> completedEvents = [];
@@ -99,7 +115,9 @@ public sealed class ConnectionTracker
         _tracked.Clear();
     }
 
-    private static IReadOnlyList<ConnectionEvent> Complete(TrackedConnection tracked)
+    private static IReadOnlyList<ConnectionEvent> Complete(
+        TrackedConnection tracked
+    )
     {
         foreach (ConnectionEvent connectionEvent in tracked.Events)
         {

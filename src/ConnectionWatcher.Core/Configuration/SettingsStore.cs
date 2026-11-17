@@ -8,7 +8,7 @@ public sealed class SettingsStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        WriteIndented = true
+        WriteIndented = true,
     };
 
     public SettingsStore(string rootDirectory)
@@ -20,6 +20,10 @@ public sealed class SettingsStore
     public string RootDirectory { get; }
     public string SettingsPath { get; }
 
+    /// <summary>
+    /// Load and normalize local settings; retain a damaged file before using
+    /// defaults.
+    /// </summary>
     public AppSettings Load()
     {
         Directory.CreateDirectory(RootDirectory);
@@ -31,29 +35,45 @@ public sealed class SettingsStore
         try
         {
             string json = File.ReadAllText(SettingsPath);
-            AppSettings settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions) ??
-                new AppSettings();
+            AppSettings settings =
+                JsonSerializer.Deserialize<AppSettings>(json, JsonOptions)
+                ?? new AppSettings();
             Normalize(settings);
             return settings;
         }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        catch (Exception ex)
+            when (ex
+                    is JsonException
+                        or IOException
+                        or UnauthorizedAccessException
+            )
         {
             string backup = Path.Combine(
                 RootDirectory,
-                $"config-invalid-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+                (
+                    "config-invalid-"
+                    + $"{DateTime.Now:yyyyMMdd-HHmmss}"
+                    + ".json"
+                )
+            );
             try
             {
                 File.Copy(SettingsPath, backup, overwrite: false);
             }
             catch
             {
-                // A damaged configuration must not prevent the app from opening.
+                // A damaged configuration must not prevent the app from
+                // opening.
             }
 
             return new AppSettings();
         }
     }
 
+    /// <summary>
+    /// Replace the settings file only after writing the complete temporary
+    /// JSON.
+    /// </summary>
     public void Save(AppSettings settings)
     {
         Directory.CreateDirectory(RootDirectory);
@@ -86,21 +106,25 @@ public sealed class SettingsStore
         settings.LogLimitMb = Math.Clamp(
             settings.LogLimitMb,
             AppSettings.MinimumLogLimitMb,
-            AppSettings.MaximumLogLimitMb);
+            AppSettings.MaximumLogLimitMb
+        );
         settings.AlertVolumePercent = Math.Clamp(
             settings.AlertVolumePercent,
             AppSettings.MinimumAlertVolumePercent,
-            AppSettings.MaximumAlertVolumePercent);
+            AppSettings.MaximumAlertVolumePercent
+        );
         decimal clampedInterval = Math.Clamp(
             settings.CheckIntervalSeconds,
             AppSettings.MinimumCheckIntervalSeconds,
-            AppSettings.MaximumCheckIntervalSeconds);
+            AppSettings.MaximumCheckIntervalSeconds
+        );
         decimal steps = Math.Round(
-            (clampedInterval - AppSettings.MinimumCheckIntervalSeconds) /
-            AppSettings.CheckIntervalStepSeconds,
-            MidpointRounding.AwayFromZero);
+            (clampedInterval - AppSettings.MinimumCheckIntervalSeconds)
+                / AppSettings.CheckIntervalStepSeconds,
+            MidpointRounding.AwayFromZero
+        );
         settings.CheckIntervalSeconds =
-            AppSettings.MinimumCheckIntervalSeconds +
-            steps * AppSettings.CheckIntervalStepSeconds;
+            AppSettings.MinimumCheckIntervalSeconds
+            + steps * AppSettings.CheckIntervalStepSeconds;
     }
 }

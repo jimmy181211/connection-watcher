@@ -15,24 +15,32 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
     private const int ErrorMoreData = 234;
     private static readonly nint InvalidHandleValue = new(-1);
 
+    /// <summary>
+    /// Attach best-effort process and service details to an observed
+    /// connection.
+    /// </summary>
     public ProcessContext GetContext(
         int processId,
         string fallbackName,
-        string? fallbackPath)
+        string? fallbackPath
+    )
     {
         Dictionary<int, int> parentIds = ReadParentProcessIds();
         ProcessSnapshot owner = ReadProcess(
             processId,
             fallbackName,
-            fallbackPath);
+            fallbackPath
+        );
         List<ProcessSnapshot> parents = [];
         HashSet<int> visited = [processId];
         int currentId = processId;
         for (int level = 0; level < 3; level++)
         {
-            if (!parentIds.TryGetValue(currentId, out int parentId) ||
-                parentId <= 0 ||
-                !visited.Add(parentId))
+            if (
+                !parentIds.TryGetValue(currentId, out int parentId)
+                || parentId <= 0
+                || !visited.Add(parentId)
+            )
             {
                 break;
             }
@@ -40,22 +48,29 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
             ProcessSnapshot parent = ReadProcess(
                 parentId,
                 $"PID {parentId}",
-                null);
+                null
+            );
             parents.Add(parent);
             currentId = parentId;
         }
 
         HashSet<int> relatedProcessIds = [processId];
         relatedProcessIds.UnionWith(parents.Select(parent => parent.ProcessId));
-        IReadOnlyList<WindowsServiceSnapshot> services =
-            ReadServices(relatedProcessIds);
+        IReadOnlyList<WindowsServiceSnapshot> services = ReadServices(
+            relatedProcessIds
+        );
         return new ProcessContext(owner, parents, services);
     }
 
+    /// <summary>
+    /// Read available process metadata while tolerating exited or protected
+    /// processes.
+    /// </summary>
     private static ProcessSnapshot ReadProcess(
         int processId,
         string fallbackName,
-        string? fallbackPath)
+        string? fallbackPath
+    )
     {
         string name = fallbackName;
         string? path = fallbackPath;
@@ -73,16 +88,26 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
                 {
                     path = process.MainModule?.FileName ?? path;
                 }
-                catch (Exception ex) when (
-                    ex is Win32Exception or InvalidOperationException or NotSupportedException)
+                catch (Exception ex)
+                    when (ex
+                            is Win32Exception
+                                or InvalidOperationException
+                                or NotSupportedException
+                    )
                 {
-                    // The owner is still useful even when Windows denies its path.
+                    // The owner is still useful even when Windows denies its
+                    // path.
                 }
             }
-            catch (Exception ex) when (
-                ex is ArgumentException or InvalidOperationException or Win32Exception)
+            catch (Exception ex)
+                when (ex
+                        is ArgumentException
+                            or InvalidOperationException
+                            or Win32Exception
+                )
             {
-                // The process may have exited between the network and process snapshots.
+                // The process may have exited between the network and process
+                // snapshots.
             }
         }
 
@@ -98,8 +123,12 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
                 company = EmptyToNull(version.CompanyName);
                 description = EmptyToNull(version.FileDescription);
             }
-            catch (Exception ex) when (
-                ex is FileNotFoundException or Win32Exception or ArgumentException)
+            catch (Exception ex)
+                when (ex
+                        is FileNotFoundException
+                            or Win32Exception
+                            or ArgumentException
+                )
             {
                 // File metadata is optional context.
             }
@@ -111,7 +140,8 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
             path,
             product,
             company,
-            description);
+            description
+        );
     }
 
     private static Dictionary<int, int> ReadParentProcessIds()
@@ -128,7 +158,7 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
             ProcessEntry32 entry = new()
             {
                 Size = (uint)Marshal.SizeOf<ProcessEntry32>(),
-                ExeFile = string.Empty
+                ExeFile = string.Empty,
             };
             if (!Process32First(snapshot, ref entry))
             {
@@ -139,8 +169,7 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
             {
                 result[(int)entry.ProcessId] = (int)entry.ParentProcessId;
                 entry.Size = (uint)Marshal.SizeOf<ProcessEntry32>();
-            }
-            while (Process32Next(snapshot, ref entry));
+            } while (Process32Next(snapshot, ref entry));
         }
         finally
         {
@@ -151,7 +180,8 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
     }
 
     private static IReadOnlyList<WindowsServiceSnapshot> ReadServices(
-        IReadOnlySet<int> processIds)
+        IReadOnlySet<int> processIds
+    )
     {
         List<WindowsServiceSnapshot> result = [];
         nint manager = OpenSCManager(null, null, ScManagerEnumerateService);
@@ -175,8 +205,12 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
                 out bytesNeeded,
                 out servicesReturned,
                 ref resumeHandle,
-                null);
-            if (bytesNeeded == 0 && Marshal.GetLastWin32Error() != ErrorMoreData)
+                null
+            );
+            if (
+                bytesNeeded == 0
+                && Marshal.GetLastWin32Error() != ErrorMoreData
+            )
             {
                 return result;
             }
@@ -185,7 +219,8 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
             try
             {
                 resumeHandle = 0;
-                if (!EnumServicesStatusEx(
+                if (
+                    !EnumServicesStatusEx(
                         manager,
                         ScEnumProcessInfo,
                         ServiceWin32,
@@ -195,7 +230,9 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
                         out bytesNeeded,
                         out servicesReturned,
                         ref resumeHandle,
-                        null))
+                        null
+                    )
+                )
                 {
                     return result;
                 }
@@ -209,14 +246,19 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
                     int serviceProcessId = (int)service.Status.ProcessId;
                     if (processIds.Contains(serviceProcessId))
                     {
-                        string serviceName = Marshal.PtrToStringUni(service.ServiceName) ??
-                            string.Empty;
-                        string displayName = Marshal.PtrToStringUni(service.DisplayName) ??
-                            serviceName;
-                        result.Add(new WindowsServiceSnapshot(
-                            serviceProcessId,
-                            serviceName,
-                            displayName));
+                        string serviceName =
+                            Marshal.PtrToStringUni(service.ServiceName)
+                            ?? string.Empty;
+                        string displayName =
+                            Marshal.PtrToStringUni(service.DisplayName)
+                            ?? serviceName;
+                        result.Add(
+                            new WindowsServiceSnapshot(
+                                serviceProcessId,
+                                serviceName,
+                                displayName
+                            )
+                        );
                     }
 
                     row += rowSize;
@@ -233,7 +275,10 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
         }
 
         return result
-            .OrderBy(service => service.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .OrderBy(
+                service => service.DisplayName,
+                StringComparer.CurrentCultureIgnoreCase
+            )
             .ToArray();
     }
 
@@ -241,13 +286,22 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern nint CreateToolhelp32Snapshot(uint flags, uint processId);
+    private static extern nint CreateToolhelp32Snapshot(
+        uint flags,
+        uint processId
+    );
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool Process32First(nint snapshot, ref ProcessEntry32 entry);
+    private static extern bool Process32First(
+        nint snapshot,
+        ref ProcessEntry32 entry
+    );
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool Process32Next(nint snapshot, ref ProcessEntry32 entry);
+    private static extern bool Process32Next(
+        nint snapshot,
+        ref ProcessEntry32 entry
+    );
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool CloseHandle(nint handle);
@@ -256,7 +310,8 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
     private static extern nint OpenSCManager(
         string? machineName,
         string? databaseName,
-        uint desiredAccess);
+        uint desiredAccess
+    );
 
     [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool EnumServicesStatusEx(
@@ -269,7 +324,8 @@ public sealed class WindowsProcessContextProvider : IProcessContextProvider
         out uint bytesNeeded,
         out uint servicesReturned,
         ref uint resumeHandle,
-        string? groupName);
+        string? groupName
+    );
 
     [DllImport("advapi32.dll", SetLastError = true)]
     private static extern bool CloseServiceHandle(nint serviceControlManager);

@@ -43,5 +43,12 @@ public static class InstallerLanguagePreference
     }
 
     public static bool IsSupported(string language) =>
-        language is "zh-CN" or "zh-TW" or "en" or "es" or "fr" or "de" or "pt-BR";
+        language
+            is "zh-CN"
+                or "zh-TW"
+                or "en"
+                or "es"
+                or "fr"
+                or "de"
+                or "pt-BR";
 }

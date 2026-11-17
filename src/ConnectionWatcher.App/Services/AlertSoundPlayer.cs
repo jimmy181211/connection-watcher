@@ -21,7 +21,10 @@ internal static class AlertSoundPlayer
                 _player?.Stop();
                 _player?.Dispose();
                 _waveStream?.Dispose();
-                _waveStream = new MemoryStream(CreateWave(safeVolume), writable: false);
+                _waveStream = new MemoryStream(
+                    CreateWave(safeVolume),
+                    writable: false
+                );
                 _player = new SoundPlayer(_waveStream);
                 _player.Load();
                 _loadedVolumePercent = safeVolume;
@@ -74,7 +77,8 @@ internal static class AlertSoundPlayer
         double start,
         double duration,
         double frequency,
-        double amplitude)
+        double amplitude
+    )
     {
         double local = time - start;
         if (local < 0 || local >= duration)

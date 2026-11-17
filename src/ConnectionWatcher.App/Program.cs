@@ -15,34 +15,44 @@ internal static class Program
         ApplicationConfiguration.Initialize();
         using Mutex instance = new(
             initiallyOwned: true,
-            name: @"Local\ConnectionWatcher-6F695A7A-5E57-4B21-86A4-A487B45D67DE",
-            createdNew: out bool createdNew);
+            name: (
+                "Local\\ConnectionWatcher-6F695A7A-5E57-"
+                + "4B21-86A4-A487B45D67DE"
+            ),
+            createdNew: out bool createdNew
+        );
         if (!createdNew)
         {
             MessageBox.Show(
-                "SocketSight is already running.\n\n" +
-                "SocketSight 已经在运行。\n\n" +
-                "SocketSight ya está en ejecución.",
+                "SocketSight is already running.\n\n"
+                    + "SocketSight 已经在运行。\n\n"
+                    + "SocketSight ya está en ejecución.",
                 "SocketSight",
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+                MessageBoxIcon.Information
+            );
             return;
         }
 
         long startupStarted = Stopwatch.GetTimestamp();
 
-        string dataRoot = Environment.GetEnvironmentVariable("SOCKETSIGHT_DATA_DIR") ??
-            Environment.GetEnvironmentVariable("CONNECTION_WATCHER_DATA_DIR") ??
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "ConnectionWatcher");
+        string dataRoot =
+            Environment.GetEnvironmentVariable("SOCKETSIGHT_DATA_DIR")
+            ?? Environment.GetEnvironmentVariable("CONNECTION_WATCHER_DATA_DIR")
+            ?? Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.LocalApplicationData
+                ),
+                "ConnectionWatcher"
+            );
         SettingsStore settingsStore = new(dataRoot);
         AppSettings settings = settingsStore.Load();
 
         StartupManager.TryMigrateLegacyRegistration();
 
         string? installerLanguage = InstallerLanguagePreference.Consume(
-            AppContext.BaseDirectory);
+            AppContext.BaseDirectory
+        );
         if (installerLanguage is not null)
         {
             settings.Language = installerLanguage;
@@ -66,24 +76,28 @@ internal static class Program
         CsvEventLogger logger = new(
             Path.Combine(dataRoot, "Logs"),
             maximumFileBytes: maximumTotalBytes / maximumLogFiles,
-            maximumFiles: maximumLogFiles);
+            maximumFiles: maximumLogFiles
+        );
 
         Application.ThreadException += (_, args) =>
             MessageBox.Show(
                 args.Exception.Message,
                 UiText.Get("UnexpectedError"),
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
+                MessageBoxIcon.Error
+            );
 
         TimeSpan splashThreshold = TimeSpan.FromMilliseconds(500);
         TimeSpan elapsed = Stopwatch.GetElapsedTime(startupStarted);
-        TimeSpan splashDelay = elapsed >= splashThreshold
-            ? TimeSpan.Zero
-            : splashThreshold - elapsed;
+        TimeSpan splashDelay =
+            elapsed >= splashThreshold
+                ? TimeSpan.Zero
+                : splashThreshold - elapsed;
         using DelayedSplashScreen splash = new(
             StartupText.Get(settings.Language),
             settings.Language,
-            splashDelay);
+            splashDelay
+        );
         splash.Start();
         using MainForm mainForm = new(settings, settingsStore, logger);
         mainForm.Shown += (_, _) => splash.Complete();

@@ -6,14 +6,17 @@ public sealed record ProcessSnapshot(
     string? ProcessPath,
     string? ProductName,
     string? CompanyName,
-    string? FileDescription);
+    string? FileDescription
+);
 
 public sealed record WindowsServiceSnapshot(
     int ProcessId,
     string ServiceName,
-    string DisplayName);
+    string DisplayName
+);
 
 public sealed record ProcessContext(
     ProcessSnapshot Owner,
     IReadOnlyList<ProcessSnapshot> ParentProcesses,
-    IReadOnlyList<WindowsServiceSnapshot> RelatedServices);
+    IReadOnlyList<WindowsServiceSnapshot> RelatedServices
+);

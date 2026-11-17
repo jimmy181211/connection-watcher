@@ -18,14 +18,14 @@ public sealed class LanguageSelectionForm : Form
             Text = "Choose the Interface Language",
             AutoSize = true,
             Location = new Point(30, 24),
-            Font = new Font("Segoe UI", 11F, FontStyle.Bold)
+            Font = new Font("Segoe UI", 11F, FontStyle.Bold),
         };
         TableLayoutPanel choices = new()
         {
             Location = new Point(26, 66),
             Size = new Size(728, 132),
             ColumnCount = 4,
-            RowCount = 2
+            RowCount = 2,
         };
         for (int index = 0; index < 4; index++)
         {
@@ -42,7 +42,7 @@ public sealed class LanguageSelectionForm : Form
             ("es", "Español"),
             ("fr", "Français"),
             ("de", "Deutsch"),
-            ("pt-BR", "Português (Brasil)")
+            ("pt-BR", "Português (Brasil)"),
         ];
         for (int index = 0; index < languages.Length; index++)
         {
@@ -52,7 +52,7 @@ public sealed class LanguageSelectionForm : Form
                 Text = label,
                 Dock = DockStyle.Fill,
                 Margin = new Padding(8),
-                MinimumSize = new Size(150, 42)
+                MinimumSize = new Size(150, 42),
             };
             button.Click += (_, _) => Select(code);
             choices.Controls.Add(button, index % 4, index / 4);

@@ -14,16 +14,29 @@ public static partial class UiText
             ["MonitoringRunning"] = "Surveillance",
             ["MonitoringInterrupted"] = "Erreur de surveillance",
             ["MonitoringStatus"] = "État de la surveillance",
-            ["StatusHint"] = "Les connexions ne sont vérifiées qu'après avoir sélectionné Démarrer la surveillance.",
+            ["StatusHint"] = (
+                "Les connexions ne sont vérifiées "
+                + "qu'après avoir sélectionné Démarrer "
+                + "la surveillance."
+            ),
             ["StartMonitoring"] = "Démarrer la surveillance",
             ["StopMonitoring"] = "Arrêter la surveillance",
             ["EnabledRules"] = "Règles activées",
             ["CheckInterval"] = "Intervalle de vérification",
             ["OneSecond"] = "1 seconde",
             ["SecondsUnit"] = "secondes",
-            ["LongIntervalHint"] = "Un intervalle long peut manquer des connexions très brèves.",
-            ["ActionLegend"] = "Symboles d'action (le journal utilise les mêmes symboles)",
-            ["RulesDescription"] = "Les règles définissent ce qui est surveillé et l'action à effectuer en cas de correspondance.",
+            ["LongIntervalHint"] = (
+                "Un intervalle long peut manquer des "
+                + "connexions très brèves."
+            ),
+            ["ActionLegend"] = (
+                "Symboles d'action (le journal utilise " + "les mêmes symboles)"
+            ),
+            ["RulesDescription"] = (
+                "Les règles définissent ce qui est "
+                + "surveillé et l'action à effectuer en "
+                + "cas de correspondance."
+            ),
             ["NewRule"] = "Nouvelle règle",
             ["Edit"] = "Modifier",
             ["Delete"] = "Supprimer",
@@ -34,9 +47,13 @@ public static partial class UiText
             ["Enabled"] = "Activée",
             ["NoRules"] = "Aucune règle. Créez et activez d'abord une règle.",
             ["DeleteRuleTitle"] = "Supprimer la règle",
-            ["DeleteRuleQuestion"] = "Supprimer la règle « {0} » ? Les événements existants seront conservés.",
+            ["DeleteRuleQuestion"] = (
+                "Supprimer la règle « {0} » ? Les "
+                + "événements existants seront conservés."
+            ),
             ["SilentLog"] = "Enregistrer silencieusement",
-            ["TrayNotice"] = "Notification dans la zone de notification et journal",
+            ["TrayNotice"] =
+                "Notification dans la zone de notification et journal",
             ["PopupAlert"] = "Alerte contextuelle et journal",
             ["SilentShort"] = "Silencieux",
             ["TrayShort"] = "Zone de notification",
@@ -49,16 +66,40 @@ public static partial class UiText
             ["LocalPort"] = "Port local",
             ["AnyPort"] = "Tout port",
             ["ListenerOn"] = "Écoute sur le port local {0}",
-            ["ConnectionCondition"] = "IP distante : {0} · port distant : {1} · port local : {2}",
+            ["ConnectionCondition"] = (
+                "IP distante : {0} · port distant : " + "{1} · port local : {2}"
+            ),
             ["Any"] = "Tous",
-            ["SearchEvents"] = "Rechercher une règle, une IP, un port ou un programme",
+            ["SearchEvents"] =
+                "Rechercher une règle, une IP, un port ou un programme",
             ["ClearDisplay"] = "Effacer l’affichage",
             ["ClearDisplayTitle"] = "Effacer l’affichage du journal",
-            ["ClearDisplayQuestion"] = "Effacer les événements affichés ? Les journaux CSV ne seront pas supprimés et les événements antérieurs resteront masqués après le redémarrage.",
-            ["EventsDescription"] = "Chaque nouvelle correspondance est enregistrée une fois ; son état et sa durée observée se mettent à jour automatiquement.",
-            ["EventDoubleClickHint"] = "Double-cliquez sur un événement pour afficher tous ses détails.",
+            ["ClearDisplayQuestion"] = (
+                "Effacer les événements affichés ? Les "
+                + "journaux CSV ne seront pas supprimés "
+                + "et les événements antérieurs "
+                + "resteront masqués après le "
+                + "redémarrage."
+            ),
+            ["EventsDescription"] = (
+                "Chaque nouvelle correspondance est "
+                + "enregistrée une fois ; son état et sa "
+                + "durée observée se mettent à jour "
+                + "automatiquement."
+            ),
+            ["EventDoubleClickHint"] = (
+                "Double-cliquez sur un événement pour "
+                + "afficher tous ses détails."
+            ),
             ["EventDetailsTitle"] = "Détails de l’événement",
-            ["EventDetailsDescription"] = "Affiche le propriétaire de la connexion signalé par Windows et le contexte associé. Ces informations aident l’enquête sans toujours prouver quelle application a déclenché la connexion.",
+            ["EventDetailsDescription"] = (
+                "Affiche le propriétaire de la "
+                + "connexion signalé par Windows et le "
+                + "contexte associé. Ces informations "
+                + "aident l’enquête sans toujours "
+                + "prouver quelle application a "
+                + "déclenché la connexion."
+            ),
             ["StartTime"] = "Heure de début",
             ["EndTime"] = "Heure de fin",
             ["ProcessPath"] = "Chemin du programme",
@@ -78,8 +119,12 @@ public static partial class UiText
             ["TcpState"] = "État TCP",
             ["Program"] = "Programme",
             ["Application"] = "Application",
-            ["ApplicationTooltip"] = "Propriétaire signalé par Windows : {0} (PID {1})\nChemin : {2}",
-            ["ConnectionOwner"] = "Propriétaire de la connexion signalé par Windows",
+            ["ApplicationTooltip"] = (
+                "Propriétaire signalé par Windows : "
+                + "{0} (PID {1})\nChemin : {2}"
+            ),
+            ["ConnectionOwner"] =
+                "Propriétaire de la connexion signalé par Windows",
             ["ProductName"] = "Nom de produit du fichier",
             ["CompanyName"] = "Société du fichier",
             ["FileDescription"] = "Description du fichier",
@@ -87,7 +132,8 @@ public static partial class UiText
             ["RelatedServices"] = "Services Windows associés",
             ["ContextUnavailable"] = "Indisponible ou non fourni",
             ["NoneFound"] = "Aucun trouvé",
-            ["NoEvents"] = "Aucune connexion n'a encore correspondu à une règle.",
+            ["NoEvents"] =
+                "Aucune connexion n'a encore correspondu à une règle.",
             ["ExportComplete"] = "Journal des événements exporté.",
             ["Language"] = "Langue de l'interface",
             ["Chinese"] = "简体中文",
@@ -97,57 +143,121 @@ public static partial class UiText
             ["French"] = "Français",
             ["German"] = "Deutsch",
             ["BrazilianPortuguese"] = "Português (Brasil)",
-            ["StartWithWindows"] = "Lancer l'application à l'ouverture de session Windows",
-            ["StartWithWindowsHint"] = "Ouvre uniquement l'application sans démarrer la surveillance.",
-            ["ResumeMonitoring"] = "Démarrer automatiquement la surveillance à l'ouverture",
-            ["ResumeMonitoringHint"] = "Désactivé par défaut ; utilise uniquement les règles activées.",
+            ["StartWithWindows"] =
+                "Lancer l'application à l'ouverture de session Windows",
+            ["StartWithWindowsHint"] = (
+                "Ouvre uniquement l'application sans "
+                + "démarrer la surveillance."
+            ),
+            ["ResumeMonitoring"] = (
+                "Démarrer automatiquement la " + "surveillance à l'ouverture"
+            ),
+            ["ResumeMonitoringHint"] = (
+                "Désactivé par défaut ; utilise "
+                + "uniquement les règles activées."
+            ),
             ["AlertSound"] = "Son de l'alerte urgente",
-            ["AlertSoundHint"] = "Utilise le bref signal sonore intégré à l'application.",
+            ["AlertSoundHint"] = (
+                "Utilise le bref signal sonore intégré " + "à l'application."
+            ),
             ["TestSound"] = "Tester le son",
             ["AlertVolume"] = "Volume de l'alerte urgente (%)",
-            ["AlertVolumeHint"] = "S'applique au test et aux alertes urgentes ; le volume Windows reste également actif.",
+            ["AlertVolumeHint"] = (
+                "S'applique au test et aux alertes "
+                + "urgentes ; le volume Windows reste "
+                + "également actif."
+            ),
             ["LogLimit"] = "Limite du journal des événements (Mo)",
-            ["LogLimitHint"] = "Choisissez 5 à 500 Mo. Cinq fichiers sont utilisés ; les plus anciens sont supprimés à la limite.",
+            ["LogLimitHint"] = (
+                "Choisissez 5 à 500 Mo. Cinq fichiers "
+                + "sont utilisés ; les plus anciens sont "
+                + "supprimés à la limite."
+            ),
             ["HelpCenter"] = "Centre d'aide",
-            ["HelpCenterHint"] = "Consultez la présentation du projet et le guide d'utilisation dans l'application.",
+            ["HelpCenterHint"] = (
+                "Consultez la présentation du projet "
+                + "et le guide d'utilisation dans "
+                + "l'application."
+            ),
             ["OpenHelpCenter"] = "Ouvrir",
             ["Feedback"] = "Commentaires",
-            ["FeedbackHint"] = "Partager un commentaire sur GitHub ; vous le vérifiez avant l'envoi.",
+            ["FeedbackHint"] = (
+                "Partager un commentaire sur GitHub ; "
+                + "vous le vérifiez avant l'envoi."
+            ),
             ["OpenFeedback"] = "Ouvrir",
             ["FeedbackTitle"] = "Envoyer un commentaire",
-            ["FeedbackDescription"] = "Écrivez une suggestion ou décrivez un problème. Après avoir choisi Continuer vers GitHub, votre navigateur ouvrira une page préremplie à vérifier avant l'envoi.",
+            ["FeedbackDescription"] = (
+                "Écrivez une suggestion ou décrivez un "
+                + "problème. Après avoir choisi "
+                + "Continuer vers GitHub, votre "
+                + "navigateur ouvrira une page "
+                + "préremplie à vérifier avant l'envoi."
+            ),
             ["FeedbackTextLabel"] = "Commentaire",
-            ["FeedbackPlaceholder"] = "Décrivez un problème, une suggestion ou une amélioration.",
-            ["IncludeDiagnostics"] = "Inclure les informations de diagnostic de base",
-            ["DiagnosticsHint"] = "Uniquement la version de l'application, la version de Windows et la langue ; aucun journal n'est joint.",
+            ["FeedbackPlaceholder"] = (
+                "Décrivez un problème, une suggestion " + "ou une amélioration."
+            ),
+            ["IncludeDiagnostics"] =
+                "Inclure les informations de diagnostic de base",
+            ["DiagnosticsHint"] = (
+                "Uniquement la version de "
+                + "l'application, la version de Windows "
+                + "et la langue ; aucun journal n'est "
+                + "joint."
+            ),
             ["ContinueToGitHub"] = "Continuer vers GitHub",
             ["FeedbackEmpty"] = "Saisissez d'abord un commentaire.",
             ["FeedbackOpenFailed"] = "Impossible d'ouvrir la page GitHub : {0}",
             ["SoftwareUpdates"] = "Mises à jour",
-            ["SoftwareUpdatesWithVersion"] = "Mises à jour (version actuelle : {0})",
-            ["SoftwareUpdatesHint"] = "Les mises à jour ne sont pas installées automatiquement.",
+            ["SoftwareUpdatesWithVersion"] =
+                "Mises à jour (version actuelle : {0})",
+            ["SoftwareUpdatesHint"] = (
+                "Les mises à jour ne sont pas " + "installées automatiquement."
+            ),
             ["CheckNow"] = "Vérifier",
             ["CurrentVersion"] = "Version actuelle : {0}",
             ["CheckingUpdates"] = "Vérification…",
             ["UpdateAvailableTitle"] = "Mise à jour disponible",
-            ["UpdateAvailableMessage"] = "Une version plus récente, {0} ({1}), est disponible sur GitHub.\n\nOuvrir la page de publication pour lire les notes et la télécharger vous-même ?",
-            ["UpToDateMessage"] = "La version {0} est la dernière version publique sur GitHub.",
-            ["UpdateCheckFailed"] = "Impossible de vérifier les mises à jour : {0}",
+            ["UpdateAvailableMessage"] = (
+                "Une version plus récente, {0} ({1}), "
+                + "est disponible sur GitHub.\n\nOuvrir la "
+                + "page de publication pour lire les "
+                + "notes et la télécharger vous-même ?"
+            ),
+            ["UpToDateMessage"] = (
+                "La version {0} est la dernière "
+                + "version publique sur GitHub."
+            ),
+            ["UpdateCheckFailed"] =
+                "Impossible de vérifier les mises à jour : {0}",
             ["ProjectOverview"] = "Présentation du projet",
             ["UserGuide"] = "Guide d'utilisation",
             ["PrivacyPolicy"] = "Politique de confidentialité",
             ["TermsOfUse"] = "Conditions d'utilisation",
-            ["HelpDocumentUnavailable"] = "Le document d'aide n'a pas pu être chargé.",
-            ["LogLimitUpdateError"] = "Impossible de modifier la limite du journal : {0}",
-            ["Privacy"] = "Cet outil se connecte à Internet uniquement lors d’une vérification manuelle des mises à jour ou de l’ouverture de la page de commentaires. Il n’envoie aucun journal, ne lit pas les paquets et ne bloque rien automatiquement.",
+            ["HelpDocumentUnavailable"] =
+                "Le document d'aide n'a pas pu être chargé.",
+            ["LogLimitUpdateError"] =
+                "Impossible de modifier la limite du journal : {0}",
+            ["Privacy"] = (
+                "Cet outil se connecte à Internet "
+                + "uniquement lors d’une vérification "
+                + "manuelle des mises à jour ou de "
+                + "l’ouverture de la page de "
+                + "commentaires. Il n’envoie aucun "
+                + "journal, ne lit pas les paquets et ne "
+                + "bloque rien automatiquement."
+            ),
             ["CreateRule"] = "Créer une règle de surveillance",
             ["EditRule"] = "Modifier la règle de surveillance",
             ["RuleType"] = "Type de règle",
             ["AnyRemoteIpCheck"] = "Toute IP distante",
             ["AnyRemotePortCheck"] = "Tout port distant",
             ["AnyLocalPortCheck"] = "Tout port local",
-            ["PortFormat"] = "Saisissez un port (1433) ou une plage (1400-1500)",
-            ["RepeatInterval"] = "Délai de répétition après fermeture de la fenêtre",
+            ["PortFormat"] =
+                "Saisissez un port (1433) ou une plage (1400-1500)",
+            ["RepeatInterval"] =
+                "Délai de répétition après fermeture de la fenêtre",
             ["EveryTime"] = "À chaque fois",
             ["OneMinute"] = "1 minute",
             ["FiveMinutes"] = "5 minutes",
@@ -156,33 +266,62 @@ public static partial class UiText
             ["RulePreview"] = "Aperçu de la règle",
             ["Save"] = "Enregistrer",
             ["Cancel"] = "Annuler",
-            ["PreviewConnection"] = "Lorsqu'une connexion TCP correspond à ces conditions : {0}, {1}.",
-            ["PreviewListener"] = "Lorsqu'un programme écoute sur le port local {0}, {1}.",
+            ["PreviewConnection"] = (
+                "Lorsqu'une connexion TCP correspond à "
+                + "ces conditions : {0}, {1}."
+            ),
+            ["PreviewListener"] = (
+                "Lorsqu'un programme écoute sur le " + "port local {0}, {1}."
+            ),
             ["NameRequired"] = "Saisissez un nom de règle.",
             ["InvalidRemoteIp"] = "L'adresse IP distante n'est pas valide.",
-            ["InvalidRemotePort"] = "Le port distant doit être un port ou une plage de 1 à 65535.",
-            ["InvalidLocalPort"] = "Le port local doit être un port ou une plage de 1 à 65535.",
-            ["ConditionRequired"] = "Limitez au moins une adresse IP ou un port.",
-            ["ListenerPortRequired"] = "Une règle d'écoute nécessite un port local.",
-            ["InvalidRepeatInterval"] = "Le délai de répétition n'est pas valide.",
-            ["NeedEnabledRule"] = "Créez et activez au moins une règle avant de démarrer la surveillance.",
+            ["InvalidRemotePort"] = (
+                "Le port distant doit être un port ou "
+                + "une plage de 1 à 65535."
+            ),
+            ["InvalidLocalPort"] = (
+                "Le port local doit être un port ou "
+                + "une plage de 1 à 65535."
+            ),
+            ["ConditionRequired"] =
+                "Limitez au moins une adresse IP ou un port.",
+            ["ListenerPortRequired"] =
+                "Une règle d'écoute nécessite un port local.",
+            ["InvalidRepeatInterval"] =
+                "Le délai de répétition n'est pas valide.",
+            ["NeedEnabledRule"] = (
+                "Créez et activez au moins une règle "
+                + "avant de démarrer la surveillance."
+            ),
             ["UrgentTitle"] = "Règle de surveillance satisfaite",
             ["FirstSeen"] = "Première détection",
             ["LatestSeen"] = "Dernière détection",
             ["Occurrences"] = "Pendant cette alerte",
             ["Times"] = "fois",
-            ["NotMalwareVerdict"] = "Cette connexion correspond à une règle que vous avez créée, mais cela ne signifie pas à lui seul que l'ordinateur est infecté.",
+            ["NotMalwareVerdict"] = (
+                "Cette connexion correspond à une "
+                + "règle que vous avez créée, mais cela "
+                + "ne signifie pas à lui seul que "
+                + "l'ordinateur est infecté."
+            ),
             ["ViewDetails"] = "Afficher les détails",
             ["Close"] = "Fermer",
             ["Open"] = "Ouvrir",
             ["Exit"] = "Quitter",
-            ["CloseWhileRunning"] = "La surveillance est active. Choisissez Oui pour réduire dans la zone de notification ou Non pour arrêter et quitter.",
+            ["CloseWhileRunning"] = (
+                "La surveillance est active. "
+                + "Choisissez Oui pour réduire dans la "
+                + "zone de notification ou Non pour "
+                + "arrêter et quitter."
+            ),
             ["CloseWhileRunningTitle"] = "La surveillance est toujours active",
             ["TrayNormal"] = "SocketSight : surveillance",
             ["TrayNotices"] = "SocketSight : {0} notifications",
             ["Error"] = "Erreur",
             ["UnexpectedError"] = "Erreur inattendue",
-            ["StartupSettingError"] = "Impossible de modifier le démarrage Windows : {0}",
-            ["ProcessPathUnavailable"] = "Indisponible (autorisations insuffisantes)"
+            ["StartupSettingError"] =
+                "Impossible de modifier le démarrage Windows : {0}",
+            ["ProcessPathUnavailable"] =
+                "Indisponible (autorisations insuffisantes)",
         };
 }

@@ -11,11 +11,11 @@ public sealed class StartupSplashForm : Form
         AutoSize = false,
         TextAlign = ContentAlignment.MiddleCenter,
         ForeColor = Color.FromArgb(74, 85, 104),
-        Dock = DockStyle.Fill
+        Dock = DockStyle.Fill,
     };
     private readonly System.Windows.Forms.Timer _messageTimer = new()
     {
-        Interval = 2300
+        Interval = 2300,
     };
     private int _messageIndex;
     private readonly Icon _icon;
@@ -44,20 +44,20 @@ public sealed class StartupSplashForm : Form
         {
             Dock = DockStyle.Fill,
             BackColor = Color.FromArgb(210, 220, 232),
-            Padding = new Padding(1)
+            Padding = new Padding(1),
         };
         Panel surface = new()
         {
             Dock = DockStyle.Fill,
             BackColor = BackColor,
-            Padding = new Padding(44, 20, 44, 20)
+            Padding = new Padding(44, 20, 44, 20),
         };
         TableLayoutPanel layout = new()
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 5,
-            BackColor = BackColor
+            BackColor = BackColor,
         };
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 82));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 39));
@@ -70,7 +70,7 @@ public sealed class StartupSplashForm : Form
             Name = "StartupLogo",
             Image = _iconBitmap,
             SizeMode = PictureBoxSizeMode.CenterImage,
-            Dock = DockStyle.Fill
+            Dock = DockStyle.Fill,
         };
         Label brand = new()
         {
@@ -79,7 +79,7 @@ public sealed class StartupSplashForm : Form
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleCenter,
             ForeColor = Color.FromArgb(17, 43, 73),
-            Font = new Font(FontFamily(language), 22F, FontStyle.Bold)
+            Font = new Font(FontFamily(language), 22F, FontStyle.Bold),
         };
         Label tagline = new()
         {
@@ -88,7 +88,7 @@ public sealed class StartupSplashForm : Form
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleCenter,
             ForeColor = Color.FromArgb(45, 111, 157),
-            Font = new Font(FontFamily(language), 10.5F, FontStyle.Regular)
+            Font = new Font(FontFamily(language), 10.5F, FontStyle.Regular),
         };
         _message.Font = new Font(FontFamily(language), 10F, FontStyle.Regular);
         _message.Text = _messages.FirstOrDefault() ?? string.Empty;
@@ -99,7 +99,7 @@ public sealed class StartupSplashForm : Form
             Height = 7,
             Margin = new Padding(42, 1, 42, 1),
             Style = ProgressBarStyle.Marquee,
-            MarqueeAnimationSpeed = 28
+            MarqueeAnimationSpeed = 28,
         };
 
         layout.Controls.Add(logo, 0, 0);

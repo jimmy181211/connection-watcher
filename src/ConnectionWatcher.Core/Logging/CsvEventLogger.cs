@@ -9,12 +9,15 @@ namespace ConnectionWatcher.Core.Logging;
 public sealed class CsvEventLogger : IEventLogger
 {
     private const string Header =
-        "Record Type/记录类型,First Seen/首次发现,Last Seen/最后发现," +
-        "Ended At/结束时间,Rules/规则,Action/操作,TCP State/TCP状态," +
-        "Local IP/本地IP,Local Port/本地端口,Remote IP/远程IP," +
-        "Remote Port/远程端口,PID,Connection Owner/连接所属进程,Path/路径," +
-        "Product/产品名称,Company/公司,File Description/文件说明," +
-        "Parent Processes/父级进程,Related Services/相关服务,Event ID/事件ID";
+        "Record Type/记录类型,First Seen/首次发现,Last Seen/最后发现,"
+        + "Ended At/结束时间,Rules/规则,Action/操作,TCP State/TCP状态,"
+        + "Local IP/本地IP,Local Port/本地端口,Remote IP/远程IP,"
+        + "Remote Port/远程端口,PID,Connection Owner/连接所属进程,Path/路径,"
+        + "Product/产品名称,Company/公司,File Description/文件说明,"
+        + (
+            "Parent Processes/父级进程,Related "
+            + "Services/相关服务,Event ID/事件ID"
+        );
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private long _maximumTotalBytes;
@@ -23,7 +26,8 @@ public sealed class CsvEventLogger : IEventLogger
     public CsvEventLogger(
         string logDirectory,
         long maximumFileBytes = 5 * 1024 * 1024,
-        int maximumFiles = 5)
+        int maximumFiles = 5
+    )
     {
         LogDirectory = logDirectory;
         _maximumFiles = maximumFiles;
@@ -33,9 +37,13 @@ public sealed class CsvEventLogger : IEventLogger
     public string LogDirectory { get; }
     public string CurrentLogPath => Path.Combine(LogDirectory, "events.csv");
 
+    /// <summary>
+    /// Apply the new byte budget while holding the same lock used by writes.
+    /// </summary>
     public async Task UpdateMaximumTotalBytesAsync(
         long maximumTotalBytes,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (maximumTotalBytes < _maximumFiles)
         {
@@ -59,7 +67,8 @@ public sealed class CsvEventLogger : IEventLogger
 
     public async Task AppendAsync(
         ConnectionEvent connectionEvent,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await AppendRecordAsync("Start", connectionEvent, cancellationToken)
             .ConfigureAwait(false);
@@ -67,16 +76,21 @@ public sealed class CsvEventLogger : IEventLogger
 
     public async Task AppendCompletionAsync(
         ConnectionEvent connectionEvent,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await AppendRecordAsync("End", connectionEvent, cancellationToken)
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Serialize one lifecycle record and enforce the bounded log rotation.
+    /// </summary>
     private async Task AppendRecordAsync(
         string recordType,
         ConnectionEvent connectionEvent,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -84,24 +98,33 @@ public sealed class CsvEventLogger : IEventLogger
             Directory.CreateDirectory(LogDirectory);
             EnsureCurrentSchema();
             string line = Format(recordType, connectionEvent);
-            long additionalBytes = Encoding.UTF8.GetByteCount(line + Environment.NewLine);
+            long additionalBytes = Encoding.UTF8.GetByteCount(
+                line + Environment.NewLine
+            );
             RotateIfNeeded(additionalBytes);
 
-            bool writeHeader = !File.Exists(CurrentLogPath) ||
-                new FileInfo(CurrentLogPath).Length == 0;
+            bool writeHeader =
+                !File.Exists(CurrentLogPath)
+                || new FileInfo(CurrentLogPath).Length == 0;
             await using FileStream stream = new(
                 CurrentLogPath,
                 FileMode.Append,
                 FileAccess.Write,
-                FileShare.Read);
-            await using StreamWriter writer = new(stream, new UTF8Encoding(true));
+                FileShare.Read
+            );
+            await using StreamWriter writer = new(
+                stream,
+                new UTF8Encoding(true)
+            );
             if (writeHeader)
             {
-                await writer.WriteLineAsync(Header.AsMemory(), cancellationToken)
+                await writer
+                    .WriteLineAsync(Header.AsMemory(), cancellationToken)
                     .ConfigureAwait(false);
             }
 
-            await writer.WriteLineAsync(line.AsMemory(), cancellationToken)
+            await writer
+                .WriteLineAsync(line.AsMemory(), cancellationToken)
                 .ConfigureAwait(false);
         }
         finally
@@ -110,9 +133,14 @@ public sealed class CsvEventLogger : IEventLogger
         }
     }
 
+    /// <summary>
+    /// Merge start and completion rows while accepting supported older CSV
+    /// formats.
+    /// </summary>
     public async Task<IReadOnlyList<ConnectionEvent>> ReadRecentAsync(
         int maximumEntries = 2000,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -123,22 +151,31 @@ public sealed class CsvEventLogger : IEventLogger
             }
 
             Dictionary<Guid, ConnectionEvent> entries = [];
-            foreach (string path in Directory.GetFiles(LogDirectory, "events*.csv")
-                         .OrderBy(File.GetLastWriteTimeUtc))
+            foreach (
+                string path in Directory
+                    .GetFiles(LogDirectory, "events*.csv")
+                    .OrderBy(File.GetLastWriteTimeUtc)
+            )
             {
-                string[] lines = await File.ReadAllLinesAsync(path, cancellationToken)
+                string[] lines = await File.ReadAllLinesAsync(
+                        path,
+                        cancellationToken
+                    )
                     .ConfigureAwait(false);
                 foreach (string line in lines.Skip(1))
                 {
-                    if (TryParse(line, out ConnectionEvent? entry) && entry is not null)
+                    if (
+                        TryParse(line, out ConnectionEvent? entry)
+                        && entry is not null
+                    )
                     {
                         entries[entry.EventId] = entry;
                     }
                 }
             }
 
-            return entries.Values
-                .OrderByDescending(entry => entry.DetectedAt)
+            return entries
+                .Values.OrderByDescending(entry => entry.DetectedAt)
                 .Take(maximumEntries)
                 .ToArray();
         }
@@ -148,13 +185,19 @@ public sealed class CsvEventLogger : IEventLogger
         }
     }
 
+    /// <summary>
+    /// Rotate whole files before a write would exceed the configured budget.
+    /// </summary>
     private void RotateIfNeeded(long additionalBytes)
     {
         long maximumTotalBytes = Interlocked.Read(ref _maximumTotalBytes);
         long maximumFileBytes = Math.Max(1, maximumTotalBytes / _maximumFiles);
         bool currentWillBeCreated = !File.Exists(CurrentLogPath);
-        if (File.Exists(CurrentLogPath) &&
-            new FileInfo(CurrentLogPath).Length + additionalBytes > maximumFileBytes)
+        if (
+            File.Exists(CurrentLogPath)
+            && new FileInfo(CurrentLogPath).Length + additionalBytes
+                > maximumFileBytes
+        )
         {
             ArchiveCurrentLog();
             currentWillBeCreated = true;
@@ -164,7 +207,9 @@ public sealed class CsvEventLogger : IEventLogger
             .GetFiles("events*.csv")
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .ToArray();
-        int filesToKeep = currentWillBeCreated ? _maximumFiles - 1 : _maximumFiles;
+        int filesToKeep = currentWillBeCreated
+            ? _maximumFiles - 1
+            : _maximumFiles;
         foreach (FileInfo obsolete in files.Skip(filesToKeep))
         {
             obsolete.Delete();
@@ -177,8 +222,13 @@ public sealed class CsvEventLogger : IEventLogger
         long totalBytes = files.Sum(file => file.Length);
         foreach (FileInfo obsolete in files.Reverse())
         {
-            if (totalBytes <= maximumTotalBytes ||
-                obsolete.FullName.Equals(CurrentLogPath, StringComparison.OrdinalIgnoreCase))
+            if (
+                totalBytes <= maximumTotalBytes
+                || obsolete.FullName.Equals(
+                    CurrentLogPath,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
             {
                 continue;
             }
@@ -188,9 +238,16 @@ public sealed class CsvEventLogger : IEventLogger
         }
     }
 
+    /// <summary>
+    /// Archive an older header before writing records in the current CSV
+    /// format.
+    /// </summary>
     private void EnsureCurrentSchema()
     {
-        if (!File.Exists(CurrentLogPath) || new FileInfo(CurrentLogPath).Length == 0)
+        if (
+            !File.Exists(CurrentLogPath)
+            || new FileInfo(CurrentLogPath).Length == 0
+        )
         {
             return;
         }
@@ -211,7 +268,8 @@ public sealed class CsvEventLogger : IEventLogger
         {
             archivedPath = Path.Combine(
                 LogDirectory,
-                $"{archiveName}-{suffix++}.csv");
+                $"{archiveName}-{suffix++}.csv"
+            );
         }
 
         File.Move(CurrentLogPath, archivedPath);
@@ -224,7 +282,9 @@ public sealed class CsvEventLogger : IEventLogger
             recordType,
             FormatTimestamp(entry.DetectedAt),
             FormatTimestamp(entry.LastSeenAt),
-            entry.EndedAt is null ? string.Empty : FormatTimestamp(entry.EndedAt.Value),
+            entry.EndedAt is null
+                ? string.Empty
+                : FormatTimestamp(entry.EndedAt.Value),
             string.Join(" | ", entry.RuleNames),
             entry.Action.ToString(),
             entry.State.ToString(),
@@ -240,15 +300,15 @@ public sealed class CsvEventLogger : IEventLogger
             entry.ProcessFileDescription ?? string.Empty,
             JsonSerializer.Serialize(entry.ParentProcesses),
             JsonSerializer.Serialize(entry.RelatedServices),
-            entry.EventId.ToString()
+            entry.EventId.ToString(),
         ];
         return string.Join(',', fields.Select(Escape));
     }
 
     private static string FormatTimestamp(DateTimeOffset value) =>
-        value.ToLocalTime().ToString(
-            "yyyy-MM-dd HH:mm:ss zzz",
-            CultureInfo.InvariantCulture);
+        value
+            .ToLocalTime()
+            .ToString("yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
 
     private static string Escape(string value)
     {
@@ -271,18 +331,28 @@ public sealed class CsvEventLogger : IEventLogger
         }
 
         DateTimeOffset parsedEndedAt = default;
-        if (fields.Count != 20 ||
-            (fields[0] != "Start" && fields[0] != "End") ||
-            !DateTimeOffset.TryParse(fields[1], out DateTimeOffset detectedAt) ||
-            !DateTimeOffset.TryParse(fields[2], out DateTimeOffset lastSeenAt) ||
-            (!string.IsNullOrWhiteSpace(fields[3]) &&
-             !DateTimeOffset.TryParse(fields[3], out parsedEndedAt)) ||
-            !Enum.TryParse(fields[5], out MatchAction action) ||
-            !Enum.TryParse(fields[6], out TcpState state) ||
-            !int.TryParse(fields[8], out int localPort) ||
-            !int.TryParse(fields[10], out int remotePort) ||
-            !int.TryParse(fields[11], out int processId) ||
-            !Guid.TryParse(fields[19], out Guid eventId))
+        if (
+            fields.Count != 20
+            || (fields[0] != "Start" && fields[0] != "End")
+            || !DateTimeOffset.TryParse(
+                fields[1],
+                out DateTimeOffset detectedAt
+            )
+            || !DateTimeOffset.TryParse(
+                fields[2],
+                out DateTimeOffset lastSeenAt
+            )
+            || (
+                !string.IsNullOrWhiteSpace(fields[3])
+                && !DateTimeOffset.TryParse(fields[3], out parsedEndedAt)
+            )
+            || !Enum.TryParse(fields[5], out MatchAction action)
+            || !Enum.TryParse(fields[6], out TcpState state)
+            || !int.TryParse(fields[8], out int localPort)
+            || !int.TryParse(fields[10], out int remotePort)
+            || !int.TryParse(fields[11], out int processId)
+            || !Guid.TryParse(fields[19], out Guid eventId)
+        )
         {
             return false;
         }
@@ -297,7 +367,8 @@ public sealed class CsvEventLogger : IEventLogger
             DetectedAt = detectedAt,
             LastSeenAt = lastSeenAt,
             EndedAt = endedAt,
-            RuleNames = fields[4].Split(" | ", StringSplitOptions.RemoveEmptyEntries),
+            RuleNames = fields[4]
+                .Split(" | ", StringSplitOptions.RemoveEmptyEntries),
             Action = action,
             State = state,
             LocalAddress = fields[7],
@@ -311,28 +382,41 @@ public sealed class CsvEventLogger : IEventLogger
             ProcessCompanyName = EmptyToNull(fields[15]),
             ProcessFileDescription = EmptyToNull(fields[16]),
             ParentProcesses = DeserializeList<ProcessSnapshot>(fields[17]),
-            RelatedServices = DeserializeList<WindowsServiceSnapshot>(fields[18])
+            RelatedServices = DeserializeList<WindowsServiceSnapshot>(
+                fields[18]
+            ),
         };
         return true;
     }
 
     private static bool TryParseVersionTwo(
         IReadOnlyList<string> fields,
-        out ConnectionEvent? entry)
+        out ConnectionEvent? entry
+    )
     {
         entry = null;
         DateTimeOffset parsedEndedAt = default;
-        if ((fields[0] != "Start" && fields[0] != "End") ||
-            !DateTimeOffset.TryParse(fields[1], out DateTimeOffset detectedAt) ||
-            !DateTimeOffset.TryParse(fields[2], out DateTimeOffset lastSeenAt) ||
-            (!string.IsNullOrWhiteSpace(fields[3]) &&
-             !DateTimeOffset.TryParse(fields[3], out parsedEndedAt)) ||
-            !Enum.TryParse(fields[5], out MatchAction action) ||
-            !Enum.TryParse(fields[6], out TcpState state) ||
-            !int.TryParse(fields[8], out int localPort) ||
-            !int.TryParse(fields[10], out int remotePort) ||
-            !int.TryParse(fields[11], out int processId) ||
-            !Guid.TryParse(fields[14], out Guid eventId))
+        if (
+            (fields[0] != "Start" && fields[0] != "End")
+            || !DateTimeOffset.TryParse(
+                fields[1],
+                out DateTimeOffset detectedAt
+            )
+            || !DateTimeOffset.TryParse(
+                fields[2],
+                out DateTimeOffset lastSeenAt
+            )
+            || (
+                !string.IsNullOrWhiteSpace(fields[3])
+                && !DateTimeOffset.TryParse(fields[3], out parsedEndedAt)
+            )
+            || !Enum.TryParse(fields[5], out MatchAction action)
+            || !Enum.TryParse(fields[6], out TcpState state)
+            || !int.TryParse(fields[8], out int localPort)
+            || !int.TryParse(fields[10], out int remotePort)
+            || !int.TryParse(fields[11], out int processId)
+            || !Guid.TryParse(fields[14], out Guid eventId)
+        )
         {
             return false;
         }
@@ -342,8 +426,11 @@ public sealed class CsvEventLogger : IEventLogger
             EventId = eventId,
             DetectedAt = detectedAt,
             LastSeenAt = lastSeenAt,
-            EndedAt = string.IsNullOrWhiteSpace(fields[3]) ? null : parsedEndedAt,
-            RuleNames = fields[4].Split(" | ", StringSplitOptions.RemoveEmptyEntries),
+            EndedAt = string.IsNullOrWhiteSpace(fields[3])
+                ? null
+                : parsedEndedAt,
+            RuleNames = fields[4]
+                .Split(" | ", StringSplitOptions.RemoveEmptyEntries),
             Action = action,
             State = state,
             LocalAddress = fields[7],
@@ -352,23 +439,26 @@ public sealed class CsvEventLogger : IEventLogger
             RemotePort = remotePort,
             ProcessId = processId,
             ProcessName = fields[12],
-            ProcessPath = EmptyToNull(fields[13])
+            ProcessPath = EmptyToNull(fields[13]),
         };
         return true;
     }
 
     private static bool TryParseLegacy(
         IReadOnlyList<string> fields,
-        out ConnectionEvent? entry)
+        out ConnectionEvent? entry
+    )
     {
         entry = null;
-        if (!DateTimeOffset.TryParse(fields[0], out DateTimeOffset detectedAt) ||
-            !Enum.TryParse(fields[2], out MatchAction action) ||
-            !Enum.TryParse(fields[3], out TcpState state) ||
-            !int.TryParse(fields[5], out int localPort) ||
-            !int.TryParse(fields[7], out int remotePort) ||
-            !int.TryParse(fields[8], out int processId) ||
-            !Guid.TryParse(fields[11], out Guid eventId))
+        if (
+            !DateTimeOffset.TryParse(fields[0], out DateTimeOffset detectedAt)
+            || !Enum.TryParse(fields[2], out MatchAction action)
+            || !Enum.TryParse(fields[3], out TcpState state)
+            || !int.TryParse(fields[5], out int localPort)
+            || !int.TryParse(fields[7], out int remotePort)
+            || !int.TryParse(fields[8], out int processId)
+            || !Guid.TryParse(fields[11], out Guid eventId)
+        )
         {
             return false;
         }
@@ -380,7 +470,8 @@ public sealed class CsvEventLogger : IEventLogger
             LastSeenAt = detectedAt,
             EndedAt = detectedAt,
             DurationKnown = false,
-            RuleNames = fields[1].Split(" | ", StringSplitOptions.RemoveEmptyEntries),
+            RuleNames = fields[1]
+                .Split(" | ", StringSplitOptions.RemoveEmptyEntries),
             Action = action,
             State = state,
             LocalAddress = fields[4],
@@ -389,7 +480,9 @@ public sealed class CsvEventLogger : IEventLogger
             RemotePort = remotePort,
             ProcessId = processId,
             ProcessName = fields[9],
-            ProcessPath = string.IsNullOrWhiteSpace(fields[10]) ? null : fields[10]
+            ProcessPath = string.IsNullOrWhiteSpace(fields[10])
+                ? null
+                : fields[10],
         };
         return true;
     }

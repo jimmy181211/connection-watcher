@@ -44,7 +44,7 @@ public sealed class RuleEditorForm : Form
         return new ComboBox
         {
             DropDownStyle = ComboBoxStyle.DropDownList,
-            Dock = DockStyle.Fill
+            Dock = DockStyle.Fill,
         };
     }
 
@@ -67,7 +67,7 @@ public sealed class RuleEditorForm : Form
             ColumnCount = 2,
             RowCount = 10,
             AutoScroll = true,
-            GrowStyle = TableLayoutPanelGrowStyle.FixedSize
+            GrowStyle = TableLayoutPanelGrowStyle.FixedSize,
         };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
@@ -101,7 +101,7 @@ public sealed class RuleEditorForm : Form
             Name = "PortHint",
             AutoSize = true,
             ForeColor = SystemColors.GrayText,
-            Margin = new Padding(3, 8, 3, 8)
+            Margin = new Padding(3, 8, 3, 8),
         };
         layout.Controls.Add(portHint, 0, 6);
         layout.SetColumnSpan(portHint, 2);
@@ -111,7 +111,7 @@ public sealed class RuleEditorForm : Form
             Name = "PreviewGroup",
             Dock = DockStyle.Fill,
             Padding = new Padding(12),
-            MinimumSize = new Size(0, 100)
+            MinimumSize = new Size(0, 100),
         };
         _preview.Dock = DockStyle.Fill;
         _preview.AutoEllipsis = false;
@@ -133,21 +133,45 @@ public sealed class RuleEditorForm : Form
             FlowDirection = FlowDirection.RightToLeft,
             AutoSize = true,
             WrapContents = true,
-            Padding = new Padding(0, 8, 0, 0)
+            Padding = new Padding(0, 8, 0, 0),
         };
-        Button save = new() { Name = "SaveButton", AutoSize = true, MinimumSize = new Size(90, 34) };
-        Button cancel = new() { Name = "CancelButton", AutoSize = true, MinimumSize = new Size(90, 34) };
+        Button save = new()
+        {
+            Name = "SaveButton",
+            AutoSize = true,
+            MinimumSize = new Size(90, 34),
+        };
+        Button cancel = new()
+        {
+            Name = "CancelButton",
+            AutoSize = true,
+            MinimumSize = new Size(90, 34),
+        };
         save.Click += SaveClicked;
-        cancel.Click += (_, _) => { DialogResult = DialogResult.Cancel; Close(); };
+        cancel.Click += (_, _) =>
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        };
         buttons.Controls.AddRange([save, cancel]);
         layout.Controls.Add(buttons, 0, 9);
         layout.SetColumnSpan(buttons, 2);
 
-        foreach (Control control in new Control[]
-                 {
-                     _name, _type, _remoteIp, _anyRemoteIp, _remotePort,
-                     _anyRemotePort, _localPort, _anyLocalPort, _action, _repeat
-                 })
+        foreach (
+            Control control in new Control[]
+            {
+                _name,
+                _type,
+                _remoteIp,
+                _anyRemoteIp,
+                _remotePort,
+                _anyRemotePort,
+                _localPort,
+                _anyLocalPort,
+                _action,
+                _repeat,
+            }
+        )
         {
             if (control is TextBox textBox)
             {
@@ -174,7 +198,8 @@ public sealed class RuleEditorForm : Form
         Control field,
         int row,
         int column,
-        int span = 1)
+        int span = 1
+    )
     {
         TableLayoutPanel container = new()
         {
@@ -182,7 +207,7 @@ public sealed class RuleEditorForm : Form
             AutoSize = true,
             Margin = new Padding(3, 4, 10, 8),
             ColumnCount = 1,
-            RowCount = 2
+            RowCount = 2,
         };
         container.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         container.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -204,35 +229,57 @@ public sealed class RuleEditorForm : Form
     {
         _name.Text = rule.Name;
         _type.Items.AddRange(
-        [
-            new Option<MonitoringRuleType>(MonitoringRuleType.TcpConnection, UiText.Get("TcpConnection")),
-            new Option<MonitoringRuleType>(MonitoringRuleType.LocalListener, UiText.Get("LocalListener"))
-        ]);
+            [
+                new Option<MonitoringRuleType>(
+                    MonitoringRuleType.TcpConnection,
+                    UiText.Get("TcpConnection")
+                ),
+                new Option<MonitoringRuleType>(
+                    MonitoringRuleType.LocalListener,
+                    UiText.Get("LocalListener")
+                ),
+            ]
+        );
         SelectValue(_type, rule.Type);
 
         _action.Items.AddRange(
-        [
-            new Option<MatchAction>(MatchAction.SilentLog, UiText.Get("SilentLog")),
-            new Option<MatchAction>(MatchAction.TrayNotice, UiText.Get("TrayNotice")),
-            new Option<MatchAction>(MatchAction.PopupAlert, UiText.Get("PopupAlert"))
-        ]);
+            [
+                new Option<MatchAction>(
+                    MatchAction.SilentLog,
+                    UiText.Get("SilentLog")
+                ),
+                new Option<MatchAction>(
+                    MatchAction.TrayNotice,
+                    UiText.Get("TrayNotice")
+                ),
+                new Option<MatchAction>(
+                    MatchAction.PopupAlert,
+                    UiText.Get("PopupAlert")
+                ),
+            ]
+        );
         SelectValue(_action, rule.Action);
 
         _repeat.Items.AddRange(
-        [
-            new Option<int>(0, UiText.Get("EveryTime")),
-            new Option<int>(1, UiText.Get("OneMinute")),
-            new Option<int>(5, UiText.Get("FiveMinutes")),
-            new Option<int>(15, UiText.Get("FifteenMinutes"))
-        ]);
+            [
+                new Option<int>(0, UiText.Get("EveryTime")),
+                new Option<int>(1, UiText.Get("OneMinute")),
+                new Option<int>(5, UiText.Get("FiveMinutes")),
+                new Option<int>(15, UiText.Get("FifteenMinutes")),
+            ]
+        );
         SelectValue(_repeat, rule.RepeatAlertMinutes);
 
         _anyRemoteIp.Checked = string.IsNullOrWhiteSpace(rule.RemoteIp);
         _remoteIp.Text = rule.RemoteIp ?? string.Empty;
         _anyRemotePort.Checked = rule.RemotePort.IsAny;
-        _remotePort.Text = rule.RemotePort.IsAny ? string.Empty : rule.RemotePort.ToString();
+        _remotePort.Text = rule.RemotePort.IsAny
+            ? string.Empty
+            : rule.RemotePort.ToString();
         _anyLocalPort.Checked = rule.LocalPort.IsAny;
-        _localPort.Text = rule.LocalPort.IsAny ? string.Empty : rule.LocalPort.ToString();
+        _localPort.Text = rule.LocalPort.IsAny
+            ? string.Empty
+            : rule.LocalPort.ToString();
         _enabled.Checked = rule.Enabled;
     }
 
@@ -268,7 +315,10 @@ public sealed class RuleEditorForm : Form
             return;
         }
 
-        MonitoringRuleType type = Selected(_type, MonitoringRuleType.TcpConnection);
+        MonitoringRuleType type = Selected(
+            _type,
+            MonitoringRuleType.TcpConnection
+        );
         bool listener = type == MonitoringRuleType.LocalListener;
         if (listener)
         {
@@ -283,14 +333,24 @@ public sealed class RuleEditorForm : Form
         _remotePort.Enabled = !listener && !_anyRemotePort.Checked;
         _anyLocalPort.Enabled = !listener;
         _localPort.Enabled = listener || !_anyLocalPort.Checked;
-        _repeat.Enabled = Selected(_action, MatchAction.SilentLog) == MatchAction.PopupAlert;
+        _repeat.Enabled =
+            Selected(_action, MatchAction.SilentLog) == MatchAction.PopupAlert;
 
         if (TryBuildRule(out MonitoringRule? rule, showErrors: false))
         {
             string condition = UiText.FormatRuleCondition(rule);
-            _preview.Text = rule.Type == MonitoringRuleType.LocalListener
-                ? string.Format(UiText.Get("PreviewListener"), UiText.FormatPort(rule.LocalPort), UiText.Action(rule.Action))
-                : string.Format(UiText.Get("PreviewConnection"), condition, UiText.Action(rule.Action));
+            _preview.Text =
+                rule.Type == MonitoringRuleType.LocalListener
+                    ? string.Format(
+                        UiText.Get("PreviewListener"),
+                        UiText.FormatPort(rule.LocalPort),
+                        UiText.Action(rule.Action)
+                    )
+                    : string.Format(
+                        UiText.Get("PreviewConnection"),
+                        condition,
+                        UiText.Action(rule.Action)
+                    );
         }
         else
         {
@@ -313,15 +373,28 @@ public sealed class RuleEditorForm : Form
     private bool TryBuildRule(out MonitoringRule rule, bool showErrors)
     {
         List<string> errors = [];
-        bool listener = Selected(_type, MonitoringRuleType.TcpConnection) ==
-            MonitoringRuleType.LocalListener;
+        bool listener =
+            Selected(_type, MonitoringRuleType.TcpConnection)
+            == MonitoringRuleType.LocalListener;
 
-        if (!PortRange.TryParse(_remotePort.Text, listener || _anyRemotePort.Checked, out PortRange remotePort))
+        if (
+            !PortRange.TryParse(
+                _remotePort.Text,
+                listener || _anyRemotePort.Checked,
+                out PortRange remotePort
+            )
+        )
         {
             errors.Add(UiText.Get("InvalidRemotePort"));
         }
 
-        if (!PortRange.TryParse(_localPort.Text, !listener && _anyLocalPort.Checked, out PortRange localPort))
+        if (
+            !PortRange.TryParse(
+                _localPort.Text,
+                !listener && _anyLocalPort.Checked,
+                out PortRange localPort
+            )
+        )
         {
             errors.Add(UiText.Get("InvalidLocalPort"));
         }
@@ -330,27 +403,39 @@ public sealed class RuleEditorForm : Form
         {
             Id = _original.Id,
             Name = _name.Text.Trim(),
-            Type = listener ? MonitoringRuleType.LocalListener : MonitoringRuleType.TcpConnection,
-            RemoteIp = listener || _anyRemoteIp.Checked ? null : _remoteIp.Text.Trim(),
+            Type = listener
+                ? MonitoringRuleType.LocalListener
+                : MonitoringRuleType.TcpConnection,
+            RemoteIp =
+                listener || _anyRemoteIp.Checked ? null : _remoteIp.Text.Trim(),
             RemotePort = remotePort,
             LocalPort = localPort,
             Action = Selected(_action, MatchAction.SilentLog),
             RepeatAlertMinutes = Selected(_repeat, 5),
-            Enabled = _enabled.Checked
+            Enabled = _enabled.Checked,
         };
 
         foreach (RuleValidationError error in RuleValidator.Validate(rule))
         {
-            errors.Add(UiText.Get(error switch
-            {
-                RuleValidationError.NameRequired => "NameRequired",
-                RuleValidationError.InvalidRemoteIp => "InvalidRemoteIp",
-                RuleValidationError.InvalidRemotePort => "InvalidRemotePort",
-                RuleValidationError.InvalidLocalPort => "InvalidLocalPort",
-                RuleValidationError.AtLeastOneConditionRequired => "ConditionRequired",
-                RuleValidationError.LocalListenerPortRequired => "ListenerPortRequired",
-                _ => "InvalidRepeatInterval"
-            }));
+            errors.Add(
+                UiText.Get(
+                    error switch
+                    {
+                        RuleValidationError.NameRequired => "NameRequired",
+                        RuleValidationError.InvalidRemoteIp =>
+                            "InvalidRemoteIp",
+                        RuleValidationError.InvalidRemotePort =>
+                            "InvalidRemotePort",
+                        RuleValidationError.InvalidLocalPort =>
+                            "InvalidLocalPort",
+                        RuleValidationError.AtLeastOneConditionRequired =>
+                            "ConditionRequired",
+                        RuleValidationError.LocalListenerPortRequired =>
+                            "ListenerPortRequired",
+                        _ => "InvalidRepeatInterval",
+                    }
+                )
+            );
         }
 
         if (showErrors)
@@ -370,8 +455,10 @@ public sealed class RuleEditorForm : Form
     {
         for (int index = 0; index < combo.Items.Count; index++)
         {
-            if (combo.Items[index] is Option<T> option &&
-                EqualityComparer<T>.Default.Equals(option.Value, value))
+            if (
+                combo.Items[index] is Option<T> option
+                && EqualityComparer<T>.Default.Equals(option.Value, value)
+            )
             {
                 combo.SelectedIndex = index;
                 return;
