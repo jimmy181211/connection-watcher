@@ -9,11 +9,23 @@ public sealed class EventDetailsForm : Form
 {
     private static readonly string[] FieldKeys =
     [
-        "StartTime", "EndTime", "ConnectionStatus", "ObservedDuration",
-        "MatchedRules", "RemoteEndpoint", "LocalEndpoint", "TcpState",
-        "PID", "ConnectionOwner", "ProcessPath", "ProductName",
-        "CompanyName", "FileDescription", "ParentProcesses",
-        "RelatedServices", "ActionColumn"
+        "StartTime",
+        "EndTime",
+        "ConnectionStatus",
+        "ObservedDuration",
+        "MatchedRules",
+        "RemoteEndpoint",
+        "LocalEndpoint",
+        "TcpState",
+        "PID",
+        "ConnectionOwner",
+        "ProcessPath",
+        "ProductName",
+        "CompanyName",
+        "FileDescription",
+        "ParentProcesses",
+        "RelatedServices",
+        "ActionColumn",
     ];
 
     private readonly ConnectionEvent _entry;
@@ -21,22 +33,25 @@ public sealed class EventDetailsForm : Form
     private readonly Dictionary<string, Label> _labels = [];
     private readonly Dictionary<string, TextBox> _values = [];
     private readonly Label _heading = new() { Name = "EventDetailsHeading" };
-    private readonly Label _description = new() { Name = "EventDetailsDescription" };
+    private readonly Label _description = new()
+    {
+        Name = "EventDetailsDescription",
+    };
     private readonly Button _copyButton = new()
     {
         Name = "CopyDetailsButton",
         AutoSize = true,
-        MinimumSize = new Size(130, 34)
+        MinimumSize = new Size(130, 34),
     };
     private readonly Button _closeButton = new()
     {
         Name = "CloseButton",
         AutoSize = true,
-        MinimumSize = new Size(90, 34)
+        MinimumSize = new Size(90, 34),
     };
     private readonly System.Windows.Forms.Timer _refreshTimer = new()
     {
-        Interval = 1000
+        Interval = 1000,
     };
     private Font? _statusFont;
 
@@ -49,7 +64,8 @@ public sealed class EventDetailsForm : Form
         UiFont.Apply(this);
         _statusFont = UiFont.Create(
             _values["ConnectionStatus"].Font.Size,
-            FontStyle.Bold);
+            FontStyle.Bold
+        );
         UpdateValues();
         _refreshTimer.Tick += (_, _) => UpdateValues();
         _refreshTimer.Start();
@@ -71,7 +87,7 @@ public sealed class EventDetailsForm : Form
             Dock = DockStyle.Fill,
             Padding = new Padding(18),
             ColumnCount = 1,
-            RowCount = 3
+            RowCount = 3,
         };
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -83,7 +99,7 @@ public sealed class EventDetailsForm : Form
             AutoSize = true,
             ColumnCount = 1,
             RowCount = 2,
-            Margin = new Padding(0, 0, 0, 14)
+            Margin = new Padding(0, 0, 0, 14),
         };
         _heading.AutoSize = true;
         _heading.Font = new Font("Segoe UI", 18F, FontStyle.Regular);
@@ -101,15 +117,15 @@ public sealed class EventDetailsForm : Form
             AutoScroll = true,
             ColumnCount = 2,
             RowCount = FieldKeys.Length + 1,
-            Padding = new Padding(0, 2, 8, 2)
+            Padding = new Padding(0, 2, 8, 2),
         };
         details.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 205));
         details.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         for (int index = 0; index < FieldKeys.Length; index++)
         {
             string key = FieldKeys[index];
-            bool multiline = key is
-                "MatchedRules" or "ParentProcesses" or "RelatedServices";
+            bool multiline =
+                key is "MatchedRules" or "ParentProcesses" or "RelatedServices";
             AddField(details, key, index, multiline);
         }
         details.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -120,7 +136,7 @@ public sealed class EventDetailsForm : Form
             AutoSize = true,
             ColumnCount = 3,
             RowCount = 1,
-            Margin = new Padding(0, 14, 0, 0)
+            Margin = new Padding(0, 14, 0, 0),
         };
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -140,14 +156,15 @@ public sealed class EventDetailsForm : Form
         TableLayoutPanel details,
         string key,
         int row,
-        bool multiline)
+        bool multiline
+    )
     {
         Label label = new()
         {
             Name = $"{key}Label",
             AutoSize = true,
             Anchor = AnchorStyles.Left,
-            Margin = new Padding(0, 6, 12, 6)
+            Margin = new Padding(0, 6, 12, 6),
         };
         TextBox value = new()
         {
@@ -160,7 +177,7 @@ public sealed class EventDetailsForm : Form
             WordWrap = multiline,
             ScrollBars = multiline ? ScrollBars.Vertical : ScrollBars.None,
             MinimumSize = new Size(0, multiline ? 52 : 27),
-            Margin = new Padding(0, 4, 0, 4)
+            Margin = new Padding(0, 4, 0, 4),
         };
         _labels[key] = label;
         _values[key] = value;
@@ -194,39 +211,64 @@ public sealed class EventDetailsForm : Form
         _values["MatchedRules"].Text = string.Join(" | ", _entry.RuleNames);
         _values["RemoteEndpoint"].Text = FormatEndpoint(
             _entry.RemoteAddress,
-            _entry.RemotePort);
+            _entry.RemotePort
+        );
         _values["LocalEndpoint"].Text = FormatEndpoint(
             _entry.LocalAddress,
-            _entry.LocalPort);
+            _entry.LocalPort
+        );
         _values["TcpState"].Text = _entry.State.ToString();
         _values["PID"].Text = _entry.ProcessId.ToString();
         _values["ConnectionOwner"].Text = _entry.ProcessName;
-        _values["ProcessPath"].Text = _entry.ProcessPath ??
-            UiText.Get("ProcessPathUnavailable");
+        _values["ProcessPath"].Text =
+            _entry.ProcessPath ?? UiText.Get("ProcessPathUnavailable");
         _values["ProductName"].Text = ValueOrUnavailable(
-            _entry.ProcessProductName);
+            _entry.ProcessProductName
+        );
         _values["CompanyName"].Text = ValueOrUnavailable(
-            _entry.ProcessCompanyName);
+            _entry.ProcessCompanyName
+        );
         _values["FileDescription"].Text = ValueOrUnavailable(
-            _entry.ProcessFileDescription);
-        _values["ParentProcesses"].Text = _entry.ParentProcesses.Count == 0
-            ? UiText.Get("ContextUnavailable")
-            : string.Join(
-                Environment.NewLine,
-                _entry.ParentProcesses.Select(parent =>
-                    $"{parent.ProcessName} (PID {parent.ProcessId})" +
-                    (string.IsNullOrWhiteSpace(parent.ProductName)
-                        ? string.Empty
-                        : $" — {parent.ProductName}")));
-        _values["RelatedServices"].Text = _entry.RelatedServices.Count == 0
-            ? UiText.Get("NoneFound")
-            : string.Join(
-                Environment.NewLine,
-                _entry.RelatedServices.Select(service =>
-                    $"{service.DisplayName} [{service.ServiceName}] " +
-                    $"(PID {service.ProcessId})"));
-        _values["ActionColumn"].Text =
-            $"{UiText.ActionMarker(_entry.Action)}  {UiText.Action(_entry.Action)}";
+            _entry.ProcessFileDescription
+        );
+        _values["ParentProcesses"].Text =
+            _entry.ParentProcesses.Count == 0
+                ? UiText.Get("ContextUnavailable")
+                : string.Join(
+                    Environment.NewLine,
+                    _entry.ParentProcesses.Select(parent =>
+                        (
+                            $"{parent.ProcessName}"
+                            + " (PID "
+                            + $"{parent.ProcessId}"
+                            + ")"
+                        )
+                        + (
+                            string.IsNullOrWhiteSpace(parent.ProductName)
+                                ? string.Empty
+                                : $" — {parent.ProductName}"
+                        )
+                    )
+                );
+        _values["RelatedServices"].Text =
+            _entry.RelatedServices.Count == 0
+                ? UiText.Get("NoneFound")
+                : string.Join(
+                    Environment.NewLine,
+                    _entry.RelatedServices.Select(service =>
+                        (
+                            $"{service.DisplayName}"
+                            + " ["
+                            + $"{service.ServiceName}"
+                            + "] "
+                        ) + $"(PID {service.ProcessId})"
+                    )
+                );
+        _values["ActionColumn"].Text = (
+            $"{UiText.ActionMarker(_entry.Action)}"
+            + "  "
+            + $"{UiText.Action(_entry.Action)}"
+        );
 
         TextBox status = _values["ConnectionStatus"];
         status.ForeColor = _entry.IsActive ? Color.SeaGreen : Color.DimGray;
@@ -247,7 +289,8 @@ public sealed class EventDetailsForm : Form
                 UiText.Get("CopyFailed"),
                 UiText.Get("Error"),
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
+                MessageBoxIcon.Error
+            );
         }
     }
 
@@ -276,12 +319,13 @@ public sealed class EventDetailsForm : Form
             : value;
 
     private static string FormatStatus(ConnectionEvent entry) =>
-        $"{(entry.IsActive ? '●' : '○')} " +
-        UiText.Get(entry.IsActive ? "ConnectionActive" : "ConnectionEnded");
+        $"{(entry.IsActive ? '●' : '○')} "
+        + UiText.Get(entry.IsActive ? "ConnectionActive" : "ConnectionEnded");
 
     private static string FormatDuration(
         ConnectionEvent entry,
-        DateTimeOffset now)
+        DateTimeOffset now
+    )
     {
         TimeSpan? duration = entry.GetObservedDuration(now);
         if (duration is null)
@@ -290,7 +334,13 @@ public sealed class EventDetailsForm : Form
         }
 
         int totalHours = (int)Math.Floor(duration.Value.TotalHours);
-        return $"{totalHours:00}:{duration.Value.Minutes:00}:{duration.Value.Seconds:00}";
+        return (
+            $"{totalHours:00}"
+            + ":"
+            + $"{duration.Value.Minutes:00}"
+            + ":"
+            + $"{duration.Value.Seconds:00}"
+        );
     }
 
     protected override void Dispose(bool disposing)

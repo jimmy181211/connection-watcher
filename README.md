@@ -32,3 +32,5 @@ SocketSight is designed for local use. It does not automatically upload logs or 
 ## Project Website
 
 [gammaacc.co](https://gammaacc.co/)
+
+[Source structure and maintenance](docs/SOURCE_STRUCTURE.md)

@@ -22,7 +22,8 @@ public sealed class MonitoringEngine : IAsyncDisposable
         IEventLogger logger,
         Func<IReadOnlyList<MonitoringRule>> rulesProvider,
         IProcessContextProvider? processContextProvider = null,
-        TimeSpan? interval = null)
+        TimeSpan? interval = null
+    )
     {
         _provider = provider;
         _logger = logger;
@@ -48,6 +49,9 @@ public sealed class MonitoringEngine : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Wake the waiting worker after safely replacing the polling interval.
+    /// </summary>
     public void UpdateInterval(TimeSpan interval)
     {
         if (interval <= TimeSpan.Zero)
@@ -72,6 +76,9 @@ public sealed class MonitoringEngine : IAsyncDisposable
         changed.Cancel();
     }
 
+    /// <summary>
+    /// Start one polling worker only when an enabled rule exists.
+    /// </summary>
     public void Start()
     {
         if (IsRunning)
@@ -81,7 +88,9 @@ public sealed class MonitoringEngine : IAsyncDisposable
 
         if (!_rulesProvider().Any(rule => rule.Enabled))
         {
-            throw new InvalidOperationException("At least one enabled rule is required.");
+            throw new InvalidOperationException(
+                "At least one enabled rule is required."
+            );
         }
 
         _tracker.Reset();
@@ -89,6 +98,9 @@ public sealed class MonitoringEngine : IAsyncDisposable
         _worker = Task.Run(() => RunAsync(_cancellation.Token));
     }
 
+    /// <summary>
+    /// Finish tracked connections before releasing the worker and its signals.
+    /// </summary>
     public async Task StopAsync()
     {
         if (_cancellation is null || _worker is null)
@@ -101,21 +113,23 @@ public sealed class MonitoringEngine : IAsyncDisposable
         {
             await _worker.ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
-        {
-        }
+        catch (OperationCanceledException) { }
         finally
         {
             try
             {
-                foreach (ConnectionEvent connectionEvent in _tracker.CompleteAll())
+                foreach (
+                    ConnectionEvent connectionEvent in _tracker.CompleteAll()
+                )
                 {
                     try
                     {
-                        await _logger.AppendCompletionAsync(connectionEvent)
+                        await _logger
+                            .AppendCompletionAsync(connectionEvent)
                             .ConfigureAwait(false);
                     }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    catch (Exception ex)
+                        when (ex is IOException or UnauthorizedAccessException)
                     {
                         MonitoringError?.Invoke(this, ex);
                     }
@@ -133,6 +147,10 @@ public sealed class MonitoringEngine : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Poll, log transitions, and report recovery without duplicating
+    /// connections.
+    /// </summary>
     private async Task RunAsync(CancellationToken cancellationToken)
     {
         bool recoveringFromError = false;
@@ -140,36 +158,50 @@ public sealed class MonitoringEngine : IAsyncDisposable
         {
             try
             {
-                IReadOnlyList<TcpConnectionInfo> connections = _provider.GetConnections();
+                IReadOnlyList<TcpConnectionInfo> connections =
+                    _provider.GetConnections();
                 ConnectionTrackingResult result = _tracker.Process(
                     connections,
                     _rulesProvider(),
-                    DateTimeOffset.Now);
-                foreach (ConnectionEvent connectionEvent in result.DetectedEvents)
+                    DateTimeOffset.Now
+                );
+                foreach (
+                    ConnectionEvent connectionEvent in result.DetectedEvents
+                )
                 {
                     if (_processContextProvider is not null)
                     {
                         try
                         {
-                            ProcessContext context = _processContextProvider.GetContext(
-                                connectionEvent.ProcessId,
-                                connectionEvent.ProcessName,
-                                connectionEvent.ProcessPath);
+                            ProcessContext context =
+                                _processContextProvider.GetContext(
+                                    connectionEvent.ProcessId,
+                                    connectionEvent.ProcessName,
+                                    connectionEvent.ProcessPath
+                                );
                             connectionEvent.ApplyProcessContext(context);
                         }
                         catch
                         {
-                            // Attribution is best-effort and must never stop monitoring.
+                            // Attribution is best-effort and must never stop
+                            // monitoring.
                         }
                     }
 
-                    await _logger.AppendAsync(connectionEvent, cancellationToken)
+                    await _logger
+                        .AppendAsync(connectionEvent, cancellationToken)
                         .ConfigureAwait(false);
                     EventDetected?.Invoke(this, connectionEvent);
                 }
-                foreach (ConnectionEvent connectionEvent in result.CompletedEvents)
+                foreach (
+                    ConnectionEvent connectionEvent in result.CompletedEvents
+                )
                 {
-                    await _logger.AppendCompletionAsync(connectionEvent, cancellationToken)
+                    await _logger
+                        .AppendCompletionAsync(
+                            connectionEvent,
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
                     EventCompleted?.Invoke(this, connectionEvent);
                 }
@@ -180,7 +212,8 @@ public sealed class MonitoringEngine : IAsyncDisposable
                     MonitoringRecovered?.Invoke(this, EventArgs.Empty);
                 }
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
             {
                 break;
             }
@@ -189,11 +222,14 @@ public sealed class MonitoringEngine : IAsyncDisposable
                 recoveringFromError = true;
                 MonitoringError?.Invoke(this, ex);
             }
-        }
-        while (await WaitForNextPollAsync(cancellationToken).ConfigureAwait(false));
+        } while (
+            await WaitForNextPollAsync(cancellationToken).ConfigureAwait(false)
+        );
     }
 
-    private async Task<bool> WaitForNextPollAsync(CancellationToken cancellationToken)
+    private async Task<bool> WaitForNextPollAsync(
+        CancellationToken cancellationToken
+    )
     {
         TimeSpan interval;
         CancellationToken intervalChanged;
@@ -206,17 +242,21 @@ public sealed class MonitoringEngine : IAsyncDisposable
         using CancellationTokenSource waitCancellation =
             CancellationTokenSource.CreateLinkedTokenSource(
                 cancellationToken,
-                intervalChanged);
+                intervalChanged
+            );
         try
         {
-            await Task.Delay(interval, waitCancellation.Token).ConfigureAwait(false);
+            await Task.Delay(interval, waitCancellation.Token)
+                .ConfigureAwait(false);
             return true;
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
         {
             return false;
         }
-        catch (OperationCanceledException) when (intervalChanged.IsCancellationRequested)
+        catch (OperationCanceledException)
+            when (intervalChanged.IsCancellationRequested)
         {
             return true;
         }

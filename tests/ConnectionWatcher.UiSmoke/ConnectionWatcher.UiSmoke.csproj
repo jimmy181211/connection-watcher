@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ConnectionWatcher.App\ConnectionWatcher.App.csproj" />
+    <ProjectReference
+      Include="..\..\src\ConnectionWatcher.App\ConnectionWatcher.App.csproj"
+    />
   </ItemGroup>
 </Project>

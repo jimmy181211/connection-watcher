@@ -45,11 +45,28 @@ public sealed class UrgentAlertForm : Form
         }
 
         _rulesValue.Text = string.Join(" | ", connectionEvent.RuleNames);
-        _remoteValue.Text = $"{connectionEvent.RemoteAddress}:{connectionEvent.RemotePort}";
-        _localValue.Text = $"{connectionEvent.LocalAddress}:{connectionEvent.LocalPort}";
-        _programValue.Text = $"{connectionEvent.ProcessName} (PID {connectionEvent.ProcessId})";
-        _firstValue.Text = _firstSeen.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss");
-        _latestValue.Text = connectionEvent.DetectedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+        _remoteValue.Text = (
+            $"{connectionEvent.RemoteAddress}"
+            + ":"
+            + $"{connectionEvent.RemotePort}"
+        );
+        _localValue.Text = (
+            $"{connectionEvent.LocalAddress}"
+            + ":"
+            + $"{connectionEvent.LocalPort}"
+        );
+        _programValue.Text = (
+            $"{connectionEvent.ProcessName}"
+            + " (PID "
+            + $"{connectionEvent.ProcessId}"
+            + ")"
+        );
+        _firstValue.Text = _firstSeen.LocalDateTime.ToString(
+            "yyyy-MM-dd HH:mm:ss"
+        );
+        _latestValue.Text = connectionEvent.DetectedAt.LocalDateTime.ToString(
+            "yyyy-MM-dd HH:mm:ss"
+        );
         _countValue.Text = $"{_count} {UiText.Get("Times")}";
     }
 
@@ -60,7 +77,7 @@ public sealed class UrgentAlertForm : Form
             AutoSize = true,
             Dock = DockStyle.Fill,
             MaximumSize = new Size(390, 0),
-            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
+            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
         };
     }
 
@@ -85,7 +102,7 @@ public sealed class UrgentAlertForm : Form
             ColumnCount = 2,
             RowCount = 9,
             AutoScroll = true,
-            GrowStyle = TableLayoutPanelGrowStyle.FixedSize
+            GrowStyle = TableLayoutPanelGrowStyle.FixedSize,
         };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -101,7 +118,7 @@ public sealed class UrgentAlertForm : Form
             AutoSize = true,
             Font = new Font("Segoe UI", 14F, FontStyle.Bold),
             ForeColor = Color.Firebrick,
-            Margin = new Padding(0, 0, 0, 14)
+            Margin = new Padding(0, 0, 0, 14),
         };
         layout.Controls.Add(heading, 0, 0);
         layout.SetColumnSpan(heading, 2);
@@ -119,7 +136,7 @@ public sealed class UrgentAlertForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 2,
-            AutoSize = true
+            AutoSize = true,
         };
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -135,11 +152,22 @@ public sealed class UrgentAlertForm : Form
             FlowDirection = FlowDirection.RightToLeft,
             AutoSize = true,
             WrapContents = true,
-            Margin = new Padding(0, 14, 0, 0)
+            Margin = new Padding(0, 14, 0, 0),
         };
-        Button details = new() { Name = "DetailsButton", AutoSize = true, MinimumSize = new Size(110, 34) };
-        Button close = new() { Name = "CloseButton", AutoSize = true, MinimumSize = new Size(90, 34) };
-        details.Click += (_, _) => ViewDetailsRequested?.Invoke(this, EventArgs.Empty);
+        Button details = new()
+        {
+            Name = "DetailsButton",
+            AutoSize = true,
+            MinimumSize = new Size(110, 34),
+        };
+        Button close = new()
+        {
+            Name = "CloseButton",
+            AutoSize = true,
+            MinimumSize = new Size(90, 34),
+        };
+        details.Click += (_, _) =>
+            ViewDetailsRequested?.Invoke(this, EventArgs.Empty);
         close.Click += (_, _) => Close();
         buttons.Controls.AddRange([details, close]);
         footer.Controls.Add(_notice, 0, 0);
@@ -151,9 +179,18 @@ public sealed class UrgentAlertForm : Form
         Shown += (_, _) => PositionAtBottomRight();
     }
 
-    private void AddRow(TableLayoutPanel layout, string name, Label value, int row)
+    private void AddRow(
+        TableLayoutPanel layout,
+        string name,
+        Label value,
+        int row
+    )
     {
-        Label label = new() { AutoSize = true, Margin = new Padding(0, 6, 8, 6) };
+        Label label = new()
+        {
+            AutoSize = true,
+            Margin = new Padding(0, 6, 8, 6),
+        };
         _labels[name] = label;
         value.Margin = new Padding(0, 6, 0, 6);
         layout.Controls.Add(label, 0, row);
@@ -163,7 +200,9 @@ public sealed class UrgentAlertForm : Form
     private void ApplyLanguage()
     {
         Text = UiText.Get("UrgentTitle");
-        Controls.Find("Heading", true).Single().Text = UiText.Get("UrgentTitle");
+        Controls.Find("Heading", true).Single().Text = UiText.Get(
+            "UrgentTitle"
+        );
         _labels["RulesLabel"].Text = UiText.Get("MatchedRules");
         _labels["RemoteLabel"].Text = UiText.Get("RemoteEndpoint");
         _labels["LocalLabel"].Text = UiText.Get("LocalEndpoint");
@@ -172,7 +211,9 @@ public sealed class UrgentAlertForm : Form
         _labels["LatestLabel"].Text = UiText.Get("LatestSeen");
         _labels["CountLabel"].Text = UiText.Get("Occurrences");
         _notice.Text = UiText.Get("NotMalwareVerdict");
-        Controls.Find("DetailsButton", true).Single().Text = UiText.Get("ViewDetails");
+        Controls.Find("DetailsButton", true).Single().Text = UiText.Get(
+            "ViewDetails"
+        );
         Controls.Find("CloseButton", true).Single().Text = UiText.Get("Close");
         _countValue.Text = $"{_count} {UiText.Get("Times")}";
     }
@@ -180,6 +221,9 @@ public sealed class UrgentAlertForm : Form
     private void PositionAtBottomRight()
     {
         Rectangle area = Screen.FromControl(this).WorkingArea;
-        Location = new Point(area.Right - Width - 16, area.Bottom - Height - 16);
+        Location = new Point(
+            area.Right - Width - 16,
+            area.Bottom - Height - 16
+        );
     }
 }

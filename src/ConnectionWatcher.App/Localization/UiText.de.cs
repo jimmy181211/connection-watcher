@@ -14,16 +14,29 @@ public static partial class UiText
             ["MonitoringRunning"] = "Überwachung",
             ["MonitoringInterrupted"] = "Überwachungsfehler",
             ["MonitoringStatus"] = "Überwachungsstatus",
-            ["StatusHint"] = "Verbindungen werden erst nach Auswahl von „Überwachung starten“ geprüft.",
+            ["StatusHint"] = (
+                "Verbindungen werden erst nach Auswahl "
+                + "von „Überwachung starten“ geprüft."
+            ),
             ["StartMonitoring"] = "Überwachung starten",
             ["StopMonitoring"] = "Überwachung beenden",
             ["EnabledRules"] = "Aktivierte Regeln",
             ["CheckInterval"] = "Prüfintervall",
             ["OneSecond"] = "1 Sekunde",
             ["SecondsUnit"] = "Sekunden",
-            ["LongIntervalHint"] = "Längere Intervalle können sehr kurze Verbindungen übersehen.",
-            ["ActionLegend"] = "Aktionssymbole (im Ereignisprotokoll werden dieselben Symbole verwendet)",
-            ["RulesDescription"] = "Regeln bestimmen, was überwacht wird und welche Aktion bei einem Treffer erfolgt.",
+            ["LongIntervalHint"] = (
+                "Längere Intervalle können sehr kurze "
+                + "Verbindungen übersehen."
+            ),
+            ["ActionLegend"] = (
+                "Aktionssymbole (im Ereignisprotokoll "
+                + "werden dieselben Symbole verwendet)"
+            ),
+            ["RulesDescription"] = (
+                "Regeln bestimmen, was überwacht wird "
+                + "und welche Aktion bei einem Treffer "
+                + "erfolgt."
+            ),
             ["NewRule"] = "Neue Regel",
             ["Edit"] = "Bearbeiten",
             ["Delete"] = "Löschen",
@@ -32,9 +45,15 @@ public static partial class UiText
             ["MatchAction"] = "Aktion bei Treffer",
             ["ActionColumn"] = "Aktion",
             ["Enabled"] = "Aktiviert",
-            ["NoRules"] = "Noch keine Regeln. Erstellen und aktivieren Sie zuerst eine Regel.",
+            ["NoRules"] = (
+                "Noch keine Regeln. Erstellen und "
+                + "aktivieren Sie zuerst eine Regel."
+            ),
             ["DeleteRuleTitle"] = "Regel löschen",
-            ["DeleteRuleQuestion"] = "Regel „{0}“ löschen? Vorhandene Ereigniseinträge bleiben erhalten.",
+            ["DeleteRuleQuestion"] = (
+                "Regel „{0}“ löschen? Vorhandene "
+                + "Ereigniseinträge bleiben erhalten."
+            ),
             ["SilentLog"] = "Im Hintergrund protokollieren",
             ["TrayNotice"] = "Taskleistenhinweis und Protokoll",
             ["PopupAlert"] = "Warnfenster und Protokoll",
@@ -49,22 +68,46 @@ public static partial class UiText
             ["LocalPort"] = "Lokaler Port",
             ["AnyPort"] = "Beliebiger Port",
             ["ListenerOn"] = "Lokalen Port {0} überwachen",
-            ["ConnectionCondition"] = "Remote-IP: {0} · Remote-Port: {1} · lokaler Port: {2}",
+            ["ConnectionCondition"] =
+                "Remote-IP: {0} · Remote-Port: {1} · lokaler Port: {2}",
             ["Any"] = "Beliebig",
             ["SearchEvents"] = "Regel, IP, Port oder Programm suchen",
             ["ClearDisplay"] = "Anzeige leeren",
             ["ClearDisplayTitle"] = "Ereignisanzeige leeren",
-            ["ClearDisplayQuestion"] = "Die aktuell angezeigten Ereignisse leeren? Die CSV-Protokolle werden nicht gelöscht; ältere Ereignisse bleiben auch nach einem Neustart ausgeblendet.",
-            ["EventsDescription"] = "Jeder neue Treffer wird einmal protokolliert; Status und beobachtete Dauer werden automatisch aktualisiert.",
-            ["EventDoubleClickHint"] = "Doppelklicken Sie auf ein Ereignis, um alle Details anzuzeigen.",
+            ["ClearDisplayQuestion"] = (
+                "Die aktuell angezeigten Ereignisse "
+                + "leeren? Die CSV-Protokolle werden "
+                + "nicht gelöscht; ältere Ereignisse "
+                + "bleiben auch nach einem Neustart "
+                + "ausgeblendet."
+            ),
+            ["EventsDescription"] = (
+                "Jeder neue Treffer wird einmal "
+                + "protokolliert; Status und beobachtete "
+                + "Dauer werden automatisch aktualisiert."
+            ),
+            ["EventDoubleClickHint"] = (
+                "Doppelklicken Sie auf ein Ereignis, "
+                + "um alle Details anzuzeigen."
+            ),
             ["EventDetailsTitle"] = "Ereignisdetails",
-            ["EventDetailsDescription"] = "Zeigt den von Windows gemeldeten Verbindungsinhaber und zugehörigen Kontext. Das hilft bei der Untersuchung, beweist aber nicht immer, welche App die Verbindung ausgelöst hat.",
+            ["EventDetailsDescription"] = (
+                "Zeigt den von Windows gemeldeten "
+                + "Verbindungsinhaber und zugehörigen "
+                + "Kontext. Das hilft bei der "
+                + "Untersuchung, beweist aber nicht "
+                + "immer, welche App die Verbindung "
+                + "ausgelöst hat."
+            ),
             ["StartTime"] = "Startzeit",
             ["EndTime"] = "Endzeit",
             ["ProcessPath"] = "Programmpfad",
             ["CopyDetails"] = "Details kopieren",
             ["Copied"] = "Kopiert",
-            ["CopyFailed"] = "Die Details konnten nicht kopiert werden. Versuchen Sie es erneut.",
+            ["CopyFailed"] = (
+                "Die Details konnten nicht kopiert "
+                + "werden. Versuchen Sie es erneut."
+            ),
             ["ExportCsv"] = "CSV exportieren",
             ["OpenLogFolder"] = "Protokollordner öffnen",
             ["Time"] = "Zeit",
@@ -78,7 +121,11 @@ public static partial class UiText
             ["TcpState"] = "TCP-Status",
             ["Program"] = "Programm",
             ["Application"] = "Anwendung",
-            ["ApplicationTooltip"] = "Von Windows gemeldeter Verbindungsinhaber: {0} (PID {1})\nPfad: {2}",
+            ["ApplicationTooltip"] = (
+                "Von Windows gemeldeter "
+                + "Verbindungsinhaber: {0} (PID "
+                + "{1})\nPfad: {2}"
+            ),
             ["ConnectionOwner"] = "Von Windows gemeldeter Verbindungsinhaber",
             ["ProductName"] = "Produktname der Datei",
             ["CompanyName"] = "Dateihersteller",
@@ -98,54 +145,111 @@ public static partial class UiText
             ["German"] = "Deutsch",
             ["BrazilianPortuguese"] = "Português (Brasil)",
             ["StartWithWindows"] = "App nach der Windows-Anmeldung starten",
-            ["StartWithWindowsHint"] = "Öffnet nur die App; die Überwachung wird nicht gestartet.",
-            ["ResumeMonitoring"] = "Überwachung beim Öffnen der App automatisch starten",
-            ["ResumeMonitoringHint"] = "Standardmäßig aus; verwendet nur aktivierte Regeln.",
+            ["StartWithWindowsHint"] = (
+                "Öffnet nur die App; die Überwachung " + "wird nicht gestartet."
+            ),
+            ["ResumeMonitoring"] =
+                "Überwachung beim Öffnen der App automatisch starten",
+            ["ResumeMonitoringHint"] =
+                "Standardmäßig aus; verwendet nur aktivierte Regeln.",
             ["AlertSound"] = "Ton bei dringender Warnung",
-            ["AlertSoundHint"] = "Verwendet den kurzen, integrierten Hinweiston.",
+            ["AlertSoundHint"] =
+                "Verwendet den kurzen, integrierten Hinweiston.",
             ["TestSound"] = "Ton testen",
             ["AlertVolume"] = "Lautstärke der dringenden Warnung (%)",
-            ["AlertVolumeHint"] = "Gilt für Testton und dringende Warnungen; die Windows-Lautstärke gilt weiterhin.",
+            ["AlertVolumeHint"] = (
+                "Gilt für Testton und dringende "
+                + "Warnungen; die Windows-Lautstärke "
+                + "gilt weiterhin."
+            ),
             ["LogLimit"] = "Größenlimit des Ereignisprotokolls (MB)",
-            ["LogLimitHint"] = "Wählen Sie 5–500 MB. Es werden fünf Dateien verwendet; die ältesten Einträge werden zuerst entfernt.",
+            ["LogLimitHint"] = (
+                "Wählen Sie 5–500 MB. Es werden fünf "
+                + "Dateien verwendet; die ältesten "
+                + "Einträge werden zuerst entfernt."
+            ),
             ["HelpCenter"] = "Hilfe",
-            ["HelpCenterHint"] = "Projektübersicht und Benutzerhandbuch direkt in der App lesen.",
+            ["HelpCenterHint"] = (
+                "Projektübersicht und Benutzerhandbuch "
+                + "direkt in der App lesen."
+            ),
             ["OpenHelpCenter"] = "Öffnen",
             ["Feedback"] = "Feedback",
-            ["FeedbackHint"] = "Feedback auf GitHub teilen; vor dem Absenden können Sie es prüfen.",
+            ["FeedbackHint"] = (
+                "Feedback auf GitHub teilen; vor dem "
+                + "Absenden können Sie es prüfen."
+            ),
             ["OpenFeedback"] = "Öffnen",
             ["FeedbackTitle"] = "Feedback senden",
-            ["FeedbackDescription"] = "Schreiben Sie einen Vorschlag oder beschreiben Sie ein Problem. Nach „Weiter zu GitHub“ wird eine vorausgefüllte Seite geöffnet, die Sie vor dem Absenden prüfen können.",
+            ["FeedbackDescription"] = (
+                "Schreiben Sie einen Vorschlag oder "
+                + "beschreiben Sie ein Problem. Nach "
+                + "„Weiter zu GitHub“ wird eine "
+                + "vorausgefüllte Seite geöffnet, die "
+                + "Sie vor dem Absenden prüfen können."
+            ),
             ["FeedbackTextLabel"] = "Feedback",
-            ["FeedbackPlaceholder"] = "Beschreiben Sie ein Problem, einen Vorschlag oder eine Verbesserung.",
-            ["IncludeDiagnostics"] = "Grundlegende Diagnoseinformationen einschließen",
-            ["DiagnosticsHint"] = "Nur App-Version, Windows-Version und Sprache; es werden keine Protokolle angehängt.",
+            ["FeedbackPlaceholder"] = (
+                "Beschreiben Sie ein Problem, einen "
+                + "Vorschlag oder eine Verbesserung."
+            ),
+            ["IncludeDiagnostics"] =
+                "Grundlegende Diagnoseinformationen einschließen",
+            ["DiagnosticsHint"] = (
+                "Nur App-Version, Windows-Version und "
+                + "Sprache; es werden keine Protokolle "
+                + "angehängt."
+            ),
             ["ContinueToGitHub"] = "Weiter zu GitHub",
             ["FeedbackEmpty"] = "Geben Sie zuerst Feedback ein.",
-            ["FeedbackOpenFailed"] = "Die GitHub-Seite konnte nicht geöffnet werden: {0}",
+            ["FeedbackOpenFailed"] =
+                "Die GitHub-Seite konnte nicht geöffnet werden: {0}",
             ["SoftwareUpdates"] = "Softwareupdates",
-            ["SoftwareUpdatesWithVersion"] = "Softwareupdates (Aktuelle Version: {0})",
-            ["SoftwareUpdatesHint"] = "Updates werden nicht automatisch installiert.",
+            ["SoftwareUpdatesWithVersion"] =
+                "Softwareupdates (Aktuelle Version: {0})",
+            ["SoftwareUpdatesHint"] =
+                "Updates werden nicht automatisch installiert.",
             ["CheckNow"] = "Jetzt prüfen",
             ["CurrentVersion"] = "Aktuelle Version: {0}",
             ["CheckingUpdates"] = "Prüfung…",
             ["UpdateAvailableTitle"] = "Update verfügbar",
-            ["UpdateAvailableMessage"] = "Auf GitHub ist eine neuere Version verfügbar: {0} ({1}).\n\nVeröffentlichungsseite öffnen, um Hinweise zu lesen und sie selbst herunterzuladen?",
-            ["UpToDateMessage"] = "Version {0} ist die neueste öffentliche GitHub-Version.",
+            ["UpdateAvailableMessage"] = (
+                "Auf GitHub ist eine neuere Version "
+                + "verfügbar: {0} ({1}).\n\nVeröffentlichun"
+                + "gsseite öffnen, um Hinweise zu lesen "
+                + "und sie selbst herunterzuladen?"
+            ),
+            ["UpToDateMessage"] = (
+                "Version {0} ist die neueste " + "öffentliche GitHub-Version."
+            ),
             ["UpdateCheckFailed"] = "Updates konnten nicht geprüft werden: {0}",
             ["ProjectOverview"] = "Projektübersicht",
             ["UserGuide"] = "Benutzerhandbuch",
-            ["HelpDocumentUnavailable"] = "Das Hilfedokument konnte nicht geladen werden.",
-            ["LogLimitUpdateError"] = "Das Protokolllimit konnte nicht geändert werden: {0}",
-            ["Privacy"] = "Dieses Tool verbindet sich nur bei einer manuellen Updateprüfung oder beim Öffnen der Feedbackseite mit dem Internet. Es lädt keine Protokolle hoch, liest keine Pakete und blockiert nichts automatisch.",
+            ["PrivacyPolicy"] = "Datenschutzerklärung",
+            ["TermsOfUse"] = "Nutzungsbedingungen",
+            ["HelpDocumentUnavailable"] =
+                "Das Hilfedokument konnte nicht geladen werden.",
+            ["LogLimitUpdateError"] =
+                "Das Protokolllimit konnte nicht geändert werden: {0}",
+            ["Privacy"] = (
+                "Dieses Tool verbindet sich nur bei "
+                + "einer manuellen Updateprüfung oder "
+                + "beim Öffnen der Feedbackseite mit dem "
+                + "Internet. Es lädt keine Protokolle "
+                + "hoch, liest keine Pakete und "
+                + "blockiert nichts automatisch."
+            ),
             ["CreateRule"] = "Überwachungsregel erstellen",
             ["EditRule"] = "Überwachungsregel bearbeiten",
             ["RuleType"] = "Regeltyp",
             ["AnyRemoteIpCheck"] = "Beliebige Remote-IP",
             ["AnyRemotePortCheck"] = "Beliebiger Remote-Port",
             ["AnyLocalPortCheck"] = "Beliebiger lokaler Port",
-            ["PortFormat"] = "Einen Port (1433) oder Bereich (1400-1500) eingeben",
-            ["RepeatInterval"] = "Wiederholungsintervall nach Schließen des Warnfensters",
+            ["PortFormat"] =
+                "Einen Port (1433) oder Bereich (1400-1500) eingeben",
+            ["RepeatInterval"] = (
+                "Wiederholungsintervall nach Schließen " + "des Warnfensters"
+            ),
             ["EveryTime"] = "Jedes Mal",
             ["OneMinute"] = "1 Minute",
             ["FiveMinutes"] = "5 Minuten",
@@ -154,33 +258,67 @@ public static partial class UiText
             ["RulePreview"] = "Regelvorschau",
             ["Save"] = "Speichern",
             ["Cancel"] = "Abbrechen",
-            ["PreviewConnection"] = "Wenn eine TCP-Verbindung diese Bedingungen erfüllt: {0}, dann {1}.",
-            ["PreviewListener"] = "Wenn ein Programm den lokalen Port {0} überwacht, dann {1}.",
+            ["PreviewConnection"] = (
+                "Wenn eine TCP-Verbindung diese "
+                + "Bedingungen erfüllt: {0}, dann {1}."
+            ),
+            ["PreviewListener"] = (
+                "Wenn ein Programm den lokalen Port "
+                + "{0} überwacht, dann {1}."
+            ),
             ["NameRequired"] = "Geben Sie einen Regelnamen ein.",
             ["InvalidRemoteIp"] = "Die Remote-IP-Adresse ist ungültig.",
-            ["InvalidRemotePort"] = "Der Remote-Port muss ein Port oder Bereich von 1 bis 65535 sein.",
-            ["InvalidLocalPort"] = "Der lokale Port muss ein Port oder Bereich von 1 bis 65535 sein.",
-            ["ConditionRequired"] = "Schränken Sie mindestens eine IP-Adresse oder einen Port ein.",
-            ["ListenerPortRequired"] = "Eine Überwachungsregel benötigt einen lokalen Port.",
-            ["InvalidRepeatInterval"] = "Das Wiederholungsintervall ist ungültig.",
-            ["NeedEnabledRule"] = "Erstellen und aktivieren Sie vor dem Start mindestens eine Regel.",
+            ["InvalidRemotePort"] = (
+                "Der Remote-Port muss ein Port oder "
+                + "Bereich von 1 bis 65535 sein."
+            ),
+            ["InvalidLocalPort"] = (
+                "Der lokale Port muss ein Port oder "
+                + "Bereich von 1 bis 65535 sein."
+            ),
+            ["ConditionRequired"] = (
+                "Schränken Sie mindestens eine "
+                + "IP-Adresse oder einen Port ein."
+            ),
+            ["ListenerPortRequired"] =
+                "Eine Überwachungsregel benötigt einen lokalen Port.",
+            ["InvalidRepeatInterval"] =
+                "Das Wiederholungsintervall ist ungültig.",
+            ["NeedEnabledRule"] = (
+                "Erstellen und aktivieren Sie vor dem "
+                + "Start mindestens eine Regel."
+            ),
             ["UrgentTitle"] = "Überwachungsregel erfüllt",
             ["FirstSeen"] = "Zuerst erkannt",
             ["LatestSeen"] = "Zuletzt erkannt",
             ["Occurrences"] = "Während dieser Warnung",
             ["Times"] = "Mal",
-            ["NotMalwareVerdict"] = "Diese Verbindung entsprach einer von Ihnen erstellten Regel. Das allein bedeutet jedoch nicht, dass der Computer infiziert ist.",
+            ["NotMalwareVerdict"] = (
+                "Diese Verbindung entsprach einer von "
+                + "Ihnen erstellten Regel. Das allein "
+                + "bedeutet jedoch nicht, dass der "
+                + "Computer infiziert ist."
+            ),
             ["ViewDetails"] = "Details anzeigen",
             ["Close"] = "Schließen",
             ["Open"] = "Öffnen",
             ["Exit"] = "Beenden",
-            ["CloseWhileRunning"] = "Die Überwachung läuft. Wählen Sie Ja zum Minimieren in die Taskleiste oder Nein zum Beenden der Überwachung und der App.",
+            ["CloseWhileRunning"] = (
+                "Die Überwachung läuft. Wählen Sie Ja "
+                + "zum Minimieren in die Taskleiste oder "
+                + "Nein zum Beenden der Überwachung und "
+                + "der App."
+            ),
             ["CloseWhileRunningTitle"] = "Überwachung läuft noch",
             ["TrayNormal"] = "SocketSight: Überwachung",
             ["TrayNotices"] = "SocketSight: {0} Hinweise",
             ["Error"] = "Fehler",
             ["UnexpectedError"] = "Unerwarteter Fehler",
-            ["StartupSettingError"] = "Die Windows-Starteinstellung konnte nicht geändert werden: {0}",
-            ["ProcessPathUnavailable"] = "Nicht verfügbar (fehlende Berechtigung)"
+            ["StartupSettingError"] = (
+                "Die Windows-Starteinstellung konnte "
+                + "nicht geändert werden: {0}"
+            ),
+            ["ProcessPathUnavailable"] =
+                "Nicht verfügbar (fehlende Berechtigung)",
         };
 }

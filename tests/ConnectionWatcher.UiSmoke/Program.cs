@@ -1,3 +1,4 @@
+using UpdateChecker = ConnectionWatcher.App.Services.UpdateCheckService;
 using ConnectionWatcher.App.Localization;
 using ConnectionWatcher.App.UI;
 using ConnectionWatcher.Core.Configuration;
@@ -14,7 +15,10 @@ internal static class Program
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
-        string output = args.Length > 0 ? args[0] : Path.Combine(Path.GetTempPath(), "ConnectionWatcherUi");
+        string output =
+            args.Length > 0
+                ? args[0]
+                : Path.Combine(Path.GetTempPath(), "ConnectionWatcherUi");
         Directory.CreateDirectory(output);
         RenderMainWindow(output, "zh-CN", "zh");
         RenderMainWindow(output, "zh-TW", "zh-tw");
@@ -58,10 +62,18 @@ internal static class Program
         RenderStartupSplash(output, "fr", "fr");
         RenderStartupSplash(output, "de", "de");
         RenderStartupSplash(output, "pt-BR", "pt-br");
-        foreach (string language in new[]
-                 {
-                     "zh-CN", "zh-TW", "en", "es", "fr", "de", "pt-BR"
-                 })
+        foreach (
+            string language in new[]
+            {
+                "zh-CN",
+                "zh-TW",
+                "en",
+                "es",
+                "fr",
+                "de",
+                "pt-BR",
+            }
+        )
         {
             AssertMainWindowScaling(output, language, 1.25F);
             AssertMainWindowScaling(output, language, 1.50F);
@@ -74,7 +86,11 @@ internal static class Program
         return 0;
     }
 
-    private static void RenderMainWindow(string output, string language, string filePrefix)
+    private static void RenderMainWindow(
+        string output,
+        string language,
+        string filePrefix
+    )
     {
         UiText.SetLanguage(language);
         string data = Path.Combine(output, "data-" + language);
@@ -82,7 +98,7 @@ internal static class Program
         AppSettings settings = new()
         {
             Language = language,
-            Rules = SampleRules()
+            Rules = SampleRules(),
         };
         SettingsStore store = new(data);
         store.Save(settings);
@@ -91,14 +107,15 @@ internal static class Program
         {
             Size = new Size(1100, 720),
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.Show();
         Application.DoEvents();
         Thread.Sleep(100);
         Application.DoEvents();
         Capture(form, Path.Combine(output, $"main-{filePrefix}-rules.png"));
-        DataGridView rulesGrid = form.Controls.Find("RulesGrid", true)
+        DataGridView rulesGrid = form
+            .Controls.Find("RulesGrid", true)
             .OfType<DataGridView>()
             .Single();
         AssertRuleGridLayout(rulesGrid);
@@ -107,16 +124,21 @@ internal static class Program
         form.Size = form.MinimumSize;
         Application.DoEvents();
         AssertRuleGridLayout(rulesGrid);
-        Capture(form, Path.Combine(output, $"main-{filePrefix}-rules-minimum.png"));
+        Capture(
+            form,
+            Path.Combine(output, $"main-{filePrefix}-rules-minimum.png")
+        );
         form.Size = new Size(1100, 720);
         Application.DoEvents();
 
         ClickNavigation(form, UiText.Get("Home"));
         Capture(form, Path.Combine(output, $"main-{filePrefix}-home.png"));
-        Button monitorButton = form.Controls.Find("MonitorButton", true)
+        Button monitorButton = form
+            .Controls.Find("MonitorButton", true)
             .OfType<Button>()
             .Single();
-        Label homeSubtitle = form.Controls.Find("HomeSubtitle", true)
+        Label homeSubtitle = form
+            .Controls.Find("HomeSubtitle", true)
             .OfType<Label>()
             .Single();
         form.Size = form.MinimumSize;
@@ -126,38 +148,59 @@ internal static class Program
         AssertNoHorizontalOverlap(form, homeSubtitle, monitorButton);
         AssertActionLegend(form);
         AssertHomeLayout(form);
-        NumericUpDown checkInterval = form.Controls.Find("CheckIntervalInput", true)
+        NumericUpDown checkInterval = form
+            .Controls.Find("CheckIntervalInput", true)
             .OfType<NumericUpDown>()
             .Single();
-        if (checkInterval.Minimum != AppSettings.MinimumCheckIntervalSeconds ||
-            checkInterval.Maximum != AppSettings.MaximumCheckIntervalSeconds ||
-            checkInterval.Increment != AppSettings.CheckIntervalStepSeconds ||
-            checkInterval.Value != AppSettings.DefaultCheckIntervalSeconds)
+        if (
+            checkInterval.Minimum != AppSettings.MinimumCheckIntervalSeconds
+            || checkInterval.Maximum != AppSettings.MaximumCheckIntervalSeconds
+            || checkInterval.Increment != AppSettings.CheckIntervalStepSeconds
+            || checkInterval.Value != AppSettings.DefaultCheckIntervalSeconds
+        )
         {
             throw new InvalidOperationException(
-                "The check interval control has the wrong range, step, or default.");
+                (
+                    "The check interval control has the "
+                    + "wrong range, step, or default."
+                )
+            );
         }
         AssertFullyVisible(form, checkInterval);
         checkInterval.Value = 2.0m;
         Application.DoEvents();
-        if (Descendants(form).OfType<Label>().Any(label =>
-                label.Visible &&
-                string.Equals(
-                    label.Text,
-                    UiText.Get("LongIntervalHint"),
-                    StringComparison.Ordinal)))
+        if (
+            Descendants(form)
+                .OfType<Label>()
+                .Any(label =>
+                    label.Visible
+                    && string.Equals(
+                        label.Text,
+                        UiText.Get("LongIntervalHint"),
+                        StringComparison.Ordinal
+                    )
+                )
+        )
         {
             throw new InvalidOperationException(
-                "The removed long-interval hint is still visible on Home.");
+                (
+                    "The removed long-interval hint is "
+                    + "still visible on Home."
+                )
+            );
         }
         checkInterval.Value = AppSettings.DefaultCheckIntervalSeconds;
         Application.DoEvents();
-        Capture(form, Path.Combine(output, $"main-{filePrefix}-home-minimum.png"));
+        Capture(
+            form,
+            Path.Combine(output, $"main-{filePrefix}-home-minimum.png")
+        );
         AssertFontFamily(
             form,
             language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
                 ? "Microsoft YaHei UI"
-                : "Segoe UI");
+                : "Segoe UI"
+        );
 
         PopulateSampleEvents(form);
         form.Size = new Size(1100, 720);
@@ -167,55 +210,76 @@ internal static class Program
         Application.DoEvents();
         AssertEventActionMarkers(form);
         AssertEventDoubleClickOpensDetails(form);
-        Label eventHint = form.Controls.Find("EventDetailsHint", true)
+        Label eventHint = form
+            .Controls.Find("EventDetailsHint", true)
             .OfType<Label>()
             .Single();
         AssertFullyVisible(form, eventHint);
         AssertTextFits(eventHint);
-        Button clearDisplay = form.Controls.Find("ClearEventsButton", true)
+        Button clearDisplay = form
+            .Controls.Find("ClearEventsButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, clearDisplay);
         AssertTextFits(clearDisplay);
-        Capture(form, Path.Combine(output, $"main-{filePrefix}-events-minimum.png"));
+        Capture(
+            form,
+            Path.Combine(output, $"main-{filePrefix}-events-minimum.png")
+        );
         form.Size = new Size(1100, 720);
         Application.DoEvents();
         Capture(form, Path.Combine(output, $"main-{filePrefix}-events.png"));
 
         ClickNavigation(form, UiText.Get("Settings"));
-        ComboBox languageBox = form.Controls.Find("LanguageComboBox", true)
+        ComboBox languageBox = form
+            .Controls.Find("LanguageComboBox", true)
             .OfType<ComboBox>()
             .Single();
         if (languageBox.Items.Count != 7)
         {
             throw new InvalidOperationException(
-                $"Expected 7 interface languages, found {languageBox.Items.Count}.");
+                (
+                    "Expected 7 interface languages, found "
+                    + $"{languageBox.Items.Count}"
+                    + "."
+                )
+            );
         }
         if (languageBox.DrawMode != DrawMode.OwnerDrawFixed)
         {
             throw new InvalidOperationException(
-                "The selected interface language is not using the centered display renderer.");
+                (
+                    "The selected interface language is "
+                    + "not using the centered display "
+                    + "renderer."
+                )
+            );
         }
-        Button testSound = form.Controls.Find("TestAlertSoundButton", true)
+        Button testSound = form
+            .Controls.Find("TestAlertSoundButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, testSound);
         AssertTextFits(testSound);
         AssertSettingsControlAlignment(form, testSound);
-        Button helpCenter = form.Controls.Find("HelpCenterButton", true)
+        Button helpCenter = form
+            .Controls.Find("HelpCenterButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, helpCenter);
         AssertTextFits(helpCenter);
-        Button checkUpdates = form.Controls.Find("CheckUpdatesButton", true)
+        Button checkUpdates = form
+            .Controls.Find("CheckUpdatesButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, checkUpdates);
         AssertTextFits(checkUpdates);
-        Label updatesCaption = form.Controls.Find("SoftwareUpdatesCaption", true)
+        Label updatesCaption = form
+            .Controls.Find("SoftwareUpdatesCaption", true)
             .OfType<Label>()
             .Single();
-        Label updateHint = form.Controls.Find("SoftwareUpdatesHint", true)
+        Label updateHint = form
+            .Controls.Find("SoftwareUpdatesHint", true)
             .OfType<Label>()
             .Single();
         AssertFullyVisible(form, updatesCaption);
@@ -224,20 +288,32 @@ internal static class Program
         AssertTextFits(updateHint);
         string expectedUpdatesCaption = string.Format(
             UiText.Get("SoftwareUpdatesWithVersion"),
-            typeof(MainForm).Assembly.GetName().Version!.ToString(3));
-        if (!updatesCaption.Font.Bold ||
-            !string.Equals(
+            typeof(MainForm).Assembly.GetName().Version!.ToString(3)
+        );
+        if (
+            !updatesCaption.Font.Bold
+            || !string.Equals(
                 updatesCaption.Text,
                 expectedUpdatesCaption,
-                StringComparison.Ordinal) ||
-            !string.Equals(
+                StringComparison.Ordinal
+            )
+            || !string.Equals(
                 updateHint.Text,
                 UiText.Get("SoftwareUpdatesHint"),
-                StringComparison.Ordinal) ||
-            updateHint.Text.Contains(Environment.NewLine, StringComparison.Ordinal))
+                StringComparison.Ordinal
+            )
+            || updateHint.Text.Contains(
+                Environment.NewLine,
+                StringComparison.Ordinal
+            )
+        )
         {
             throw new InvalidOperationException(
-                "Software update version and hint hierarchy is incorrect.");
+                (
+                    "Software update version and hint "
+                    + "hierarchy is incorrect."
+                )
+            );
         }
         AssertSettingsRightInset(form, helpCenter, checkUpdates);
         Capture(form, Path.Combine(output, $"main-{filePrefix}-settings.png"));
@@ -247,17 +323,19 @@ internal static class Program
     private static void AssertMainWindowScaling(
         string output,
         string language,
-        float scale)
+        float scale
+    )
     {
         UiText.SetLanguage(language);
         string data = Path.Combine(
             output,
-            $"scale-data-{language}-{scale:0.00}");
+            $"scale-data-{language}-{scale:0.00}"
+        );
         Directory.CreateDirectory(data);
         AppSettings settings = new()
         {
             Language = language,
-            Rules = SampleRules()
+            Rules = SampleRules(),
         };
         SettingsStore store = new(data);
         store.Save(settings);
@@ -265,20 +343,23 @@ internal static class Program
         using MainForm form = new(settings, store, logger)
         {
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.Show();
         form.Scale(new SizeF(scale, scale));
         form.Size = new Size(
             (int)Math.Ceiling(1100 * scale),
-            (int)Math.Ceiling(720 * scale));
+            (int)Math.Ceiling(720 * scale)
+        );
         Application.DoEvents();
 
         ClickNavigation(form, UiText.Get("Home"));
-        Button monitor = form.Controls.Find("MonitorButton", true)
+        Button monitor = form
+            .Controls.Find("MonitorButton", true)
             .OfType<Button>()
             .Single();
-        NumericUpDown interval = form.Controls.Find("CheckIntervalInput", true)
+        NumericUpDown interval = form
+            .Controls.Find("CheckIntervalInput", true)
             .OfType<NumericUpDown>()
             .Single();
         AssertFullyVisible(form, monitor);
@@ -287,17 +368,20 @@ internal static class Program
 
         PopulateSampleEvents(form);
         ClickNavigation(form, UiText.Get("Events"));
-        Button clear = form.Controls.Find("ClearEventsButton", true)
+        Button clear = form
+            .Controls.Find("ClearEventsButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, clear);
         AssertTextFits(clear);
 
         ClickNavigation(form, UiText.Get("Settings"));
-        Button helpCenter = form.Controls.Find("HelpCenterButton", true)
+        Button helpCenter = form
+            .Controls.Find("HelpCenterButton", true)
             .OfType<Button>()
             .Single();
-        Button checkUpdates = form.Controls.Find("CheckUpdatesButton", true)
+        Button checkUpdates = form
+            .Controls.Find("CheckUpdatesButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, helpCenter);
@@ -336,13 +420,17 @@ internal static class Program
         bitmap.Save(path);
     }
 
-    private static void RenderRuleEditor(string output, string language, string filePrefix)
+    private static void RenderRuleEditor(
+        string output,
+        string language,
+        string filePrefix
+    )
     {
         UiText.SetLanguage(language);
         using RuleEditorForm form = new(SampleRules()[0])
         {
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.Show();
         form.Size = form.MinimumSize;
@@ -351,16 +439,27 @@ internal static class Program
             form,
             language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
                 ? "Microsoft YaHei UI"
-                : "Segoe UI");
-        AssertFullyVisible(form, form.Controls.Find("SaveButton", true).Single());
-        AssertFullyVisible(form, form.Controls.Find("CancelButton", true).Single());
+                : "Segoe UI"
+        );
+        AssertFullyVisible(
+            form,
+            form.Controls.Find("SaveButton", true).Single()
+        );
+        AssertFullyVisible(
+            form,
+            form.Controls.Find("CancelButton", true).Single()
+        );
         using Bitmap bitmap = new(form.Width, form.Height);
         form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.Size));
         bitmap.Save(Path.Combine(output, $"rule-editor-{filePrefix}.png"));
         form.Hide();
     }
 
-    private static void RenderUrgentAlert(string output, string language, string filePrefix)
+    private static void RenderUrgentAlert(
+        string output,
+        string language,
+        string filePrefix
+    )
     {
         UiText.SetLanguage(language);
         MonitoringRule rule = SampleRules()[0];
@@ -378,12 +477,12 @@ internal static class Program
             State = System.Net.NetworkInformation.TcpState.Established,
             ProcessId = 2480,
             ProcessName = "taskhostw.exe",
-            ProcessPath = @"C:\Windows\System32\taskhostw.exe"
+            ProcessPath = @"C:\Windows\System32\taskhostw.exe",
         };
         using UrgentAlertForm form = new(entry)
         {
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.AddEvent(entry);
         form.AddEvent(entry);
@@ -394,23 +493,34 @@ internal static class Program
             form,
             language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
                 ? "Microsoft YaHei UI"
-                : "Segoe UI");
+                : "Segoe UI"
+        );
         Control notice = form.Controls.Find("Notice", true).Single();
         AssertFullyVisible(form, notice);
         AssertTextFits(notice);
-        AssertFullyVisible(form, form.Controls.Find("DetailsButton", true).Single());
-        AssertFullyVisible(form, form.Controls.Find("CloseButton", true).Single());
+        AssertFullyVisible(
+            form,
+            form.Controls.Find("DetailsButton", true).Single()
+        );
+        AssertFullyVisible(
+            form,
+            form.Controls.Find("CloseButton", true).Single()
+        );
         Capture(form, Path.Combine(output, $"urgent-alert-{filePrefix}.png"));
         form.Hide();
     }
 
-    private static void RenderHelpCenter(string output, string language, string filePrefix)
+    private static void RenderHelpCenter(
+        string output,
+        string language,
+        string filePrefix
+    )
     {
         UiText.SetLanguage(language);
         using HelpCenterForm form = new()
         {
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.Show();
         form.Size = form.MinimumSize;
@@ -419,19 +529,32 @@ internal static class Program
             form,
             language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
                 ? "Microsoft YaHei UI"
-                : "Segoe UI");
-        WebBrowser[] documents = Descendants(form).OfType<WebBrowser>().ToArray();
-        for (int attempt = 0; attempt < 10 &&
-             documents.Any(document => document.Document?.Body is null); attempt++)
+                : "Segoe UI"
+        );
+        WebBrowser[] documents = Descendants(form)
+            .OfType<WebBrowser>()
+            .ToArray();
+        for (
+            int attempt = 0;
+            attempt < 10
+                && documents.Any(document => document.Document?.Body is null);
+            attempt++
+        )
         {
             Thread.Sleep(50);
             Application.DoEvents();
         }
 
-        if (documents.Length != 2 || documents.Any(document =>
-                (document.Document?.Body?.InnerText?.Length ?? 0) < 100))
+        if (
+            documents.Length != 4
+            || documents.Any(document =>
+                (document.Document?.Body?.InnerText?.Length ?? 0) < 100
+            )
+        )
         {
-            throw new InvalidOperationException("Embedded help documents did not load.");
+            throw new InvalidOperationException(
+                "Embedded help documents did not load."
+            );
         }
 
         Capture(form, Path.Combine(output, $"help-center-{filePrefix}.png"));
@@ -441,14 +564,15 @@ internal static class Program
     private static void RenderEventDetails(
         string output,
         string language,
-        string filePrefix)
+        string filePrefix
+    )
     {
         UiText.SetLanguage(language);
         ConnectionEvent entry = SampleEvents()[0];
         using EventDetailsForm form = new(entry)
         {
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.Show();
         form.Size = form.MinimumSize;
@@ -457,12 +581,15 @@ internal static class Program
             form,
             language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
                 ? "Microsoft YaHei UI"
-                : "Segoe UI");
+                : "Segoe UI"
+        );
 
-        Button copy = form.Controls.Find("CopyDetailsButton", true)
+        Button copy = form
+            .Controls.Find("CopyDetailsButton", true)
             .OfType<Button>()
             .Single();
-        Button close = form.Controls.Find("CloseButton", true)
+        Button close = form
+            .Controls.Find("CloseButton", true)
             .OfType<Button>()
             .Single();
         AssertFullyVisible(form, copy);
@@ -472,29 +599,49 @@ internal static class Program
 
         string[] valueNames =
         [
-            "StartTimeValue", "EndTimeValue", "ConnectionStatusValue",
-            "ObservedDurationValue", "MatchedRulesValue",
-            "RemoteEndpointValue", "LocalEndpointValue", "TcpStateValue",
-            "PIDValue", "ConnectionOwnerValue", "ProcessPathValue",
-            "ProductNameValue", "CompanyNameValue", "FileDescriptionValue",
-            "ParentProcessesValue", "RelatedServicesValue", "ActionColumnValue"
+            "StartTimeValue",
+            "EndTimeValue",
+            "ConnectionStatusValue",
+            "ObservedDurationValue",
+            "MatchedRulesValue",
+            "RemoteEndpointValue",
+            "LocalEndpointValue",
+            "TcpStateValue",
+            "PIDValue",
+            "ConnectionOwnerValue",
+            "ProcessPathValue",
+            "ProductNameValue",
+            "CompanyNameValue",
+            "FileDescriptionValue",
+            "ParentProcessesValue",
+            "RelatedServicesValue",
+            "ActionColumnValue",
         ];
         TextBox[] values = valueNames
-            .Select(name => form.Controls.Find(name, true).OfType<TextBox>().Single())
+            .Select(name =>
+                form.Controls.Find(name, true).OfType<TextBox>().Single()
+            )
             .ToArray();
-        if (values.Any(value => string.IsNullOrWhiteSpace(value.Text)) ||
-            !values[2].Text.StartsWith("●", StringComparison.Ordinal) ||
-            values[3].Text.Count(character => character == ':') != 2)
+        if (
+            values.Any(value => string.IsNullOrWhiteSpace(value.Text))
+            || !values[2].Text.StartsWith("●", StringComparison.Ordinal)
+            || values[3].Text.Count(character => character == ':') != 2
+        )
         {
             throw new InvalidOperationException(
-                "The event details window does not show every required field.");
+                (
+                    "The event details window does not "
+                    + "show every required field."
+                )
+            );
         }
         string[] fieldKeys = valueNames
             .Select(name => name[..^"Value".Length])
             .ToArray();
         for (int index = 0; index < fieldKeys.Length; index++)
         {
-            Label label = form.Controls.Find($"{fieldKeys[index]}Label", true)
+            Label label = form
+                .Controls.Find($"{fieldKeys[index]}Label", true)
                 .OfType<Label>()
                 .Single();
             int labelCenter = label.Top + label.Height / 2;
@@ -502,24 +649,37 @@ internal static class Program
             if (Math.Abs(labelCenter - valueCenter) > 6)
             {
                 throw new InvalidOperationException(
-                    $"Event detail field '{fieldKeys[index]}' is misaligned.");
+                    (
+                        "Event detail field '"
+                        + $"{fieldKeys[index]}"
+                        + "' is misaligned."
+                    )
+                );
             }
         }
-        System.Reflection.MethodInfo buildCopyText = typeof(EventDetailsForm)
-            .GetMethod(
+        System.Reflection.MethodInfo buildCopyText =
+            typeof(EventDetailsForm).GetMethod(
                 "BuildCopyText",
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic) ??
-            throw new InvalidOperationException(
-                "The event details copy payload was not found.");
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic
+            )
+            ?? throw new InvalidOperationException(
+                "The event details copy payload was not found."
+            );
         string copied = (string)buildCopyText.Invoke(form, null)!;
-        if (!copied.Contains(entry.RemoteAddress, StringComparison.Ordinal) ||
-            !copied.Contains(entry.ProcessPath!, StringComparison.Ordinal) ||
-            !copied.Contains(entry.ProcessProductName!, StringComparison.Ordinal) ||
-            !copied.Contains(entry.RuleNames[0], StringComparison.Ordinal))
+        if (
+            !copied.Contains(entry.RemoteAddress, StringComparison.Ordinal)
+            || !copied.Contains(entry.ProcessPath!, StringComparison.Ordinal)
+            || !copied.Contains(
+                entry.ProcessProductName!,
+                StringComparison.Ordinal
+            )
+            || !copied.Contains(entry.RuleNames[0], StringComparison.Ordinal)
+        )
         {
             throw new InvalidOperationException(
-                "Copy details does not include the full event record.");
+                "Copy details does not include the full event record."
+            );
         }
 
         Capture(form, Path.Combine(output, $"event-details-{filePrefix}.png"));
@@ -531,20 +691,28 @@ internal static class Program
         using LanguageSelectionForm form = new()
         {
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.Show();
         Application.DoEvents();
         if (form.Text != "Choose Language")
         {
             throw new InvalidOperationException(
-                "The first-run language selector title must use title case.");
+                (
+                    "The first-run language selector title "
+                    + "must use title case."
+                )
+            );
         }
         Button[] languageButtons = Descendants(form).OfType<Button>().ToArray();
         if (languageButtons.Length != 7)
         {
             throw new InvalidOperationException(
-                "The first-run language selector must offer seven languages.");
+                (
+                    "The first-run language selector must "
+                    + "offer seven languages."
+                )
+            );
         }
         foreach (Button button in languageButtons)
         {
@@ -558,29 +726,36 @@ internal static class Program
     private static void RenderStartupSplash(
         string output,
         string language,
-        string filePrefix)
+        string filePrefix
+    )
     {
         ConnectionWatcher.App.Localization.StartupPresentation presentation =
             ConnectionWatcher.App.Localization.StartupText.Get(language);
-        if (string.IsNullOrWhiteSpace(presentation.Tagline) ||
-            presentation.Messages.Count < 6 ||
-            presentation.Messages.Any(string.IsNullOrWhiteSpace))
+        if (
+            string.IsNullOrWhiteSpace(presentation.Tagline)
+            || presentation.Messages.Count < 6
+            || presentation.Messages.Any(string.IsNullOrWhiteSpace)
+        )
         {
             throw new InvalidOperationException(
-                $"Startup text is incomplete for {language}.");
+                $"Startup text is incomplete for {language}."
+            );
         }
 
         using StartupSplashForm form = new(presentation, language)
         {
             Opacity = 0,
-            ShowInTaskbar = false
+            ShowInTaskbar = false,
         };
         form.Show();
         Application.DoEvents();
         string[] names =
         [
-            "StartupLogo", "StartupBrand", "StartupTagline",
-            "StartupMessage", "StartupProgress"
+            "StartupLogo",
+            "StartupBrand",
+            "StartupTagline",
+            "StartupMessage",
+            "StartupProgress",
         ];
         foreach (string name in names)
         {
@@ -595,18 +770,28 @@ internal static class Program
             form,
             language.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
                 ? "Microsoft YaHei UI"
-                : "Segoe UI");
+                : "Segoe UI"
+        );
         Capture(form, Path.Combine(output, $"startup-{filePrefix}.png"));
         form.Hide();
     }
 
     private static void AssertFullyVisible(Form form, Control control)
     {
-        Rectangle bounds = form.RectangleToClient(control.Parent!.RectangleToScreen(control.Bounds));
+        Rectangle bounds = form.RectangleToClient(
+            control.Parent!.RectangleToScreen(control.Bounds)
+        );
         if (!form.ClientRectangle.Contains(bounds))
         {
             throw new InvalidOperationException(
-                $"Control '{control.Name}' is outside the visible client area: {bounds}.");
+                (
+                    "Control '"
+                    + $"{control.Name}"
+                    + "' is outside the visible client area: "
+                    + $"{bounds}"
+                    + "."
+                )
+            );
         }
     }
 
@@ -618,40 +803,66 @@ internal static class Program
                 label.Text,
                 label.Font,
                 new Size(Math.Max(1, label.ClientSize.Width), int.MaxValue),
-                TextFormatFlags.WordBreak | TextFormatFlags.NoPadding);
+                TextFormatFlags.WordBreak | TextFormatFlags.NoPadding
+            );
             // TextRenderer includes a few pixels of internal leading that a
             // WinForms Label does not report in ClientSize.
             if (measured.Height > label.ClientSize.Height + 6)
             {
                 throw new InvalidOperationException(
-                    $"Control '{control.Name}' clips its wrapped text: " +
-                    $"required height {measured.Height}, actual {label.ClientSize.Height}.");
+                    (
+                        "Control '"
+                        + $"{control.Name}"
+                        + "' clips its wrapped text: "
+                    )
+                        + (
+                            "required height "
+                            + $"{measured.Height}"
+                            + ", actual "
+                            + $"{label.ClientSize.Height}"
+                            + "."
+                        )
+                );
             }
             return;
         }
 
         Size preferred = control.GetPreferredSize(Size.Empty);
-        if (preferred.Width > control.Width || preferred.Height > control.Height)
+        if (
+            preferred.Width > control.Width
+            || preferred.Height > control.Height
+        )
         {
             throw new InvalidOperationException(
-                $"Control '{control.Name}' clips its text: " +
-                $"preferred {preferred}, actual {control.Size}.");
+                $"Control '{control.Name}' clips its text: "
+                    + $"preferred {preferred}, actual {control.Size}."
+            );
         }
     }
 
     private static void AssertNoHorizontalOverlap(
         Form form,
         Control left,
-        Control right)
+        Control right
+    )
     {
         Rectangle leftBounds = form.RectangleToClient(
-            left.Parent!.RectangleToScreen(left.Bounds));
+            left.Parent!.RectangleToScreen(left.Bounds)
+        );
         Rectangle rightBounds = form.RectangleToClient(
-            right.Parent!.RectangleToScreen(right.Bounds));
+            right.Parent!.RectangleToScreen(right.Bounds)
+        );
         if (leftBounds.Right > rightBounds.Left - 10)
         {
             throw new InvalidOperationException(
-                $"Control '{left.Name}' overlaps '{right.Name}'.");
+                (
+                    "Control '"
+                    + $"{left.Name}"
+                    + "' overlaps '"
+                    + $"{right.Name}"
+                    + "'."
+                )
+            );
         }
     }
 
@@ -659,117 +870,196 @@ internal static class Program
     {
         Label[] labels =
         [
-            form.Controls.Find("SilentActionLegend", true).OfType<Label>().Single(),
-            form.Controls.Find("TrayActionLegend", true).OfType<Label>().Single(),
-            form.Controls.Find("PopupActionLegend", true).OfType<Label>().Single()
+            form
+                .Controls.Find("SilentActionLegend", true)
+                .OfType<Label>()
+                .Single(),
+            form
+                .Controls.Find("TrayActionLegend", true)
+                .OfType<Label>()
+                .Single(),
+            form
+                .Controls.Find("PopupActionLegend", true)
+                .OfType<Label>()
+                .Single(),
         ];
         string[] markers = ["1 ●", "2 ▲", "3 ◆"];
         for (int index = 0; index < labels.Length; index++)
         {
-            if (!labels[index].Text.StartsWith(markers[index], StringComparison.Ordinal))
+            if (
+                !labels[index]
+                    .Text.StartsWith(markers[index], StringComparison.Ordinal)
+            )
             {
                 throw new InvalidOperationException(
-                    $"Legend item {index} does not start with '{markers[index]}'.");
+                    (
+                        "Legend item "
+                        + $"{index}"
+                        + " does not start with '"
+                        + $"{markers[index]}"
+                        + "'."
+                    )
+                );
             }
             AssertFullyVisible(form, labels[index]);
             AssertTextFits(labels[index]);
         }
-        if (labels.Select(label => label.ForeColor.ToArgb()).Distinct().Count() != 3)
+        if (
+            labels.Select(label => label.ForeColor.ToArgb()).Distinct().Count()
+            != 3
+        )
         {
             throw new InvalidOperationException(
-                "The three action legend items must use distinct colors.");
+                ("The three action legend items must " + "use distinct colors.")
+            );
         }
     }
 
     private static void AssertHomeLayout(Form form)
     {
-        Label subtitle = form.Controls.Find("HomeSubtitle", true)
+        Label subtitle = form
+            .Controls.Find("HomeSubtitle", true)
             .OfType<Label>()
             .Single();
-        TableLayoutPanel summary = form.Controls.Find("HomeSummary", true)
+        TableLayoutPanel summary = form
+            .Controls.Find("HomeSummary", true)
             .OfType<TableLayoutPanel>()
             .Single();
         Rectangle subtitleBounds = form.RectangleToClient(
-            subtitle.Parent!.RectangleToScreen(subtitle.Bounds));
+            subtitle.Parent!.RectangleToScreen(subtitle.Bounds)
+        );
         Rectangle summaryBounds = form.RectangleToClient(
-            summary.Parent!.RectangleToScreen(summary.Bounds));
-        DataGridView rulesGrid = form.Controls.Find("RulesGrid", true)
+            summary.Parent!.RectangleToScreen(summary.Bounds)
+        );
+        DataGridView rulesGrid = form
+            .Controls.Find("RulesGrid", true)
             .OfType<DataGridView>()
             .Single();
         Rectangle rulesBounds = form.RectangleToClient(
-            rulesGrid.Parent!.RectangleToScreen(rulesGrid.Bounds));
-        if (summaryBounds.Top - subtitleBounds.Bottom < 20 ||
-            Math.Abs(summaryBounds.Top - rulesBounds.Top) > 32)
+            rulesGrid.Parent!.RectangleToScreen(rulesGrid.Bounds)
+        );
+        if (
+            summaryBounds.Top - subtitleBounds.Bottom < 20
+            || Math.Abs(summaryBounds.Top - rulesBounds.Top) > 32
+        )
         {
             throw new InvalidOperationException(
-                "The Home title-to-content spacing is inconsistent with other pages.");
+                (
+                    "The Home title-to-content spacing is "
+                    + "inconsistent with other pages."
+                )
+            );
         }
     }
 
-    private static void AssertSettingsControlAlignment(Form form, Button testSound)
+    private static void AssertSettingsControlAlignment(
+        Form form,
+        Button testSound
+    )
     {
-        CheckBox start = form.Controls.Find("StartWithWindowsCheckBox", true)
+        CheckBox start = form
+            .Controls.Find("StartWithWindowsCheckBox", true)
             .OfType<CheckBox>()
             .Single();
-        CheckBox resume = form.Controls.Find("ResumeMonitoringCheckBox", true)
+        CheckBox resume = form
+            .Controls.Find("ResumeMonitoringCheckBox", true)
             .OfType<CheckBox>()
             .Single();
-        CheckBox alert = form.Controls.Find("AlertSoundCheckBox", true)
+        CheckBox alert = form
+            .Controls.Find("AlertSoundCheckBox", true)
             .OfType<CheckBox>()
             .Single();
-        NumericUpDown volume = form.Controls.Find("AlertVolumeInput", true)
+        NumericUpDown volume = form
+            .Controls.Find("AlertVolumeInput", true)
             .OfType<NumericUpDown>()
             .Single();
-        int[] leftEdges = [ControlLeft(form, start), ControlLeft(form, resume), ControlLeft(form, alert)];
-        if (leftEdges.Max() - leftEdges.Min() > 5 ||
-            ControlLeft(form, testSound) >= ControlLeft(form, volume) ||
-            Math.Abs(
-                (testSound.Top + testSound.Height / 2) -
-                (volume.Top + volume.Height / 2)) > 6)
+        int[] leftEdges =
+        [
+            ControlLeft(form, start),
+            ControlLeft(form, resume),
+            ControlLeft(form, alert),
+        ];
+        if (
+            leftEdges.Max() - leftEdges.Min() > 5
+            || ControlLeft(form, testSound) >= ControlLeft(form, volume)
+            || Math.Abs(
+                (testSound.Top + testSound.Height / 2)
+                    - (volume.Top + volume.Height / 2)
+            ) > 6
+        )
         {
             throw new InvalidOperationException(
-                "Settings checkboxes are not aligned or Test sound is not beside the volume control.");
+                (
+                    "Settings checkboxes are not aligned "
+                    + "or Test sound is not beside the "
+                    + "volume control."
+                )
+            );
         }
-        if (volume.Minimum != AppSettings.MinimumAlertVolumePercent ||
-            volume.Maximum != AppSettings.MaximumAlertVolumePercent ||
-            volume.Increment != 5 ||
-            volume.Value != AppSettings.DefaultAlertVolumePercent)
+        if (
+            volume.Minimum != AppSettings.MinimumAlertVolumePercent
+            || volume.Maximum != AppSettings.MaximumAlertVolumePercent
+            || volume.Increment != 5
+            || volume.Value != AppSettings.DefaultAlertVolumePercent
+        )
         {
             throw new InvalidOperationException(
-                "The alert volume control does not use the expected 10–100% range and 40% default.");
+                (
+                    "The alert volume control does not use "
+                    + "the expected 10–100% range and 40% "
+                    + "default."
+                )
+            );
         }
         AssertFullyVisible(form, volume);
     }
 
-    private static void AssertSettingsRightInset(Form form, params Control[] controls)
+    private static void AssertSettingsRightInset(
+        Form form,
+        params Control[] controls
+    )
     {
-        TableLayoutPanel settings = form.Controls.Find("SettingsTable", true)
+        TableLayoutPanel settings = form
+            .Controls.Find("SettingsTable", true)
             .OfType<TableLayoutPanel>()
             .Single();
         foreach (Control control in controls)
         {
             Rectangle bounds = settings.RectangleToClient(
-                control.Parent!.RectangleToScreen(control.Bounds));
+                control.Parent!.RectangleToScreen(control.Bounds)
+            );
             if (settings.ClientSize.Width - bounds.Right < 8)
             {
                 throw new InvalidOperationException(
-                    $"Control '{control.Name}' is too close to the Settings right edge.");
+                    (
+                        "Control '"
+                        + $"{control.Name}"
+                        + "' is too close to the Settings right "
+                        + "edge."
+                    )
+                );
             }
         }
     }
 
-    private static void AssertFullyVisibleOrScrollable(Form form, Control control)
+    private static void AssertFullyVisibleOrScrollable(
+        Form form,
+        Control control
+    )
     {
         Rectangle bounds = form.RectangleToClient(
-            control.Parent!.RectangleToScreen(control.Bounds));
+            control.Parent!.RectangleToScreen(control.Bounds)
+        );
         if (form.ClientRectangle.Contains(bounds))
         {
             return;
         }
 
-        for (Control? ancestor = control.Parent;
-             ancestor is not null;
-             ancestor = ancestor.Parent)
+        for (
+            Control? ancestor = control.Parent;
+            ancestor is not null;
+            ancestor = ancestor.Parent
+        )
         {
             if (ancestor is ScrollableControl { AutoScroll: true })
             {
@@ -778,51 +1068,81 @@ internal static class Program
         }
 
         throw new InvalidOperationException(
-            $"Control '{control.Name}' is neither visible nor inside a scrollable area: {bounds}.");
+            (
+                "Control '"
+                + $"{control.Name}"
+                + "' is neither visible nor inside a "
+                + "scrollable area: "
+                + $"{bounds}"
+                + "."
+            )
+        );
     }
 
     private static int ControlLeft(Form form, Control control)
     {
         return form.RectangleToClient(
-            control.Parent!.RectangleToScreen(control.Bounds)).Left;
+            control.Parent!.RectangleToScreen(control.Bounds)
+        ).Left;
     }
 
     private static void AssertEmbeddedAlertSound()
     {
-        Type soundType = typeof(MainForm).Assembly.GetType(
-            "ConnectionWatcher.App.Services.AlertSoundPlayer") ??
-            throw new InvalidOperationException("AlertSoundPlayer was not found.");
-        System.Reflection.MethodInfo createWave = soundType.GetMethod(
-            "CreateWave",
-            System.Reflection.BindingFlags.Static |
-            System.Reflection.BindingFlags.NonPublic) ??
-            throw new InvalidOperationException("Embedded alert wave generator was not found.");
+        Type soundType =
+            typeof(MainForm).Assembly.GetType(
+                "ConnectionWatcher.App.Services.AlertSoundPlayer"
+            )
+            ?? throw new InvalidOperationException(
+                "AlertSoundPlayer was not found."
+            );
+        System.Reflection.MethodInfo createWave =
+            soundType.GetMethod(
+                "CreateWave",
+                System.Reflection.BindingFlags.Static
+                    | System.Reflection.BindingFlags.NonPublic
+            )
+            ?? throw new InvalidOperationException(
+                "Embedded alert wave generator was not found."
+            );
         byte[] lowWave = (byte[])createWave.Invoke(null, [10])!;
         byte[] fullWave = (byte[])createWave.Invoke(null, [100])!;
-        if (!IsWave(lowWave) || !IsWave(fullWave) ||
-            PeakAmplitude(fullWave) <= PeakAmplitude(lowWave) * 8)
+        if (
+            !IsWave(lowWave)
+            || !IsWave(fullWave)
+            || PeakAmplitude(fullWave) <= PeakAmplitude(lowWave) * 8
+        )
         {
             throw new InvalidOperationException(
-                "The embedded alert sound is invalid or its volume is not scaled.");
+                (
+                    "The embedded alert sound is invalid "
+                    + "or its volume is not scaled."
+                )
+            );
         }
     }
 
     private static void AssertUpdateVersionParsing()
     {
-        if (!ConnectionWatcher.App.Services.UpdateCheckService.TryParseVersion(
+        if (
+            !UpdateChecker.TryParseVersion(
                 "v1.3.0",
-                out Version? stable) ||
-            stable != new Version(1, 3, 0) ||
-            !ConnectionWatcher.App.Services.UpdateCheckService.TryParseVersion(
+                out Version? stable
+            )
+            || stable != new Version(1, 3, 0)
+            || !UpdateChecker.TryParseVersion(
                 "1.4.0-beta+build.1",
-                out Version? prerelease) ||
-            prerelease != new Version(1, 4, 0) ||
-            ConnectionWatcher.App.Services.UpdateCheckService.TryParseVersion(
+                out Version? prerelease
+            )
+            || prerelease != new Version(1, 4, 0)
+            || UpdateChecker.TryParseVersion(
                 "not-a-version",
-                out _))
+                out _
+            )
+        )
         {
             throw new InvalidOperationException(
-                "GitHub release version parsing is incorrect.");
+                "GitHub release version parsing is incorrect."
+            );
         }
     }
 
@@ -832,37 +1152,53 @@ internal static class Program
         Directory.CreateDirectory(directory);
         string path = Path.Combine(
             directory,
-            ConnectionWatcher.App.Services.InstallerLanguagePreference.FileName);
+            ConnectionWatcher.App.Services.InstallerLanguagePreference.FileName
+        );
         File.WriteAllText(path, "en");
-        string? selected = ConnectionWatcher.App.Services
-            .InstallerLanguagePreference.Consume(directory);
+        string? selected =
+            ConnectionWatcher.App.Services.InstallerLanguagePreference.Consume(
+                directory
+            );
         if (selected != "en" || File.Exists(path))
         {
             throw new InvalidOperationException(
-                "The app language chosen in Setup was not applied once and consumed.");
+                (
+                    "The app language chosen in Setup was "
+                    + "not applied once and consumed."
+                )
+            );
         }
 
         File.WriteAllText(path, "unsupported-language");
-        selected = ConnectionWatcher.App.Services
-            .InstallerLanguagePreference.Consume(directory);
+        selected =
+            ConnectionWatcher.App.Services.InstallerLanguagePreference.Consume(
+                directory
+            );
         if (selected is not null || File.Exists(path))
         {
             throw new InvalidOperationException(
-                "An unsupported app language from Setup was accepted or retained.");
+                (
+                    "An unsupported app language from "
+                    + "Setup was accepted or retained."
+                )
+            );
         }
     }
 
     private static bool IsWave(byte[] wave) =>
-        wave.Length >= 1_000 &&
-        System.Text.Encoding.ASCII.GetString(wave, 0, 4) == "RIFF" &&
-        System.Text.Encoding.ASCII.GetString(wave, 8, 4) == "WAVE";
+        wave.Length >= 1_000
+        && System.Text.Encoding.ASCII.GetString(wave, 0, 4) == "RIFF"
+        && System.Text.Encoding.ASCII.GetString(wave, 8, 4) == "WAVE";
 
     private static int PeakAmplitude(byte[] wave)
     {
         int peak = 0;
         for (int offset = 44; offset + 1 < wave.Length; offset += 2)
         {
-            peak = Math.Max(peak, Math.Abs((int)BitConverter.ToInt16(wave, offset)));
+            peak = Math.Max(
+                peak,
+                Math.Abs((int)BitConverter.ToInt16(wave, offset))
+            );
         }
 
         return peak;
@@ -870,27 +1206,42 @@ internal static class Program
 
     private static void AssertPageTitles(Form form, string language)
     {
-        string[] names = ["HomeTitle", "RulesTitle", "EventsTitle", "SettingsTitle"];
+        string[] names =
+        [
+            "HomeTitle",
+            "RulesTitle",
+            "EventsTitle",
+            "SettingsTitle",
+        ];
         foreach (string name in names)
         {
-            Label title = form.Controls.Find(name, true).OfType<Label>().Single();
+            Label title = form
+                .Controls.Find(name, true)
+                .OfType<Label>()
+                .Single();
             if (title.Font.Size < 19.5F)
             {
                 throw new InvalidOperationException(
-                    $"Page title '{name}' is smaller than 20 pt.");
+                    ("Page title '" + $"{name}" + "' is smaller than 20 pt.")
+                );
             }
         }
-        if (language == "en" &&
-            (UiText.Get("Rules") != "Monitoring Rules" ||
-             UiText.Get("Events") != "Event Log" ||
-             UiText.Get("AppTitle") != "SocketSight" ||
-             UiText.Get("StartMonitoring") != "Start Monitoring" ||
-             UiText.Get("MonitoringStatus") != "Monitoring Status" ||
-             UiText.Get("SoftwareUpdatesWithVersion") !=
-                 "Software Updates (Current Version: {0})"))
+        if (
+            language == "en"
+            && (
+                UiText.Get("Rules") != "Monitoring Rules"
+                || UiText.Get("Events") != "Event Log"
+                || UiText.Get("AppTitle") != "SocketSight"
+                || UiText.Get("StartMonitoring") != "Start Monitoring"
+                || UiText.Get("MonitoringStatus") != "Monitoring Status"
+                || UiText.Get("SoftwareUpdatesWithVersion")
+                    != "Software Updates (Current Version: {0})"
+            )
+        )
         {
             throw new InvalidOperationException(
-                "English page titles must use title case.");
+                "English page titles must use title case."
+            );
         }
     }
 
@@ -900,157 +1251,219 @@ internal static class Program
         [
             MatchAction.PopupAlert,
             MatchAction.SilentLog,
-            MatchAction.TrayNotice
+            MatchAction.TrayNotice,
         ];
         if (grid.Rows.Count != actions.Length)
         {
             throw new InvalidOperationException(
-                "The rule marker test requires exactly three rows.");
+                "The rule marker test requires exactly three rows."
+            );
         }
         for (int index = 0; index < actions.Length; index++)
         {
             DataGridViewCell cell = grid.Rows[index].Cells[2];
-            if (!string.Equals(
+            if (
+                !string.Equals(
                     cell.Value?.ToString(),
                     UiText.ActionCompact(actions[index]),
-                    StringComparison.Ordinal) ||
-                !string.Equals(
+                    StringComparison.Ordinal
+                )
+                || !string.Equals(
                     cell.ToolTipText,
                     UiText.Action(actions[index]),
-                    StringComparison.Ordinal) ||
-                cell.Style.SelectionForeColor != cell.Style.ForeColor)
+                    StringComparison.Ordinal
+                )
+                || cell.Style.SelectionForeColor != cell.Style.ForeColor
+            )
             {
                 throw new InvalidOperationException(
-                    $"Rule action marker {index} is incorrect.");
+                    $"Rule action marker {index} is incorrect."
+                );
             }
         }
-        if (grid.Rows.Cast<DataGridViewRow>()
+        if (
+            grid.Rows.Cast<DataGridViewRow>()
                 .Select(row => row.Cells[2].Style.ForeColor.ToArgb())
                 .Distinct()
-                .Count() != 3)
+                .Count() != 3
+        )
         {
             throw new InvalidOperationException(
-                "Rule action markers must use three distinct colors.");
+                "Rule action markers must use three distinct colors."
+            );
         }
     }
 
     private static void PopulateSampleEvents(MainForm form)
     {
-        System.Reflection.FieldInfo eventsField = typeof(MainForm).GetField(
-            "_events",
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.NonPublic) ??
-            throw new InvalidOperationException("MainForm event storage was not found.");
+        System.Reflection.FieldInfo eventsField =
+            typeof(MainForm).GetField(
+                "_events",
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic
+            )
+            ?? throw new InvalidOperationException(
+                "MainForm event storage was not found."
+            );
         List<ConnectionEvent> events =
             (List<ConnectionEvent>)eventsField.GetValue(form)!;
         events.Clear();
         events.AddRange(SampleEvents());
-        System.Reflection.MethodInfo refresh = typeof(MainForm).GetMethod(
-            "RefreshEvents",
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.NonPublic) ??
-            throw new InvalidOperationException("RefreshEvents was not found.");
+        System.Reflection.MethodInfo refresh =
+            typeof(MainForm).GetMethod(
+                "RefreshEvents",
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic
+            )
+            ?? throw new InvalidOperationException(
+                "RefreshEvents was not found."
+            );
         refresh.Invoke(form, null);
         Application.DoEvents();
     }
 
     private static void AssertEventActionMarkers(Form form)
     {
-        DataGridView grid = form.Controls.Find("EventsGrid", true)
+        DataGridView grid = form
+            .Controls.Find("EventsGrid", true)
             .OfType<DataGridView>()
             .Single();
         MatchAction[] actions =
         [
             MatchAction.SilentLog,
             MatchAction.TrayNotice,
-            MatchAction.PopupAlert
+            MatchAction.PopupAlert,
         ];
         if (grid.Rows.Count != actions.Length)
         {
             throw new InvalidOperationException(
-                "The event marker test requires exactly three rows.");
+                "The event marker test requires exactly three rows."
+            );
         }
         for (int index = 0; index < actions.Length; index++)
         {
             DataGridViewCell cell = grid.Rows[index].Cells[5];
-            if (!string.Equals(
+            if (
+                !string.Equals(
                     cell.Value?.ToString(),
                     UiText.ActionMarker(actions[index]),
-                    StringComparison.Ordinal) ||
-                !string.Equals(
+                    StringComparison.Ordinal
+                )
+                || !string.Equals(
                     cell.ToolTipText,
                     UiText.Action(actions[index]),
-                    StringComparison.Ordinal))
+                    StringComparison.Ordinal
+                )
+            )
             {
                 throw new InvalidOperationException(
-                    $"Event action marker {index} is incorrect.");
+                    $"Event action marker {index} is incorrect."
+                );
             }
         }
-        if (grid.Rows.Cast<DataGridViewRow>()
+        if (
+            grid.Rows.Cast<DataGridViewRow>()
                 .Select(row => row.Cells[5].Style.ForeColor.ToArgb())
                 .Distinct()
-                .Count() != 3)
+                .Count() != 3
+        )
         {
             throw new InvalidOperationException(
-                "Event action markers must use three distinct colors.");
+                "Event action markers must use three distinct colors."
+            );
         }
-        if (grid.Rows.Cast<DataGridViewRow>().Any(row =>
-                row.Cells[5].Style.SelectionForeColor !=
-                row.Cells[5].Style.ForeColor))
+        if (
+            grid
+                .Rows.Cast<DataGridViewRow>()
+                .Any(row =>
+                    row.Cells[5].Style.SelectionForeColor
+                    != row.Cells[5].Style.ForeColor
+                )
+        )
         {
             throw new InvalidOperationException(
-                "Selected event markers must keep their action color.");
+                "Selected event markers must keep their action color."
+            );
         }
-        if (grid.Columns.Count != 6 ||
-            grid.Rows[0].Cells[1].Value?.ToString() != $"● {UiText.Get("ConnectionActive")}" ||
-            grid.Rows[1].Cells[1].Value?.ToString() != $"○ {UiText.Get("ConnectionEnded")}" ||
-            grid.Rows[0].Cells[2].Value?.ToString() is not string activeDuration ||
-            activeDuration.Count(character => character == ':') != 2 ||
-            grid.Rows[1].Cells[2].Value?.ToString() != "—")
+        if (
+            grid.Columns.Count != 6
+            || grid.Rows[0].Cells[1].Value?.ToString()
+                != $"● {UiText.Get("ConnectionActive")}"
+            || grid.Rows[1].Cells[1].Value?.ToString()
+                != $"○ {UiText.Get("ConnectionEnded")}"
+            || grid.Rows[0].Cells[2].Value?.ToString()
+                is not string activeDuration
+            || activeDuration.Count(character => character == ':') != 2
+            || grid.Rows[1].Cells[2].Value?.ToString() != "—"
+        )
         {
             throw new InvalidOperationException(
-                "The Event Log does not clearly show status and observed duration.");
+                (
+                    "The Event Log does not clearly show "
+                    + "status and observed duration."
+                )
+            );
         }
-        if (grid.Rows[0].Cells[1].Style.SelectionForeColor !=
-            SystemColors.HighlightText)
+        if (
+            grid.Rows[0].Cells[1].Style.SelectionForeColor
+            != SystemColors.HighlightText
+        )
         {
             throw new InvalidOperationException(
-                "Active status must remain readable when its row is selected.");
+                (
+                    "Active status must remain readable "
+                    + "when its row is selected."
+                )
+            );
         }
-        if (grid.Columns.Cast<DataGridViewColumn>().Any(column =>
-                column.HeaderCell.InheritedStyle.Alignment !=
-                    DataGridViewContentAlignment.MiddleCenter) ||
-            grid.Rows.Cast<DataGridViewRow>().Any(row =>
-                row.Cells.Cast<DataGridViewCell>().Any(cell =>
-                    cell.InheritedStyle.Alignment !=
-                        DataGridViewContentAlignment.MiddleLeft)))
+        if (
+            grid.Columns.Cast<DataGridViewColumn>()
+                .Any(column =>
+                    column.HeaderCell.InheritedStyle.Alignment
+                    != DataGridViewContentAlignment.MiddleCenter
+                )
+            || grid.Rows.Cast<DataGridViewRow>()
+                .Any(row =>
+                    row.Cells.Cast<DataGridViewCell>()
+                        .Any(cell =>
+                            cell.InheritedStyle.Alignment
+                            != DataGridViewContentAlignment.MiddleLeft
+                        )
+                )
+        )
         {
             throw new InvalidOperationException(
-                "Event Log headings must be centered while event values stay left-aligned.");
+                (
+                    "Event Log headings must be centered "
+                    + "while event values stay left-aligned."
+                )
+            );
         }
 
-        int totalWidth = grid.Columns
-            .Cast<DataGridViewColumn>()
+        int totalWidth = grid
+            .Columns.Cast<DataGridViewColumn>()
             .Where(column => column.Visible)
             .Sum(column => column.Width);
         if (totalWidth > grid.ClientSize.Width + 2)
         {
             throw new InvalidOperationException(
-                "The Event Log overview requires horizontal scrolling.");
+                "The Event Log overview requires horizontal scrolling."
+            );
         }
     }
 
     private static void AssertEventDoubleClickOpensDetails(Form form)
     {
-        DataGridView grid = form.Controls.Find("EventsGrid", true)
+        DataGridView grid = form
+            .Controls.Find("EventsGrid", true)
             .OfType<DataGridView>()
             .Single();
         bool opened = false;
         using System.Windows.Forms.Timer closeTimer = new() { Interval = 50 };
         closeTimer.Tick += (_, _) =>
         {
-            EventDetailsForm? details = Application.OpenForms
-                .OfType<EventDetailsForm>()
+            EventDetailsForm? details = Application
+                .OpenForms.OfType<EventDetailsForm>()
                 .FirstOrDefault();
             if (details is null)
             {
@@ -1060,22 +1473,26 @@ internal static class Program
             opened = true;
             details.Close();
         };
-        System.Reflection.MethodInfo raiseDoubleClick = typeof(DataGridView)
-            .GetMethod(
+        System.Reflection.MethodInfo raiseDoubleClick =
+            typeof(DataGridView).GetMethod(
                 "OnCellDoubleClick",
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic) ??
-            throw new InvalidOperationException(
-                "Could not raise the Event Log double-click action.");
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic
+            )
+            ?? throw new InvalidOperationException(
+                "Could not raise the Event Log double-click action."
+            );
         closeTimer.Start();
-        raiseDoubleClick.Invoke(
-            grid,
-            [new DataGridViewCellEventArgs(0, 0)]);
+        raiseDoubleClick.Invoke(grid, [new DataGridViewCellEventArgs(0, 0)]);
         closeTimer.Stop();
         if (!opened)
         {
             throw new InvalidOperationException(
-                "Double-clicking an Event Log row did not open Event details.");
+                (
+                    "Double-clicking an Event Log row did "
+                    + "not open Event details."
+                )
+            );
         }
     }
 
@@ -1084,29 +1501,40 @@ internal static class Program
         if (grid.Columns.Count != 4 || grid.Columns[3].Width < 100)
         {
             throw new InvalidOperationException(
-                "The Enabled column does not have enough horizontal space.");
+                (
+                    "The Enabled column does not have "
+                    + "enough horizontal space."
+                )
+            );
         }
 
-        int totalWidth = grid.Columns
-            .Cast<DataGridViewColumn>()
+        int totalWidth = grid
+            .Columns.Cast<DataGridViewColumn>()
             .Where(column => column.Visible)
             .Sum(column => column.Width);
         if (totalWidth > grid.ClientSize.Width)
         {
             throw new InvalidOperationException(
-                $"The rule columns require {totalWidth}px but the grid provides " +
-                $"{grid.ClientSize.Width}px.");
+                (
+                    "The rule columns require "
+                    + $"{totalWidth}"
+                    + "px but the grid provides "
+                ) + $"{grid.ClientSize.Width}px."
+            );
         }
 
         foreach (DataGridViewColumn column in grid.Columns)
         {
-            if (column.DefaultCellStyle.Alignment !=
-                    DataGridViewContentAlignment.MiddleCenter ||
-                column.HeaderCell.InheritedStyle.Alignment !=
-                    DataGridViewContentAlignment.MiddleCenter)
+            if (
+                column.DefaultCellStyle.Alignment
+                    != DataGridViewContentAlignment.MiddleCenter
+                || column.HeaderCell.InheritedStyle.Alignment
+                    != DataGridViewContentAlignment.MiddleCenter
+            )
             {
                 throw new InvalidOperationException(
-                    $"Rule column {column.Index} is not centered.");
+                    ("Rule column " + $"{column.Index}" + " is not centered.")
+                );
             }
         }
     }
@@ -1115,15 +1543,24 @@ internal static class Program
     {
         Control? mismatch = Descendants(root)
             .Prepend(root)
-            .FirstOrDefault(control => !string.Equals(
-                control.Font.FontFamily.Name,
-                expectedFamily,
-                StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(control =>
+                !string.Equals(
+                    control.Font.FontFamily.Name,
+                    expectedFamily,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            );
         if (mismatch is not null)
         {
             throw new InvalidOperationException(
-                $"Control '{mismatch.Name}' uses '{mismatch.Font.FontFamily.Name}' " +
-                $"instead of '{expectedFamily}'.");
+                (
+                    "Control '"
+                    + $"{mismatch.Name}"
+                    + "' uses '"
+                    + $"{mismatch.Font.FontFamily.Name}"
+                    + "' "
+                ) + $"instead of '{expectedFamily}'."
+            );
         }
     }
 
@@ -1139,7 +1576,7 @@ internal static class Program
                 LocalPort = PortRange.Any,
                 Action = MatchAction.PopupAlert,
                 RepeatAlertMinutes = 5,
-                Enabled = true
+                Enabled = true,
             },
             new MonitoringRule
             {
@@ -1148,7 +1585,7 @@ internal static class Program
                 RemotePort = new PortRange(1433, 1433),
                 LocalPort = PortRange.Any,
                 Action = MatchAction.SilentLog,
-                Enabled = true
+                Enabled = true,
             },
             new MonitoringRule
             {
@@ -1157,8 +1594,8 @@ internal static class Program
                 RemotePort = new PortRange(443, 443),
                 LocalPort = PortRange.Any,
                 Action = MatchAction.TrayNotice,
-                Enabled = true
-            }
+                Enabled = true,
+            },
         ];
     }
 
@@ -1168,44 +1605,55 @@ internal static class Program
         [
             MatchAction.SilentLog,
             MatchAction.TrayNotice,
-            MatchAction.PopupAlert
+            MatchAction.PopupAlert,
         ];
         DateTimeOffset firstSeen = DateTimeOffset.Now.AddMinutes(-2);
-        List<ConnectionEvent> events = actions.Select((action, index) => new ConnectionEvent
-        {
-            DetectedAt = firstSeen.AddSeconds(index * 10),
-            RuleIds = [Guid.NewGuid()],
-            RuleNames = [$"Sample rule {index + 1}"],
-            Action = action,
-            LocalAddress = "172.20.10.2",
-            LocalPort = 61000 + index,
-            RemoteAddress = "103.1.40.235",
-            RemotePort = 1433,
-            State = System.Net.NetworkInformation.TcpState.Established,
-            ProcessId = 2400 + index,
-            ProcessName = $"sample{index + 1}.exe",
-            ProcessPath = $@"C:\Sample\sample{index + 1}.exe",
-            ProcessProductName = $"Sample Product {index + 1}",
-            ProcessCompanyName = "Sample Company",
-            ProcessFileDescription = "Sample network component",
-            ParentProcesses =
-            [
-                new ProcessSnapshot(
-                    1200 + index,
-                    "sample-host.exe",
-                    @"C:\Sample\sample-host.exe",
-                    "Sample Host",
-                    "Sample Company",
-                    "Sample host process")
-            ],
-            RelatedServices =
-            [
-                new WindowsServiceSnapshot(
-                    2400 + index,
-                    "SampleService",
-                    "Sample Service")
-            ]
-        }).ToList();
+        List<ConnectionEvent> events = actions
+            .Select(
+                (action, index) =>
+                    new ConnectionEvent
+                    {
+                        DetectedAt = firstSeen.AddSeconds(index * 10),
+                        RuleIds = [Guid.NewGuid()],
+                        RuleNames = [$"Sample rule {index + 1}"],
+                        Action = action,
+                        LocalAddress = "172.20.10.2",
+                        LocalPort = 61000 + index,
+                        RemoteAddress = "103.1.40.235",
+                        RemotePort = 1433,
+                        State = System
+                            .Net
+                            .NetworkInformation
+                            .TcpState
+                            .Established,
+                        ProcessId = 2400 + index,
+                        ProcessName = $"sample{index + 1}.exe",
+                        ProcessPath = $@"C:\Sample\sample{index + 1}.exe",
+                        ProcessProductName = $"Sample Product {index + 1}",
+                        ProcessCompanyName = "Sample Company",
+                        ProcessFileDescription = "Sample network component",
+                        ParentProcesses =
+                        [
+                            new ProcessSnapshot(
+                                1200 + index,
+                                "sample-host.exe",
+                                @"C:\Sample\sample-host.exe",
+                                "Sample Host",
+                                "Sample Company",
+                                "Sample host process"
+                            ),
+                        ],
+                        RelatedServices =
+                        [
+                            new WindowsServiceSnapshot(
+                                2400 + index,
+                                "SampleService",
+                                "Sample Service"
+                            ),
+                        ],
+                    }
+            )
+            .ToList();
         events[1].MarkHistoricalInactive();
         return events;
     }

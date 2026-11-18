@@ -11,14 +11,17 @@ public sealed record TcpConnectionInfo(
     TcpState State,
     int ProcessId,
     string ProcessName,
-    string? ProcessPath)
+    string? ProcessPath
+)
 {
-    public ConnectionKey Key => new(
-        LocalAddress.ToString(),
-        LocalPort,
-        RemoteAddress.ToString(),
-        RemotePort,
-        ProcessId);
+    public ConnectionKey Key =>
+        new(
+            LocalAddress.ToString(),
+            LocalPort,
+            RemoteAddress.ToString(),
+            RemotePort,
+            ProcessId
+        );
 }
 
 public readonly record struct ConnectionKey(
@@ -26,4 +29,5 @@ public readonly record struct ConnectionKey(
     int LocalPort,
     string RemoteAddress,
     int RemotePort,
-    int ProcessId);
+    int ProcessId
+);

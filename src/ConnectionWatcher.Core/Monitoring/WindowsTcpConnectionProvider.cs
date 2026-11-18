@@ -12,6 +12,9 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
     private const int AfInet6 = 23;
     private const uint ErrorInsufficientBuffer = 122;
 
+    /// <summary>
+    /// Read IPv4 and IPv6 owner tables without inspecting packet contents.
+    /// </summary>
     public IReadOnlyList<TcpConnectionInfo> GetConnections()
     {
         List<TcpConnectionInfo> connections = [];
@@ -22,52 +25,69 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
 
     private static void ReadIpv4(List<TcpConnectionInfo> destination)
     {
-        ReadTable(AfInet, (buffer, count) =>
-        {
-            int rowSize = Marshal.SizeOf<MibTcpRowOwnerPid>();
-            nint rowPointer = buffer + sizeof(uint);
-            for (int index = 0; index < count; index++)
+        ReadTable(
+            AfInet,
+            (buffer, count) =>
             {
-                MibTcpRowOwnerPid row = Marshal.PtrToStructure<MibTcpRowOwnerPid>(rowPointer);
-                int processId = (int)row.OwningPid;
-                destination.Add(new TcpConnectionInfo(
-                    new IPAddress(row.LocalAddress),
-                    ConvertPort(row.LocalPort),
-                    new IPAddress(row.RemoteAddress),
-                    ConvertPort(row.RemotePort),
-                    (TcpState)row.State,
-                    processId,
-                    ProcessFallbackName(processId),
-                    null));
-                rowPointer += rowSize;
+                int rowSize = Marshal.SizeOf<MibTcpRowOwnerPid>();
+                nint rowPointer = buffer + sizeof(uint);
+                for (int index = 0; index < count; index++)
+                {
+                    MibTcpRowOwnerPid row =
+                        Marshal.PtrToStructure<MibTcpRowOwnerPid>(rowPointer);
+                    int processId = (int)row.OwningPid;
+                    destination.Add(
+                        new TcpConnectionInfo(
+                            new IPAddress(row.LocalAddress),
+                            ConvertPort(row.LocalPort),
+                            new IPAddress(row.RemoteAddress),
+                            ConvertPort(row.RemotePort),
+                            (TcpState)row.State,
+                            processId,
+                            ProcessFallbackName(processId),
+                            null
+                        )
+                    );
+                    rowPointer += rowSize;
+                }
             }
-        });
+        );
     }
 
     private static void ReadIpv6(List<TcpConnectionInfo> destination)
     {
-        ReadTable(AfInet6, (buffer, count) =>
-        {
-            int rowSize = Marshal.SizeOf<MibTcp6RowOwnerPid>();
-            nint rowPointer = buffer + sizeof(uint);
-            for (int index = 0; index < count; index++)
+        ReadTable(
+            AfInet6,
+            (buffer, count) =>
             {
-                MibTcp6RowOwnerPid row = Marshal.PtrToStructure<MibTcp6RowOwnerPid>(rowPointer);
-                int processId = (int)row.OwningPid;
-                destination.Add(new TcpConnectionInfo(
-                    new IPAddress(row.LocalAddress, row.LocalScopeId),
-                    ConvertPort(row.LocalPort),
-                    new IPAddress(row.RemoteAddress, row.RemoteScopeId),
-                    ConvertPort(row.RemotePort),
-                    (TcpState)row.State,
-                    processId,
-                    ProcessFallbackName(processId),
-                    null));
-                rowPointer += rowSize;
+                int rowSize = Marshal.SizeOf<MibTcp6RowOwnerPid>();
+                nint rowPointer = buffer + sizeof(uint);
+                for (int index = 0; index < count; index++)
+                {
+                    MibTcp6RowOwnerPid row =
+                        Marshal.PtrToStructure<MibTcp6RowOwnerPid>(rowPointer);
+                    int processId = (int)row.OwningPid;
+                    destination.Add(
+                        new TcpConnectionInfo(
+                            new IPAddress(row.LocalAddress, row.LocalScopeId),
+                            ConvertPort(row.LocalPort),
+                            new IPAddress(row.RemoteAddress, row.RemoteScopeId),
+                            ConvertPort(row.RemotePort),
+                            (TcpState)row.State,
+                            processId,
+                            ProcessFallbackName(processId),
+                            null
+                        )
+                    );
+                    rowPointer += rowSize;
+                }
             }
-        });
+        );
     }
 
+    /// <summary>
+    /// Resize the native buffer when Windows reports a larger TCP table.
+    /// </summary>
     private static void ReadTable(int addressFamily, Action<nint, int> readRows)
     {
         uint size = 0;
@@ -77,7 +97,8 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
             true,
             addressFamily,
             TcpTableClass.TcpTableOwnerPidAll,
-            0);
+            0
+        );
         if (result != ErrorInsufficientBuffer && result != 0)
         {
             throw new Win32Exception((int)result);
@@ -92,7 +113,8 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
                 true,
                 addressFamily,
                 TcpTableClass.TcpTableOwnerPidAll,
-                0);
+                0
+            );
             if (result != 0)
             {
                 throw new Win32Exception((int)result);
@@ -109,6 +131,9 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
     private static string ProcessFallbackName(int processId) =>
         processId <= 0 ? "System" : $"PID {processId}";
 
+    /// <summary>
+    /// Decode the network-order port stored in the native table row.
+    /// </summary>
     private static int ConvertPort(uint port)
     {
         return (ushort)IPAddress.NetworkToHostOrder((short)(port & 0xffff));
@@ -121,7 +146,8 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
         [MarshalAs(UnmanagedType.Bool)] bool order,
         int addressFamily,
         TcpTableClass tableClass,
-        uint reserved);
+        uint reserved
+    );
 
     private enum TcpTableClass
     {
@@ -130,7 +156,7 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
         TcpTableBasicAll,
         TcpTableOwnerPidListener,
         TcpTableOwnerPidConnections,
-        TcpTableOwnerPidAll
+        TcpTableOwnerPidAll,
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -151,6 +177,7 @@ public sealed class WindowsTcpConnectionProvider : ITcpConnectionProvider
         public byte[] LocalAddress;
         public uint LocalScopeId;
         public uint LocalPort;
+
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
         public byte[] RemoteAddress;
         public uint RemoteScopeId;

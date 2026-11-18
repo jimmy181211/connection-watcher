@@ -6,8 +6,9 @@ namespace ConnectionWatcher.App.UI;
 
 public sealed class FeedbackForm : Form
 {
-    private const string GitHubIssueUrl =
-        "https://github.com/jimmy181211/connection-watcher/issues/new";
+    private const string GitHubIssueUrl = (
+        "https://github.com/jimmy181211/connect" + "ion-watcher/issues/new"
+    );
 
     private readonly TextBox _feedbackText = new();
     private readonly CheckBox _includeDiagnostics = new();
@@ -38,7 +39,7 @@ public sealed class FeedbackForm : Form
             Dock = DockStyle.Fill,
             Padding = new Padding(20),
             ColumnCount = 1,
-            RowCount = 5
+            RowCount = 5,
         };
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -68,7 +69,7 @@ public sealed class FeedbackForm : Form
             AutoSize = true,
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
-            Margin = new Padding(0, 0, 0, 16)
+            Margin = new Padding(0, 0, 0, 16),
         };
         _includeDiagnostics.AutoSize = true;
         _diagnosticsHint.AutoSize = true;
@@ -82,13 +83,13 @@ public sealed class FeedbackForm : Form
             Dock = DockStyle.Fill,
             AutoSize = true,
             FlowDirection = FlowDirection.RightToLeft,
-            WrapContents = false
+            WrapContents = false,
         };
         Button cancel = new()
         {
             AutoSize = true,
             MinimumSize = new Size(100, 36),
-            DialogResult = DialogResult.Cancel
+            DialogResult = DialogResult.Cancel,
         };
         _continueButton.AutoSize = true;
         _continueButton.MinimumSize = new Size(150, 36);
@@ -132,7 +133,8 @@ public sealed class FeedbackForm : Form
                 UiText.Get("FeedbackEmpty"),
                 UiText.Get("FeedbackTitle"),
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+                MessageBoxIcon.Information
+            );
             _feedbackText.Focus();
             return;
         }
@@ -147,22 +149,27 @@ public sealed class FeedbackForm : Form
             body.AppendLine("## Basic diagnostic information");
             body.AppendLine();
             body.AppendLine($"- App version: {CurrentVersion()}");
-            body.AppendLine($"- Windows version: {Environment.OSVersion.VersionString}");
+            body.AppendLine(
+                (
+                    "- Windows version: "
+                    + $"{Environment.OSVersion.VersionString}"
+                )
+            );
             body.AppendLine($"- Interface language: {UiText.Language}");
-            body.AppendLine("- Logs and network connection records: not attached");
+            body.AppendLine(
+                "- Logs and network connection records: not attached"
+            );
         }
 
         string title = $"SocketSight feedback ({CurrentVersion()})";
         string url =
-            $"{GitHubIssueUrl}?title={Uri.EscapeDataString(title)}" +
-            $"&body={Uri.EscapeDataString(body.ToString())}";
+            ($"{GitHubIssueUrl}" + "?title=" + $"{Uri.EscapeDataString(title)}")
+            + $"&body={Uri.EscapeDataString(body.ToString())}";
         try
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = url,
-                UseShellExecute = true
-            });
+            Process.Start(
+                new ProcessStartInfo { FileName = url, UseShellExecute = true }
+            );
             DialogResult = DialogResult.OK;
             Close();
         }
@@ -170,10 +177,14 @@ public sealed class FeedbackForm : Form
         {
             MessageBox.Show(
                 this,
-                string.Format(UiText.Get("FeedbackOpenFailed"), exception.Message),
+                string.Format(
+                    UiText.Get("FeedbackOpenFailed"),
+                    exception.Message
+                ),
                 UiText.Get("Error"),
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
+                MessageBoxIcon.Error
+            );
         }
     }
 

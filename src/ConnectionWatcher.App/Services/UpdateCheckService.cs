@@ -9,40 +9,50 @@ public sealed record UpdateCheckResult(
     string LatestTag,
     string ReleaseName,
     Uri ReleasePage,
-    bool IsUpdateAvailable);
+    bool IsUpdateAvailable
+);
 
 public sealed class UpdateCheckService
 {
     private static readonly Uri LatestReleaseApi = new(
-        "https://api.github.com/repos/jimmy181211/connection-watcher/releases/latest");
+        (
+            "https://api.github.com/repos/jimmy1812"
+            + "11/connection-watcher/releases/latest"
+        )
+    );
     private readonly HttpClient _client;
 
     public UpdateCheckService(HttpClient? client = null)
     {
-        _client = client ?? new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(12)
-        };
+        _client =
+            client ?? new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
         if (!_client.DefaultRequestHeaders.UserAgent.Any())
         {
             _client.DefaultRequestHeaders.UserAgent.Add(
-                new ProductInfoHeaderValue("SocketSight", "1.4"));
+                new ProductInfoHeaderValue("SocketSight", "1.4")
+            );
         }
     }
 
+    /// <summary>
+    /// Read release metadata for an explicit user request without installing an
+    /// update.
+    /// </summary>
     public async Task<UpdateCheckResult> CheckAsync(
         Version currentVersion,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        using HttpResponseMessage response = await _client.GetAsync(
-            LatestReleaseApi,
-            cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await _client
+            .GetAsync(LatestReleaseApi, cancellationToken)
+            .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        await using Stream content = await response.Content.ReadAsStreamAsync(
-            cancellationToken).ConfigureAwait(false);
-        using JsonDocument document = await JsonDocument.ParseAsync(
-            content,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+        await using Stream content = await response
+            .Content.ReadAsStreamAsync(cancellationToken)
+            .ConfigureAwait(false);
+        using JsonDocument document = await JsonDocument
+            .ParseAsync(content, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
         JsonElement root = document.RootElement;
         string tag = RequiredString(root, "tag_name");
         string releaseName = OptionalString(root, "name") ?? tag;
@@ -50,7 +60,12 @@ public sealed class UpdateCheckService
         if (!TryParseVersion(tag, out Version? latestVersion))
         {
             throw new InvalidDataException(
-                $"GitHub returned an unsupported release version: {tag}");
+                (
+                    "GitHub returned an unsupported "
+                    + "release version: "
+                    + $"{tag}"
+                )
+            );
         }
 
         return new UpdateCheckResult(
@@ -59,7 +74,8 @@ public sealed class UpdateCheckService
             tag,
             releaseName,
             new Uri(page),
-            latestVersion! > currentVersion);
+            latestVersion! > currentVersion
+        );
     }
 
     public static bool TryParseVersion(string value, out Version? version)
@@ -80,12 +96,14 @@ public sealed class UpdateCheckService
     }
 
     private static string RequiredString(JsonElement root, string name) =>
-        OptionalString(root, name) ??
-        throw new InvalidDataException($"GitHub response is missing {name}.");
+        OptionalString(root, name)
+        ?? throw new InvalidDataException(
+            $"GitHub response is missing {name}."
+        );
 
     private static string? OptionalString(JsonElement root, string name) =>
-        root.TryGetProperty(name, out JsonElement value) &&
-        value.ValueKind == JsonValueKind.String
+        root.TryGetProperty(name, out JsonElement value)
+        && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
 }

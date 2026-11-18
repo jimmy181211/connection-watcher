@@ -3,21 +3,22 @@ namespace ConnectionWatcher.Core.Models;
 public enum MonitoringRuleType
 {
     TcpConnection,
-    LocalListener
+    LocalListener,
 }
 
 public enum MatchAction
 {
     SilentLog,
     TrayNotice,
-    PopupAlert
+    PopupAlert,
 }
 
 public sealed class MonitoringRule
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = string.Empty;
-    public MonitoringRuleType Type { get; set; } = MonitoringRuleType.TcpConnection;
+    public MonitoringRuleType Type { get; set; } =
+        MonitoringRuleType.TcpConnection;
     public string? RemoteIp { get; set; }
     public PortRange RemotePort { get; set; } = PortRange.Any;
     public PortRange LocalPort { get; set; } = PortRange.Any;
@@ -37,7 +38,7 @@ public sealed class MonitoringRule
             LocalPort = LocalPort with { },
             Action = Action,
             RepeatAlertMinutes = RepeatAlertMinutes,
-            Enabled = Enabled
+            Enabled = Enabled,
         };
     }
 }

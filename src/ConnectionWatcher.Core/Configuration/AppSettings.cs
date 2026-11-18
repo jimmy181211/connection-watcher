@@ -21,7 +21,8 @@ public sealed class AppSettings
     public bool AlertSound { get; set; }
     public int AlertVolumePercent { get; set; } = DefaultAlertVolumePercent;
     public int LogLimitMb { get; set; } = DefaultLogLimitMb;
-    public decimal CheckIntervalSeconds { get; set; } = DefaultCheckIntervalSeconds;
+    public decimal CheckIntervalSeconds { get; set; } =
+        DefaultCheckIntervalSeconds;
     public DateTimeOffset? EventLogDisplayCutoff { get; set; }
     public List<MonitoringRule> Rules { get; set; } = [];
 }

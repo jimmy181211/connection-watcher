@@ -25,7 +25,8 @@ public static partial class UiText
             ["SecondsUnit"] = "秒",
             ["LongIntervalHint"] = "较长间隔可能漏掉短暂连接。",
             ["ActionLegend"] = "操作标识（事件记录使用相同标识）",
-            ["RulesDescription"] = "规则决定监视什么；“匹配后操作”决定发现后怎样处理。",
+            ["RulesDescription"] =
+                "规则决定监视什么；“匹配后操作”决定发现后怎样处理。",
             ["NewRule"] = "新建规则",
             ["Edit"] = "编辑",
             ["Delete"] = "删除",
@@ -36,7 +37,8 @@ public static partial class UiText
             ["Enabled"] = "启用",
             ["NoRules"] = "还没有规则。请先新建并启用一条规则。",
             ["DeleteRuleTitle"] = "删除规则",
-            ["DeleteRuleQuestion"] = "确定删除规则“{0}”吗？过去的事件记录不会被删除。",
+            ["DeleteRuleQuestion"] =
+                "确定删除规则“{0}”吗？过去的事件记录不会被删除。",
             ["SilentLog"] = "静默记录",
             ["TrayNotice"] = "托盘提示并记录",
             ["PopupAlert"] = "弹窗警报并记录",
@@ -51,16 +53,20 @@ public static partial class UiText
             ["LocalPort"] = "本地端口",
             ["AnyPort"] = "任意端口",
             ["ListenerOn"] = "监听本地端口 {0}",
-            ["ConnectionCondition"] = "远程IP：{0} · 远程端口：{1} · 本地端口：{2}",
+            ["ConnectionCondition"] =
+                "远程IP：{0} · 远程端口：{1} · 本地端口：{2}",
             ["Any"] = "任意",
             ["SearchEvents"] = "搜索规则、IP、端口或程序",
             ["ClearDisplay"] = "清空显示",
             ["ClearDisplayTitle"] = "清空事件页面",
-            ["ClearDisplayQuestion"] = "清空事件页面中的现有记录吗？CSV日志不会被删除；清空前的事件在重启程序后仍会保持隐藏。",
-            ["EventsDescription"] = "每个新匹配连接记录一次；活动状态和已观察时长会自动更新。",
+            ["ClearDisplayQuestion"] =
+                "清空事件页面中的现有记录吗？CSV日志不会被删除；清空前的事件在重启程序后仍会保持隐藏。",
+            ["EventsDescription"] =
+                "每个新匹配连接记录一次；活动状态和已观察时长会自动更新。",
             ["EventDoubleClickHint"] = "双击一条事件可查看完整详细信息。",
             ["EventDetailsTitle"] = "事件详细信息",
-            ["EventDetailsDescription"] = "显示Windows报告的连接所属进程及相关背景信息；这些信息有助于调查，但不一定能证明最终由哪个应用触发。",
+            ["EventDetailsDescription"] =
+                "显示Windows报告的连接所属进程及相关背景信息；这些信息有助于调查，但不一定能证明最终由哪个应用触发。",
             ["StartTime"] = "开始时间",
             ["EndTime"] = "结束时间",
             ["ProcessPath"] = "程序路径",
@@ -80,7 +86,8 @@ public static partial class UiText
             ["TcpState"] = "TCP状态",
             ["Program"] = "程序",
             ["Application"] = "应用",
-            ["ApplicationTooltip"] = "Windows报告的连接所属进程：{0}（PID {1}）\n路径：{2}",
+            ["ApplicationTooltip"] =
+                "Windows报告的连接所属进程：{0}（PID {1}）\n路径：{2}",
             ["ConnectionOwner"] = "Windows报告的连接所属进程",
             ["ProductName"] = "文件产品名称",
             ["CompanyName"] = "文件公司",
@@ -107,9 +114,11 @@ public static partial class UiText
             ["AlertSoundHint"] = "使用程序内置的短提示音。",
             ["TestSound"] = "测试声音",
             ["AlertVolume"] = "紧急提醒音量（%）",
-            ["AlertVolumeHint"] = "同时用于测试声音和真正的紧急警报；Windows 系统音量仍然有效。",
+            ["AlertVolumeHint"] =
+                "同时用于测试声音和真正的紧急警报；Windows 系统音量仍然有效。",
             ["LogLimit"] = "事件日志上限（MB）",
-            ["LogLimitHint"] = "可设置5–500MB；日志分为5个文件，超过上限后自动删除最旧的记录。",
+            ["LogLimitHint"] =
+                "可设置5–500MB；日志分为5个文件，超过上限后自动删除最旧的记录。",
             ["HelpCenter"] = "帮助中心",
             ["HelpCenterHint"] = "在软件内查看项目说明和使用说明。",
             ["OpenHelpCenter"] = "打开",
@@ -117,11 +126,16 @@ public static partial class UiText
             ["FeedbackHint"] = "提交意见到 GitHub；提交前会由你确认。",
             ["OpenFeedback"] = "打开",
             ["FeedbackTitle"] = "提交反馈",
-            ["FeedbackDescription"] = "写下你的建议或遇到的问题。点击“继续到 GitHub”后，浏览器会打开预填好的页面；你可以检查内容，再由你提交。",
+            ["FeedbackDescription"] = (
+                "写下你的建议或遇到的问题。点击“继续到 GitHub”后，浏览器会打开预填好"
+                + "的页面；你可以检查内容，再由你提交。"
+            ),
             ["FeedbackTextLabel"] = "反馈内容",
-            ["FeedbackPlaceholder"] = "请写下你遇到的问题、建议或想改进的地方。",
+            ["FeedbackPlaceholder"] =
+                "请写下你遇到的问题、建议或想改进的地方。",
             ["IncludeDiagnostics"] = "附加基本诊断信息",
-            ["DiagnosticsHint"] = "只包含软件版本、Windows 版本和界面语言；不会附加日志。",
+            ["DiagnosticsHint"] =
+                "只包含软件版本、Windows 版本和界面语言；不会附加日志。",
             ["ContinueToGitHub"] = "继续到 GitHub",
             ["FeedbackEmpty"] = "请先填写反馈内容。",
             ["FeedbackOpenFailed"] = "无法打开 GitHub 页面：{0}",
@@ -132,14 +146,18 @@ public static partial class UiText
             ["CurrentVersion"] = "当前版本：{0}",
             ["CheckingUpdates"] = "正在检查…",
             ["UpdateAvailableTitle"] = "发现新版本",
-            ["UpdateAvailableMessage"] = "GitHub上有新版本 {0}（{1}）。\n\n是否打开发布页面查看说明并自行下载？",
+            ["UpdateAvailableMessage"] =
+                "GitHub上有新版本 {0}（{1}）。\n\n是否打开发布页面查看说明并自行下载？",
             ["UpToDateMessage"] = "当前版本 {0} 已是GitHub上的最新正式版本。",
             ["UpdateCheckFailed"] = "无法检查更新：{0}",
             ["ProjectOverview"] = "项目说明",
             ["UserGuide"] = "使用说明",
+            ["PrivacyPolicy"] = "隐私政策",
+            ["TermsOfUse"] = "使用条款",
             ["HelpDocumentUnavailable"] = "无法读取帮助文档。",
             ["LogLimitUpdateError"] = "无法更新事件日志上限：{0}",
-            ["Privacy"] = "除非您手动检查更新或打开反馈页面，否则本工具不会联网；它不上传日志、不读取数据包内容，也不会自动封锁连接。",
+            ["Privacy"] =
+                "除非您手动检查更新或打开反馈页面，否则本工具不会联网；它不上传日志、不读取数据包内容，也不会自动封锁连接。",
             ["CreateRule"] = "新建监视规则",
             ["EditRule"] = "编辑监视规则",
             ["RuleType"] = "规则类型",
@@ -160,8 +178,10 @@ public static partial class UiText
             ["PreviewListener"] = "当程序监听本地端口 {0} 时，{1}。",
             ["NameRequired"] = "请填写规则名称。",
             ["InvalidRemoteIp"] = "远程IP格式不正确。",
-            ["InvalidRemotePort"] = "远程端口必须是1–65535之间的单个端口或范围。",
-            ["InvalidLocalPort"] = "本地端口必须是1–65535之间的单个端口或范围。",
+            ["InvalidRemotePort"] =
+                "远程端口必须是1–65535之间的单个端口或范围。",
+            ["InvalidLocalPort"] =
+                "本地端口必须是1–65535之间的单个端口或范围。",
             ["ConditionRequired"] = "请至少限制一个IP或端口。",
             ["ListenerPortRequired"] = "监听规则必须指定本地端口。",
             ["InvalidRepeatInterval"] = "重复提醒间隔无效。",
@@ -171,19 +191,21 @@ public static partial class UiText
             ["LatestSeen"] = "最近发生",
             ["Occurrences"] = "本次提醒期间",
             ["Times"] = "次",
-            ["NotMalwareVerdict"] = "此连接匹配了您设置的规则，但这本身不代表电脑已经感染病毒。",
+            ["NotMalwareVerdict"] =
+                "此连接匹配了您设置的规则，但这本身不代表电脑已经感染病毒。",
             ["ViewDetails"] = "查看详情",
             ["Close"] = "关闭",
             ["Open"] = "打开",
             ["Exit"] = "退出程序",
-            ["CloseWhileRunning"] = "监控正在运行。选择“是”将最小化到托盘；选择“否”将停止监控并退出。",
+            ["CloseWhileRunning"] =
+                "监控正在运行。选择“是”将最小化到托盘；选择“否”将停止监控并退出。",
             ["CloseWhileRunningTitle"] = "监控仍在运行",
             ["TrayNormal"] = "SocketSight：正在监控",
             ["TrayNotices"] = "SocketSight：{0}条普通提醒",
             ["Error"] = "错误",
             ["UnexpectedError"] = "意外错误",
             ["StartupSettingError"] = "无法修改Windows启动设置：{0}",
-            ["ProcessPathUnavailable"] = "无法读取（权限限制）"
+            ["ProcessPathUnavailable"] = "无法读取（权限限制）",
         };
 
     private static readonly IReadOnlyDictionary<string, string> English =
@@ -198,16 +220,24 @@ public static partial class UiText
             ["MonitoringRunning"] = "Monitoring",
             ["MonitoringInterrupted"] = "Monitoring Error",
             ["MonitoringStatus"] = "Monitoring Status",
-            ["StatusHint"] = "Connections are checked only after you select Start Monitoring.",
+            ["StatusHint"] = (
+                "Connections are checked only after "
+                + "you select Start Monitoring."
+            ),
             ["StartMonitoring"] = "Start Monitoring",
             ["StopMonitoring"] = "Stop Monitoring",
             ["EnabledRules"] = "Enabled Rules",
             ["CheckInterval"] = "Check Interval",
             ["OneSecond"] = "1 second",
             ["SecondsUnit"] = "seconds",
-            ["LongIntervalHint"] = "Longer intervals may miss short-lived connections.",
-            ["ActionLegend"] = "Action Symbols (the Event Log Uses the Same Symbols)",
-            ["RulesDescription"] = "Rules define what to monitor; “Action on Match” defines what happens next.",
+            ["LongIntervalHint"] =
+                "Longer intervals may miss short-lived connections.",
+            ["ActionLegend"] =
+                "Action Symbols (the Event Log Uses the Same Symbols)",
+            ["RulesDescription"] = (
+                "Rules define what to monitor; “Action "
+                + "on Match” defines what happens next."
+            ),
             ["NewRule"] = "New Rule",
             ["Edit"] = "Edit",
             ["Delete"] = "Delete",
@@ -218,7 +248,10 @@ public static partial class UiText
             ["Enabled"] = "Enabled",
             ["NoRules"] = "No rules yet. Create and enable a rule first.",
             ["DeleteRuleTitle"] = "Delete Rule",
-            ["DeleteRuleQuestion"] = "Delete rule “{0}”? Existing event records will not be deleted.",
+            ["DeleteRuleQuestion"] = (
+                "Delete rule “{0}”? Existing event "
+                + "records will not be deleted."
+            ),
             ["SilentLog"] = "Log Silently",
             ["TrayNotice"] = "Tray Notice and Log",
             ["PopupAlert"] = "Pop-Up Alert and Log",
@@ -233,22 +266,40 @@ public static partial class UiText
             ["LocalPort"] = "Local Port",
             ["AnyPort"] = "Any Port",
             ["ListenerOn"] = "Listen on local port {0}",
-            ["ConnectionCondition"] = "Remote IP: {0} · remote port: {1} · local port: {2}",
+            ["ConnectionCondition"] =
+                "Remote IP: {0} · remote port: {1} · local port: {2}",
             ["Any"] = "Any",
             ["SearchEvents"] = "Search Rule, IP, Port, or Program",
             ["ClearDisplay"] = "Clear Display",
             ["ClearDisplayTitle"] = "Clear Event Log Display",
-            ["ClearDisplayQuestion"] = "Clear the events currently shown? The CSV logs will not be deleted, and events from before this point will stay hidden after the app restarts.",
-            ["EventsDescription"] = "Each new match is logged once; its status and observed duration update automatically.",
-            ["EventDoubleClickHint"] = "Double-click an event to view its full details.",
+            ["ClearDisplayQuestion"] = (
+                "Clear the events currently shown? The "
+                + "CSV logs will not be deleted, and "
+                + "events from before this point will "
+                + "stay hidden after the app restarts."
+            ),
+            ["EventsDescription"] = (
+                "Each new match is logged once; its "
+                + "status and observed duration update "
+                + "automatically."
+            ),
+            ["EventDoubleClickHint"] =
+                "Double-click an event to view its full details.",
             ["EventDetailsTitle"] = "Event Details",
-            ["EventDetailsDescription"] = "Shows the connection owner reported by Windows and related context. This can help an investigation, but may not prove which app ultimately triggered the connection.",
+            ["EventDetailsDescription"] = (
+                "Shows the connection owner reported "
+                + "by Windows and related context. This "
+                + "can help an investigation, but may "
+                + "not prove which app ultimately "
+                + "triggered the connection."
+            ),
             ["StartTime"] = "Start Time",
             ["EndTime"] = "End Time",
             ["ProcessPath"] = "Program Path",
             ["CopyDetails"] = "Copy Details",
             ["Copied"] = "Copied",
-            ["CopyFailed"] = "The details could not be copied. Please try again.",
+            ["CopyFailed"] =
+                "The details could not be copied. Please try again.",
             ["ExportCsv"] = "Export CSV",
             ["OpenLogFolder"] = "Open Log Folder",
             ["Time"] = "Time",
@@ -262,7 +313,10 @@ public static partial class UiText
             ["TcpState"] = "TCP State",
             ["Program"] = "Program",
             ["Application"] = "Application",
-            ["ApplicationTooltip"] = "Connection owner reported by Windows: {0} (PID {1})\nPath: {2}",
+            ["ApplicationTooltip"] = (
+                "Connection owner reported by Windows: "
+                + "{0} (PID {1})\nPath: {2}"
+            ),
             ["ConnectionOwner"] = "Connection Owner Reported by Windows",
             ["ProductName"] = "File Product Name",
             ["CompanyName"] = "File Company",
@@ -282,46 +336,93 @@ public static partial class UiText
             ["German"] = "Deutsch",
             ["BrazilianPortuguese"] = "Português (Brasil)",
             ["StartWithWindows"] = "Launch App at Windows Sign-In",
-            ["StartWithWindowsHint"] = "Opens the app only; it does not start monitoring.",
-            ["ResumeMonitoring"] = "Start Monitoring Automatically When the App Opens",
-            ["ResumeMonitoringHint"] = "Off by default; uses only enabled rules.",
+            ["StartWithWindowsHint"] =
+                "Opens the app only; it does not start monitoring.",
+            ["ResumeMonitoring"] =
+                "Start Monitoring Automatically When the App Opens",
+            ["ResumeMonitoringHint"] =
+                "Off by default; uses only enabled rules.",
             ["AlertSound"] = "Urgent Alert Sound",
-            ["AlertSoundHint"] = "Uses the short alert chime built into the app.",
+            ["AlertSoundHint"] =
+                "Uses the short alert chime built into the app.",
             ["TestSound"] = "Test Sound",
             ["AlertVolume"] = "Urgent Alert Volume (%)",
-            ["AlertVolumeHint"] = "Applies to Test Sound and urgent alerts; the Windows volume still applies.",
+            ["AlertVolumeHint"] = (
+                "Applies to Test Sound and urgent "
+                + "alerts; the Windows volume still "
+                + "applies."
+            ),
             ["LogLimit"] = "Event Log Limit (MB)",
-            ["LogLimitHint"] = "Choose 5–500 MB. Logs use five files; the oldest records are removed when the limit is reached.",
+            ["LogLimitHint"] = (
+                "Choose 5–500 MB. Logs use five files; "
+                + "the oldest records are removed when "
+                + "the limit is reached."
+            ),
             ["HelpCenter"] = "Help Center",
-            ["HelpCenterHint"] = "Read the project overview and user guide inside the app.",
+            ["HelpCenterHint"] = (
+                "Read the project overview and user " + "guide inside the app."
+            ),
             ["OpenHelpCenter"] = "Open",
             ["Feedback"] = "Feedback",
-            ["FeedbackHint"] = "Share feedback on GitHub; you review it before submitting.",
+            ["FeedbackHint"] = (
+                "Share feedback on GitHub; you review "
+                + "it before submitting."
+            ),
             ["OpenFeedback"] = "Open",
             ["FeedbackTitle"] = "Send Feedback",
-            ["FeedbackDescription"] = "Write your suggestion or describe a problem. After you choose Continue to GitHub, your browser will open a pre-filled page for you to review and submit.",
+            ["FeedbackDescription"] = (
+                "Write your suggestion or describe a "
+                + "problem. After you choose Continue to "
+                + "GitHub, your browser will open a "
+                + "pre-filled page for you to review and "
+                + "submit."
+            ),
             ["FeedbackTextLabel"] = "Feedback",
-            ["FeedbackPlaceholder"] = "Describe a problem, suggestion, or improvement.",
+            ["FeedbackPlaceholder"] =
+                "Describe a problem, suggestion, or improvement.",
             ["IncludeDiagnostics"] = "Include basic diagnostic information",
-            ["DiagnosticsHint"] = "Only the app version, Windows version, and interface language; no logs are attached.",
+            ["DiagnosticsHint"] = (
+                "Only the app version, Windows "
+                + "version, and interface language; no "
+                + "logs are attached."
+            ),
             ["ContinueToGitHub"] = "Continue to GitHub",
             ["FeedbackEmpty"] = "Please enter feedback first.",
             ["FeedbackOpenFailed"] = "Could not open the GitHub page: {0}",
             ["SoftwareUpdates"] = "Software Updates",
-            ["SoftwareUpdatesWithVersion"] = "Software Updates (Current Version: {0})",
-            ["SoftwareUpdatesHint"] = "Updates are not installed automatically.",
+            ["SoftwareUpdatesWithVersion"] =
+                "Software Updates (Current Version: {0})",
+            ["SoftwareUpdatesHint"] =
+                "Updates are not installed automatically.",
             ["CheckNow"] = "Check Now",
             ["CurrentVersion"] = "Current Version: {0}",
             ["CheckingUpdates"] = "Checking…",
             ["UpdateAvailableTitle"] = "Update Available",
-            ["UpdateAvailableMessage"] = "A newer version, {0} ({1}), is available on GitHub.\n\nOpen the release page to read the notes and download it yourself?",
-            ["UpToDateMessage"] = "Version {0} is the latest public GitHub release.",
+            ["UpdateAvailableMessage"] = (
+                "A newer version, {0} ({1}), is "
+                + "available on GitHub.\n\nOpen the "
+                + "release page to read the notes and "
+                + "download it yourself?"
+            ),
+            ["UpToDateMessage"] =
+                "Version {0} is the latest public GitHub release.",
             ["UpdateCheckFailed"] = "Could not check for updates: {0}",
             ["ProjectOverview"] = "Project Overview",
             ["UserGuide"] = "User Guide",
-            ["HelpDocumentUnavailable"] = "The help document could not be loaded.",
-            ["LogLimitUpdateError"] = "The event log limit could not be updated: {0}",
-            ["Privacy"] = "This tool connects to the internet only when you manually check for updates or open the feedback page. It does not upload logs, read packet contents, or block connections automatically.",
+            ["PrivacyPolicy"] = "Privacy Policy",
+            ["TermsOfUse"] = "Terms of Use",
+            ["HelpDocumentUnavailable"] =
+                "The help document could not be loaded.",
+            ["LogLimitUpdateError"] =
+                "The event log limit could not be updated: {0}",
+            ["Privacy"] = (
+                "This tool connects to the internet "
+                + "only when you manually check for "
+                + "updates or open the feedback page. It "
+                + "does not upload logs, read packet "
+                + "contents, or block connections "
+                + "automatically."
+            ),
             ["CreateRule"] = "Create Monitoring Rule",
             ["EditRule"] = "Edit Monitoring Rule",
             ["RuleType"] = "Rule Type",
@@ -338,34 +439,52 @@ public static partial class UiText
             ["RulePreview"] = "Rule Preview",
             ["Save"] = "Save",
             ["Cancel"] = "Cancel",
-            ["PreviewConnection"] = "When a program’s TCP connection matches: {0}, {1}.",
-            ["PreviewListener"] = "When a program listens on local port {0}, {1}.",
+            ["PreviewConnection"] =
+                "When a program’s TCP connection matches: {0}, {1}.",
+            ["PreviewListener"] =
+                "When a program listens on local port {0}, {1}.",
             ["NameRequired"] = "Enter a rule name.",
             ["InvalidRemoteIp"] = "The remote IP address is invalid.",
-            ["InvalidRemotePort"] = "Remote port must be one port or a range from 1 to 65535.",
-            ["InvalidLocalPort"] = "Local port must be one port or a range from 1 to 65535.",
+            ["InvalidRemotePort"] = (
+                "Remote port must be one port or a " + "range from 1 to 65535."
+            ),
+            ["InvalidLocalPort"] = (
+                "Local port must be one port or a " + "range from 1 to 65535."
+            ),
             ["ConditionRequired"] = "Restrict at least one IP address or port.",
             ["ListenerPortRequired"] = "A listener rule requires a local port.",
             ["InvalidRepeatInterval"] = "The repeat interval is invalid.",
-            ["NeedEnabledRule"] = "Create and enable at least one rule before starting monitoring.",
+            ["NeedEnabledRule"] = (
+                "Create and enable at least one rule "
+                + "before starting monitoring."
+            ),
             ["UrgentTitle"] = "Monitoring Rule Matched",
             ["FirstSeen"] = "First Seen",
             ["LatestSeen"] = "Latest Seen",
             ["Occurrences"] = "During This Alert",
             ["Times"] = "times",
-            ["NotMalwareVerdict"] = "This connection matched a rule you created, but that alone does not mean the computer is infected.",
+            ["NotMalwareVerdict"] = (
+                "This connection matched a rule you "
+                + "created, but that alone does not mean "
+                + "the computer is infected."
+            ),
             ["ViewDetails"] = "View Details",
             ["Close"] = "Close",
             ["Open"] = "Open",
             ["Exit"] = "Exit",
-            ["CloseWhileRunning"] = "Monitoring is running. Choose Yes to minimize to the tray, or No to stop monitoring and exit.",
+            ["CloseWhileRunning"] = (
+                "Monitoring is running. Choose Yes to "
+                + "minimize to the tray, or No to stop "
+                + "monitoring and exit."
+            ),
             ["CloseWhileRunningTitle"] = "Monitoring Is Still Running",
             ["TrayNormal"] = "SocketSight: monitoring",
             ["TrayNotices"] = "SocketSight: {0} tray notices",
             ["Error"] = "Error",
             ["UnexpectedError"] = "Unexpected Error",
-            ["StartupSettingError"] = "Windows startup setting could not be changed: {0}",
-            ["ProcessPathUnavailable"] = "Unavailable (permission restricted)"
+            ["StartupSettingError"] =
+                "Windows startup setting could not be changed: {0}",
+            ["ProcessPathUnavailable"] = "Unavailable (permission restricted)",
         };
 
     private static readonly IReadOnlyDictionary<string, string> Spanish =
@@ -380,16 +499,28 @@ public static partial class UiText
             ["MonitoringRunning"] = "Monitoreando",
             ["MonitoringInterrupted"] = "Error de monitoreo",
             ["MonitoringStatus"] = "Estado del monitoreo",
-            ["StatusHint"] = "Las conexiones solo se revisan después de seleccionar Iniciar monitoreo.",
+            ["StatusHint"] = (
+                "Las conexiones solo se revisan "
+                + "después de seleccionar Iniciar "
+                + "monitoreo."
+            ),
             ["StartMonitoring"] = "Iniciar monitoreo",
             ["StopMonitoring"] = "Detener monitoreo",
             ["EnabledRules"] = "Reglas activas",
             ["CheckInterval"] = "Intervalo de revisión",
             ["OneSecond"] = "1 segundo",
             ["SecondsUnit"] = "segundos",
-            ["LongIntervalHint"] = "Los intervalos largos pueden omitir conexiones breves.",
-            ["ActionLegend"] = "Símbolos de acción (el registro usa los mismos símbolos)",
-            ["RulesDescription"] = "Las reglas definen qué observar; «Acción al coincidir» define qué ocurre después.",
+            ["LongIntervalHint"] = (
+                "Los intervalos largos pueden omitir " + "conexiones breves."
+            ),
+            ["ActionLegend"] = (
+                "Símbolos de acción (el registro usa " + "los mismos símbolos)"
+            ),
+            ["RulesDescription"] = (
+                "Las reglas definen qué observar; "
+                + "«Acción al coincidir» define qué "
+                + "ocurre después."
+            ),
             ["NewRule"] = "Nueva regla",
             ["Edit"] = "Editar",
             ["Delete"] = "Eliminar",
@@ -400,7 +531,10 @@ public static partial class UiText
             ["Enabled"] = "Activada",
             ["NoRules"] = "Aún no hay reglas. Primero cree y active una regla.",
             ["DeleteRuleTitle"] = "Eliminar regla",
-            ["DeleteRuleQuestion"] = "¿Desea eliminar la regla «{0}»? Los eventos existentes no se eliminarán.",
+            ["DeleteRuleQuestion"] = (
+                "¿Desea eliminar la regla «{0}»? Los "
+                + "eventos existentes no se eliminarán."
+            ),
             ["SilentLog"] = "Registrar en silencio",
             ["TrayNotice"] = "Aviso en bandeja y registro",
             ["PopupAlert"] = "Alerta emergente y registro",
@@ -415,22 +549,44 @@ public static partial class UiText
             ["LocalPort"] = "Puerto local",
             ["AnyPort"] = "Cualquier puerto",
             ["ListenerOn"] = "Escucha en el puerto local {0}",
-            ["ConnectionCondition"] = "IP remota: {0} · puerto remoto: {1} · puerto local: {2}",
+            ["ConnectionCondition"] = (
+                "IP remota: {0} · puerto remoto: {1} · " + "puerto local: {2}"
+            ),
             ["Any"] = "Cualquiera",
             ["SearchEvents"] = "Buscar regla, IP, puerto o programa",
             ["ClearDisplay"] = "Limpiar vista",
             ["ClearDisplayTitle"] = "Limpiar la vista del registro",
-            ["ClearDisplayQuestion"] = "¿Limpiar los eventos que se muestran? Los registros CSV no se eliminarán y los eventos anteriores seguirán ocultos tras reiniciar la aplicación.",
-            ["EventsDescription"] = "Cada coincidencia nueva se registra una vez; su estado y duración observada se actualizan automáticamente.",
-            ["EventDoubleClickHint"] = "Haga doble clic en un evento para ver todos sus detalles.",
+            ["ClearDisplayQuestion"] = (
+                "¿Limpiar los eventos que se muestran? "
+                + "Los registros CSV no se eliminarán y "
+                + "los eventos anteriores seguirán "
+                + "ocultos tras reiniciar la aplicación."
+            ),
+            ["EventsDescription"] = (
+                "Cada coincidencia nueva se registra "
+                + "una vez; su estado y duración "
+                + "observada se actualizan "
+                + "automáticamente."
+            ),
+            ["EventDoubleClickHint"] = (
+                "Haga doble clic en un evento para ver " + "todos sus detalles."
+            ),
             ["EventDetailsTitle"] = "Detalles del evento",
-            ["EventDetailsDescription"] = "Muestra el propietario de la conexión indicado por Windows y el contexto relacionado. Ayuda a investigar, pero no siempre demuestra qué aplicación inició finalmente la conexión.",
+            ["EventDetailsDescription"] = (
+                "Muestra el propietario de la conexión "
+                + "indicado por Windows y el contexto "
+                + "relacionado. Ayuda a investigar, pero "
+                + "no siempre demuestra qué aplicación "
+                + "inició finalmente la conexión."
+            ),
             ["StartTime"] = "Hora de inicio",
             ["EndTime"] = "Hora de finalización",
             ["ProcessPath"] = "Ruta del programa",
             ["CopyDetails"] = "Copiar detalles",
             ["Copied"] = "Copiado",
-            ["CopyFailed"] = "No se pudieron copiar los detalles. Inténtelo de nuevo.",
+            ["CopyFailed"] = (
+                "No se pudieron copiar los detalles. " + "Inténtelo de nuevo."
+            ),
             ["ExportCsv"] = "Exportar CSV",
             ["OpenLogFolder"] = "Abrir carpeta de registros",
             ["Time"] = "Hora",
@@ -444,8 +600,12 @@ public static partial class UiText
             ["TcpState"] = "Estado TCP",
             ["Program"] = "Programa",
             ["Application"] = "Aplicación",
-            ["ApplicationTooltip"] = "Propietario indicado por Windows: {0} (PID {1})\nRuta: {2}",
-            ["ConnectionOwner"] = "Propietario de la conexión indicado por Windows",
+            ["ApplicationTooltip"] = (
+                "Propietario indicado por Windows: {0} "
+                + "(PID {1})\nRuta: {2}"
+            ),
+            ["ConnectionOwner"] =
+                "Propietario de la conexión indicado por Windows",
             ["ProductName"] = "Nombre de producto del archivo",
             ["CompanyName"] = "Empresa del archivo",
             ["FileDescription"] = "Descripción del archivo",
@@ -463,55 +623,119 @@ public static partial class UiText
             ["French"] = "Français",
             ["German"] = "Deutsch",
             ["BrazilianPortuguese"] = "Português (Brasil)",
-            ["StartWithWindows"] = "Abrir la aplicación al iniciar sesión en Windows",
-            ["StartWithWindowsHint"] = "Solo abre la aplicación; no inicia el monitoreo.",
-            ["ResumeMonitoring"] = "Iniciar el monitoreo automáticamente al abrir la aplicación",
-            ["ResumeMonitoringHint"] = "Desactivado de forma predeterminada; solo utiliza reglas activadas.",
+            ["StartWithWindows"] =
+                "Abrir la aplicación al iniciar sesión en Windows",
+            ["StartWithWindowsHint"] =
+                "Solo abre la aplicación; no inicia el monitoreo.",
+            ["ResumeMonitoring"] = (
+                "Iniciar el monitoreo automáticamente "
+                + "al abrir la aplicación"
+            ),
+            ["ResumeMonitoringHint"] = (
+                "Desactivado de forma predeterminada; "
+                + "solo utiliza reglas activadas."
+            ),
             ["AlertSound"] = "Sonido de alerta urgente",
-            ["AlertSoundHint"] = "Utiliza el aviso sonoro corto integrado en la aplicación.",
+            ["AlertSoundHint"] = (
+                "Utiliza el aviso sonoro corto " + "integrado en la aplicación."
+            ),
             ["TestSound"] = "Probar sonido",
             ["AlertVolume"] = "Volumen de la alerta urgente (%)",
-            ["AlertVolumeHint"] = "Se aplica a Probar sonido y a las alertas urgentes; el volumen de Windows también se mantiene.",
+            ["AlertVolumeHint"] = (
+                "Se aplica a Probar sonido y a las "
+                + "alertas urgentes; el volumen de "
+                + "Windows también se mantiene."
+            ),
             ["LogLimit"] = "Límite del registro de eventos (MB)",
-            ["LogLimitHint"] = "Elija entre 5 y 500 MB. Se utilizan cinco archivos y se eliminan primero los registros más antiguos.",
+            ["LogLimitHint"] = (
+                "Elija entre 5 y 500 MB. Se utilizan "
+                + "cinco archivos y se eliminan primero "
+                + "los registros más antiguos."
+            ),
             ["HelpCenter"] = "Centro de ayuda",
-            ["HelpCenterHint"] = "Consulte la descripción del proyecto y la guía del usuario dentro de la aplicación.",
+            ["HelpCenterHint"] = (
+                "Consulte la descripción del proyecto "
+                + "y la guía del usuario dentro de la "
+                + "aplicación."
+            ),
             ["OpenHelpCenter"] = "Abrir",
             ["Feedback"] = "Comentarios",
-            ["FeedbackHint"] = "Comparte tus comentarios en GitHub; podrás revisarlos antes de enviarlos.",
+            ["FeedbackHint"] = (
+                "Comparte tus comentarios en GitHub; "
+                + "podrás revisarlos antes de enviarlos."
+            ),
             ["OpenFeedback"] = "Abrir",
             ["FeedbackTitle"] = "Enviar comentarios",
-            ["FeedbackDescription"] = "Escribe una sugerencia o describe un problema. Al elegir Continuar a GitHub, el navegador abrirá una página rellenada para que la revises y la envíes.",
+            ["FeedbackDescription"] = (
+                "Escribe una sugerencia o describe un "
+                + "problema. Al elegir Continuar a "
+                + "GitHub, el navegador abrirá una "
+                + "página rellenada para que la revises "
+                + "y la envíes."
+            ),
             ["FeedbackTextLabel"] = "Comentarios",
-            ["FeedbackPlaceholder"] = "Describe un problema, una sugerencia o una mejora.",
-            ["IncludeDiagnostics"] = "Incluir información básica de diagnóstico",
-            ["DiagnosticsHint"] = "Solo incluye la versión de la aplicación, la versión de Windows y el idioma; no se adjuntan registros.",
+            ["FeedbackPlaceholder"] =
+                "Describe un problema, una sugerencia o una mejora.",
+            ["IncludeDiagnostics"] =
+                "Incluir información básica de diagnóstico",
+            ["DiagnosticsHint"] = (
+                "Solo incluye la versión de la "
+                + "aplicación, la versión de Windows y "
+                + "el idioma; no se adjuntan registros."
+            ),
             ["ContinueToGitHub"] = "Continuar a GitHub",
             ["FeedbackEmpty"] = "Escribe primero tus comentarios.",
-            ["FeedbackOpenFailed"] = "No se pudo abrir la página de GitHub: {0}",
+            ["FeedbackOpenFailed"] =
+                "No se pudo abrir la página de GitHub: {0}",
             ["SoftwareUpdates"] = "Actualizaciones",
-            ["SoftwareUpdatesWithVersion"] = "Actualizaciones (versión actual: {0})",
-            ["SoftwareUpdatesHint"] = "Las actualizaciones no se instalan automáticamente.",
+            ["SoftwareUpdatesWithVersion"] =
+                "Actualizaciones (versión actual: {0})",
+            ["SoftwareUpdatesHint"] =
+                "Las actualizaciones no se instalan automáticamente.",
             ["CheckNow"] = "Comprobar ahora",
             ["CurrentVersion"] = "Versión actual: {0}",
             ["CheckingUpdates"] = "Comprobando…",
             ["UpdateAvailableTitle"] = "Actualización disponible",
-            ["UpdateAvailableMessage"] = "Hay una versión más reciente, {0} ({1}), en GitHub.\n\n¿Abrir la página de la versión para leer las notas y descargarla manualmente?",
-            ["UpToDateMessage"] = "La versión {0} es la última versión pública de GitHub.",
-            ["UpdateCheckFailed"] = "No se pudo comprobar si hay actualizaciones: {0}",
+            ["UpdateAvailableMessage"] = (
+                "Hay una versión más reciente, {0} "
+                + "({1}), en GitHub.\n\n¿Abrir la página "
+                + "de la versión para leer las notas y "
+                + "descargarla manualmente?"
+            ),
+            ["UpToDateMessage"] = (
+                "La versión {0} es la última versión " + "pública de GitHub."
+            ),
+            ["UpdateCheckFailed"] =
+                "No se pudo comprobar si hay actualizaciones: {0}",
             ["ProjectOverview"] = "Descripción del proyecto",
             ["UserGuide"] = "Guía del usuario",
-            ["HelpDocumentUnavailable"] = "No se pudo cargar el documento de ayuda.",
-            ["LogLimitUpdateError"] = "No se pudo actualizar el límite del registro de eventos: {0}",
-            ["Privacy"] = "Esta herramienta solo se conecta a Internet al comprobar actualizaciones manualmente o abrir la página de comentarios. No sube registros, no lee paquetes ni bloquea conexiones automáticamente.",
+            ["PrivacyPolicy"] = "Política de privacidad",
+            ["TermsOfUse"] = "Términos de uso",
+            ["HelpDocumentUnavailable"] =
+                "No se pudo cargar el documento de ayuda.",
+            ["LogLimitUpdateError"] = (
+                "No se pudo actualizar el límite del "
+                + "registro de eventos: {0}"
+            ),
+            ["Privacy"] = (
+                "Esta herramienta solo se conecta a "
+                + "Internet al comprobar actualizaciones "
+                + "manualmente o abrir la página de "
+                + "comentarios. No sube registros, no "
+                + "lee paquetes ni bloquea conexiones "
+                + "automáticamente."
+            ),
             ["CreateRule"] = "Crear regla de monitoreo",
             ["EditRule"] = "Editar regla de monitoreo",
             ["RuleType"] = "Tipo de regla",
             ["AnyRemoteIpCheck"] = "Cualquier IP remota",
             ["AnyRemotePortCheck"] = "Cualquier puerto remoto",
             ["AnyLocalPortCheck"] = "Cualquier puerto local",
-            ["PortFormat"] = "Introduzca un puerto (1433) o un intervalo (1400-1500)",
-            ["RepeatInterval"] = "Intervalo para repetir la alerta después de cerrarla",
+            ["PortFormat"] = (
+                "Introduzca un puerto (1433) o un " + "intervalo (1400-1500)"
+            ),
+            ["RepeatInterval"] =
+                "Intervalo para repetir la alerta después de cerrarla",
             ["EveryTime"] = "Cada vez",
             ["OneMinute"] = "1 minuto",
             ["FiveMinutes"] = "5 minutos",
@@ -520,59 +744,95 @@ public static partial class UiText
             ["RulePreview"] = "Vista previa de la regla",
             ["Save"] = "Guardar",
             ["Cancel"] = "Cancelar",
-            ["PreviewConnection"] = "Cuando una conexión TCP de un programa coincida con: {0}, {1}.",
-            ["PreviewListener"] = "Cuando un programa escuche en el puerto local {0}, {1}.",
+            ["PreviewConnection"] = (
+                "Cuando una conexión TCP de un "
+                + "programa coincida con: {0}, {1}."
+            ),
+            ["PreviewListener"] = (
+                "Cuando un programa escuche en el " + "puerto local {0}, {1}."
+            ),
             ["NameRequired"] = "Introduzca un nombre para la regla.",
             ["InvalidRemoteIp"] = "La dirección IP remota no es válida.",
-            ["InvalidRemotePort"] = "El puerto remoto debe ser un puerto o un intervalo entre 1 y 65535.",
-            ["InvalidLocalPort"] = "El puerto local debe ser un puerto o un intervalo entre 1 y 65535.",
-            ["ConditionRequired"] = "Limite al menos una dirección IP o un puerto.",
-            ["ListenerPortRequired"] = "Una regla de escucha requiere un puerto local.",
-            ["InvalidRepeatInterval"] = "El intervalo de repetición no es válido.",
-            ["NeedEnabledRule"] = "Cree y active al menos una regla antes de iniciar el monitoreo.",
+            ["InvalidRemotePort"] = (
+                "El puerto remoto debe ser un puerto o "
+                + "un intervalo entre 1 y 65535."
+            ),
+            ["InvalidLocalPort"] = (
+                "El puerto local debe ser un puerto o "
+                + "un intervalo entre 1 y 65535."
+            ),
+            ["ConditionRequired"] =
+                "Limite al menos una dirección IP o un puerto.",
+            ["ListenerPortRequired"] =
+                "Una regla de escucha requiere un puerto local.",
+            ["InvalidRepeatInterval"] =
+                "El intervalo de repetición no es válido.",
+            ["NeedEnabledRule"] = (
+                "Cree y active al menos una regla "
+                + "antes de iniciar el monitoreo."
+            ),
             ["UrgentTitle"] = "Coincidencia con una regla",
             ["FirstSeen"] = "Primera detección",
             ["LatestSeen"] = "Detección más reciente",
             ["Occurrences"] = "Durante esta alerta",
             ["Times"] = "veces",
-            ["NotMalwareVerdict"] = "Esta conexión coincidió con una regla creada por usted, pero eso por sí solo no significa que el equipo esté infectado.",
+            ["NotMalwareVerdict"] = (
+                "Esta conexión coincidió con una regla "
+                + "creada por usted, pero eso por sí "
+                + "solo no significa que el equipo esté "
+                + "infectado."
+            ),
             ["ViewDetails"] = "Ver detalles",
             ["Close"] = "Cerrar",
             ["Open"] = "Abrir",
             ["Exit"] = "Salir",
-            ["CloseWhileRunning"] = "El monitoreo está activo. Seleccione Sí para minimizar a la bandeja o No para detenerlo y salir.",
+            ["CloseWhileRunning"] = (
+                "El monitoreo está activo. Seleccione "
+                + "Sí para minimizar a la bandeja o No "
+                + "para detenerlo y salir."
+            ),
             ["CloseWhileRunningTitle"] = "El monitoreo sigue activo",
             ["TrayNormal"] = "SocketSight: monitoreando",
             ["TrayNotices"] = "SocketSight: {0} avisos",
             ["Error"] = "Error",
             ["UnexpectedError"] = "Error inesperado",
-            ["StartupSettingError"] = "No se pudo cambiar la configuración de inicio de Windows: {0}",
-            ["ProcessPathUnavailable"] = "No disponible (permisos insuficientes)"
+            ["StartupSettingError"] = (
+                "No se pudo cambiar la configuración "
+                + "de inicio de Windows: {0}"
+            ),
+            ["ProcessPathUnavailable"] =
+                "No disponible (permisos insuficientes)",
         };
 
     public static string Language { get; private set; } = "en";
 
-    public static bool IsChinese => Language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
+    public static bool IsChinese =>
+        Language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
 
-    public static bool IsSpanish => Language.StartsWith("es", StringComparison.OrdinalIgnoreCase);
+    public static bool IsSpanish =>
+        Language.StartsWith("es", StringComparison.OrdinalIgnoreCase);
 
     public static void SetLanguage(string language)
     {
         string normalized = language.Trim();
-        Language = normalized.StartsWith("zh-TW", StringComparison.OrdinalIgnoreCase) ||
-            normalized.StartsWith("zh-Hant", StringComparison.OrdinalIgnoreCase)
+        Language =
+            normalized.StartsWith("zh-TW", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith(
+                "zh-Hant",
+                StringComparison.OrdinalIgnoreCase
+            )
                 ? "zh-TW"
-                : normalized.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
-                    ? "zh-CN"
-                    : normalized.StartsWith("es", StringComparison.OrdinalIgnoreCase)
-                        ? "es"
-                        : normalized.StartsWith("fr", StringComparison.OrdinalIgnoreCase)
-                            ? "fr"
-                            : normalized.StartsWith("de", StringComparison.OrdinalIgnoreCase)
-                                ? "de"
-                                : normalized.StartsWith("pt", StringComparison.OrdinalIgnoreCase)
-                                    ? "pt-BR"
-                                    : "en";
+            : normalized.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                ? "zh-CN"
+            : normalized.StartsWith("es", StringComparison.OrdinalIgnoreCase)
+                ? "es"
+            : normalized.StartsWith("fr", StringComparison.OrdinalIgnoreCase)
+                ? "fr"
+            : normalized.StartsWith("de", StringComparison.OrdinalIgnoreCase)
+                ? "de"
+            : normalized.StartsWith("pt", StringComparison.OrdinalIgnoreCase)
+                ? "pt-BR"
+            : "en";
     }
 
     public static string Get(string key)
@@ -585,19 +845,21 @@ public static partial class UiText
             "fr" => French,
             "de" => German,
             "pt-BR" => BrazilianPortuguese,
-            _ => English
+            _ => English,
         };
         return source.TryGetValue(key, out string? value) ? value : key;
     }
 
     public static string Action(MatchAction action)
     {
-        return Get(action switch
-        {
-            MatchAction.SilentLog => "SilentLog",
-            MatchAction.TrayNotice => "TrayNotice",
-            _ => "PopupAlert"
-        });
+        return Get(
+            action switch
+            {
+                MatchAction.SilentLog => "SilentLog",
+                MatchAction.TrayNotice => "TrayNotice",
+                _ => "PopupAlert",
+            }
+        );
     }
 
     public static string ActionMarker(MatchAction action)
@@ -606,26 +868,30 @@ public static partial class UiText
         {
             MatchAction.SilentLog => "1 ●",
             MatchAction.TrayNotice => "2 ▲",
-            _ => "3 ◆"
+            _ => "3 ◆",
         };
     }
 
     public static string ActionCompact(MatchAction action)
     {
-        string shortName = Get(action switch
-        {
-            MatchAction.SilentLog => "SilentShort",
-            MatchAction.TrayNotice => "TrayShort",
-            _ => "PopupShort"
-        });
+        string shortName = Get(
+            action switch
+            {
+                MatchAction.SilentLog => "SilentShort",
+                MatchAction.TrayNotice => "TrayShort",
+                _ => "PopupShort",
+            }
+        );
         return $"{ActionMarker(action)}  {shortName}";
     }
 
     public static string RuleType(MonitoringRuleType type)
     {
-        return Get(type == MonitoringRuleType.LocalListener
-            ? "LocalListener"
-            : "TcpConnection");
+        return Get(
+            type == MonitoringRuleType.LocalListener
+                ? "LocalListener"
+                : "TcpConnection"
+        );
     }
 
     public static string FormatRuleCondition(MonitoringRule rule)
@@ -637,9 +903,12 @@ public static partial class UiText
 
         return string.Format(
             Get("ConnectionCondition"),
-            string.IsNullOrWhiteSpace(rule.RemoteIp) ? Get("Any") : rule.RemoteIp,
+            string.IsNullOrWhiteSpace(rule.RemoteIp)
+                ? Get("Any")
+                : rule.RemoteIp,
             FormatPort(rule.RemotePort),
-            FormatPort(rule.LocalPort));
+            FormatPort(rule.LocalPort)
+        );
     }
 
     public static string FormatPort(PortRange range)

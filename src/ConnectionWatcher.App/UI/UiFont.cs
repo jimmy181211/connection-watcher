@@ -7,9 +7,8 @@ internal static class UiFont
     private const string EnglishFamily = "Segoe UI";
     private const string ChineseFamily = "Microsoft YaHei UI";
 
-    public static string FamilyName => UiText.IsChinese
-        ? ChineseFamily
-        : EnglishFamily;
+    public static string FamilyName =>
+        UiText.IsChinese ? ChineseFamily : EnglishFamily;
 
     public static Font Create(float size, FontStyle style = FontStyle.Regular)
     {
@@ -25,10 +24,13 @@ internal static class UiFont
     private static void ApplyRecursive(Control control, string family)
     {
         Font current = control.Font;
-        if (!string.Equals(
+        if (
+            !string.Equals(
                 current.FontFamily.Name,
                 family,
-                StringComparison.OrdinalIgnoreCase))
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
         {
             control.Font = new Font(
                 family,
@@ -36,7 +38,8 @@ internal static class UiFont
                 current.Style,
                 current.Unit,
                 current.GdiCharSet,
-                current.GdiVerticalFont);
+                current.GdiVerticalFont
+            );
         }
 
         foreach (Control child in control.Controls)

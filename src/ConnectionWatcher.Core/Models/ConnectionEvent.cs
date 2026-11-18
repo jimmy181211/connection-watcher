@@ -10,7 +10,8 @@ public sealed class ConnectionEvent
     public DateTimeOffset? EndedAt { get; internal set; }
     public bool DurationKnown { get; internal set; } = true;
     public IReadOnlyList<Guid> RuleIds { get; init; } = Array.Empty<Guid>();
-    public IReadOnlyList<string> RuleNames { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> RuleNames { get; init; } =
+        Array.Empty<string>();
     public MatchAction Action { get; init; }
     public int RepeatAlertMinutes { get; init; } = 5;
     public string LocalAddress { get; init; } = string.Empty;
@@ -101,13 +102,16 @@ public sealed class ConnectionEvent
     public static ConnectionEvent Create(
         DateTimeOffset detectedAt,
         TcpConnectionInfo connection,
-        IReadOnlyList<MonitoringRule> rules)
+        IReadOnlyList<MonitoringRule> rules
+    )
     {
         MatchAction action = rules.Max(rule => rule.Action);
-        int repeatMinutes = action == MatchAction.PopupAlert
-            ? rules.Where(rule => rule.Action == MatchAction.PopupAlert)
-                .Min(rule => rule.RepeatAlertMinutes)
-            : 5;
+        int repeatMinutes =
+            action == MatchAction.PopupAlert
+                ? rules
+                    .Where(rule => rule.Action == MatchAction.PopupAlert)
+                    .Min(rule => rule.RepeatAlertMinutes)
+                : 5;
 
         return new ConnectionEvent
         {
@@ -124,7 +128,7 @@ public sealed class ConnectionEvent
             State = connection.State,
             ProcessId = connection.ProcessId,
             ProcessName = connection.ProcessName,
-            ProcessPath = connection.ProcessPath
+            ProcessPath = connection.ProcessPath,
         };
     }
 }
