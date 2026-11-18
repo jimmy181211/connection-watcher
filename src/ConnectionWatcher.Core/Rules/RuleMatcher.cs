@@ -18,6 +18,16 @@ public static class RuleMatcher
         TcpState.LastAck,
     ];
 
+    /// <summary>
+    /// Test one snapshot against an enabled rule without changing either one.
+    /// Listener rules inspect Listen state and the local port only. Remote
+    /// rules require an active state, a concrete address and all port filters.
+    /// IPv4-mapped IPv6 addresses compare as their IPv4 equivalent.
+    /// </summary>
+    /// <returns>
+    /// True when every applicable condition matches; false for disabled rules,
+    /// invalid remote IP filters or ineligible connection states.
+    /// </returns>
     public static bool Matches(
         MonitoringRule rule,
         TcpConnectionInfo connection

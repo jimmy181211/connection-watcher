@@ -16,6 +16,15 @@ public enum RuleValidationError
 
 public static class RuleValidator
 {
+    /// <summary>
+    /// Collect rule errors without modifying the rule or stopping at the first.
+    /// Listener rules need a local port; other rules need at least one filter.
+    /// Repeat intervals are validated only for popup actions.
+    /// </summary>
+    /// <returns>
+    /// Errors in validation order, or an empty list when all checks pass.
+    /// This does not verify whether a matching connection currently exists.
+    /// </returns>
     public static IReadOnlyList<RuleValidationError> Validate(
         MonitoringRule rule
     )
